@@ -9,7 +9,7 @@
       </div>
       <div class="layout-content">
         <a-space :size="16" direction="vertical" fill>
-          <PreView />
+          <Monitor />
           <Logger />
         </a-space>
       </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import PreView from './components/preview.vue';
+import Monitor from './components/monitor.vue';
 import Device from './components/device.vue';
 import Logger from './components/logger.vue';
 import Config from './components/config.vue';
@@ -26,7 +26,7 @@ import Config from './components/config.vue';
 
 <script lang="ts">
 export default {
-  name: 'Monitor',
+  name: 'Workplace',
 };
 </script>
 

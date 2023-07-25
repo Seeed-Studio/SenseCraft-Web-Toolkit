@@ -1,34 +1,34 @@
 <template>
-  <a-card :bordered="false" :body-style="{ padding: '20px' }">
-    <div class="logger">
-      <div v-for="(log, index) in logs" :key="index" class="logger-item">{{ log }}</div>
-    </div>
+ <a-card class="general-card" :title="$t('workplace.logger.title')" :header-style="{ paddingBottom: '0' }">
+    <a-scrollbar style="height:300px;overflow: auto;">
+      <div class="logger">
+        <div v-for="(log, index) in logs" :key="index" class="logger-item">{{ log }}</div>
+      </div>
+    </a-scrollbar>
   </a-card>
 </template>
 
-<script lang="ts">
-export default {
-  data() {
-    return {
-      logs: [
-        'Strart',
-        'Stio',
-        '{"asdf: "asdf"}',
-      ]
-    };
-  },
-  methods: {
-    log(data: string) {
-      this.logs.push(data);
-    }
-  }
+<script lang="ts" setup>
+
+import { ref } from 'vue';
+import { useDeviceStore } from '@/store';
+
+const deviceStore = useDeviceStore();
+const dev = deviceStore.device;
+
+const logs = ref<string[]>([]);
+const addLog = (log: string) => {
+  logs.value.push(log);
 };
+
+dev.onLogger = (log: string) => {
+  addLog(log);
+};
+
 </script>
 
 <style scoped lang="less">
 .logger {
-  height: 300px;
-  overflow-y: scroll;
   padding: 20px;
 
   &-item {

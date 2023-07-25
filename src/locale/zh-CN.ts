@@ -1,5 +1,5 @@
 import localeWorkplace from '@/views/dashboard/workplace/locale/zh-CN';
-
+import localeDeviceConfig from '@/api/atclient/locale/zh-CN';
 import localeSettings from './zh-CN/settings';
 
 export default {
@@ -18,4 +18,5 @@ export default {
   'navbar.action.locale': '切换为中文',
   ...localeSettings,
   ...localeWorkplace,
+  ...localeDeviceConfig,
 };

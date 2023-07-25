@@ -1,5 +1,5 @@
 import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
-
+import localeDeviceConfig from '@/api/atclient/locale/en-US';
 import localeSettings from './en-US/settings';
 
 export default {
@@ -20,5 +20,6 @@ export default {
   'navbar.docs': 'Docs',
   'navbar.action.locale': 'Switch to English',
   ...localeSettings,
-  ...localeWorkplace
+  ...localeWorkplace,
+  ...localeDeviceConfig,
 };

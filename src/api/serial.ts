@@ -1,11 +1,9 @@
 export class Serial {
   private port: SerialPort | null;
 
-  private reader: ReadableStreamDefaultReader;
+  private reader: ReadableStreamDefaultReader | null;
 
-  private writer: WritableStreamDefaultWriter;
-
-  private textEncoder: TextEncoder;
+  private writer: WritableStreamDefaultWriter | null;
 
   private onReceive: any;
 
@@ -15,15 +13,17 @@ export class Serial {
     this.port = port;
     this.reader = null;
     this.writer = null;
-    this.textEncoder = new TextEncoderStream();
   }
 
-  public async connect(baudRate : number): Promise<void> {
+  public async connect(): Promise<void> {
     const readLoop = () => {
+      if (this.reader === null) {
+        return;
+      }
       this.reader
         .read()
-        .then((result: { value: any }) => {
-          this.onReceive(result.value);
+        .then(({ value, done }) => {
+          this.onReceive(value);
           readLoop();
         })
         .catch((error: any) => {
@@ -31,7 +31,7 @@ export class Serial {
         });
     };
 
-    return this.port.open({ baudRate }).then(() => {
+    return this.port.open({ baudRate: 115200 }).then(() => {
       this.reader = this.port.readable.getReader();
       this.writer = this.port.writable.getWriter();
       readLoop();
@@ -44,9 +44,11 @@ export class Serial {
     return this.port.close();
   }
 
-  public async send(data: string): Promise<void> {
-    const dataArrayBuffer = this.textEncoder.encode(data);
-    return this.writer.write(dataArrayBuffer);
+  public async write(data: BufferSource): Promise<void> {
+    if (this.writer === null) {
+      return;
+    }
+    this.writer.write(data);
   }
 }
 

@@ -36,6 +36,7 @@ module.exports = {
     },
   },
   rules: {
+    'class-methods-use-this': 0,
     'prettier/prettier': 1,
     // Vue: Recommended rules to be closed or modify
     'vue/require-default-prop': 0,
@@ -66,5 +67,10 @@ module.exports = {
     'no-param-reassign': 0,
     'prefer-regex-literals': 0,
     'import/no-extraneous-dependencies': 0,
+    'lines-between-class-members': [
+      'error',
+      'always',
+      { 'exceptAfterSingleLine': true },
+    ],
   },
 };

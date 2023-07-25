@@ -1,11 +1,11 @@
-export class Port {
+export class WebUSB {
   private device: USBDevice;
 
-  public interfaceNumber: number;
+  private interfaceNumber: number;
 
-  public endpointIn: number;
+  private endpointIn: number;
 
-  public endpointOut: number;
+  private endpointOut: number;
 
   public onReceive: any;
 
@@ -22,7 +22,7 @@ export class Port {
     const readLoop = () => {
       this.device
         .transferIn(this.endpointIn, 2048)
-        .then((result: { data: any }) => {
+        .then((result: any) => {
           this.onReceive(result.data);
           readLoop();
         })
@@ -83,7 +83,6 @@ export class Port {
   }
 
   public disconnect(): Promise<void> {
-    console.log('I am disconnecting');
     return this.device
       .controlTransferOut({
         requestType: 'class',
@@ -95,25 +94,25 @@ export class Port {
       .then(() => this.device.close());
   }
 
-  public send(data: ArrayBuffer): Promise<void> {
+  public write(data: BufferSource): Promise<void> {
     return this.device.transferOut(this.endpointOut, data);
   }
 }
 
-export async function getPorts(): Promise<Port[]> {
+export async function getWebUSBs(): Promise<WebUSB[]> {
   return navigator.usb.getDevices().then((devices: USBDevice[]) => {
-    return devices.map((device: USBDevice) => new Port(device));
+    return devices.map((device: USBDevice) => new WebUSB(device));
   });
 }
 
-export async function requestPort(): Promise<Port> {
+export async function requestWebUSB(): Promise<WebUSB> {
   const filters = [{ vendorId: 0x2886 }]; // Seeed studio Grove AI
   return navigator.usb
     .requestDevice({ filters })
-    .then((device: USBDevice) => new Port(device));
+    .then((device: USBDevice) => new WebUSB(device));
 }
 
 export default {
-  getPorts,
-  requestPort,
+  getWebUSBs,
+  requestWebUSB,
 };

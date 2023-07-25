@@ -1,0 +1,15 @@
+export default {
+  'workplace.config.model.0': 'Image classification - Panda and human',
+  'workplace.config.model.1': 'User-Defined 1',
+  'workplace.config.model.2': 'User-Defined 2',
+  'workplace.config.model.3': 'User-Defined 3',
+  'workplace.config.model.4': 'User-Defined 4',
+  'workplace.config.model.5': 'Pointer meter - Pressure meter',
+  'workplace.config.model.6': 'Digital meter - Water meter',
+  'workplace.config.model.17': 'Object detection - Human detection',
+  'workplace.config.algorithm.0': 'Object detection',
+  'workplace.config.algorithm.1': 'Object counting',
+  'workplace.config.algorithm.2': 'Image classification',
+  'workplace.config.algorithm.3': 'Pointer meter',
+  'workplace.config.algorithm.4': 'Digital meter',
+};
