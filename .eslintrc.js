@@ -70,7 +70,10 @@ module.exports = {
     'lines-between-class-members': [
       'error',
       'always',
-      { 'exceptAfterSingleLine': true },
+      { exceptAfterSingleLine: true },
     ],
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': ['off'],
+    'no-bitwise': 'off',
   },
 };

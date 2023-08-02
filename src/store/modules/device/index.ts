@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia';
-import Device from '@/api/device';
+import { Device } from '@/edgelab';
 
 const useDeviceStore = defineStore('device', {
-  state: () =>{
+  state: () => {
     return {
-      device : new Device()
+      device: new Device(),
     };
   },
 
   getters: {
-    deviceCurrentSetting(state) {
+    getDevice(state) {
       return state.device;
     },
   },
@@ -20,9 +20,7 @@ const useDeviceStore = defineStore('device', {
       // @ts-ignore-next-line
       this.$patch(partial);
     },
-
   },
-
 });
 
 export default useDeviceStore;

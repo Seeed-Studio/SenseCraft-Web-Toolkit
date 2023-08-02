@@ -18,10 +18,12 @@
 </template>
 
 <script lang="ts" setup>
+
 import Monitor from './components/monitor.vue';
 import Device from './components/device.vue';
 import Logger from './components/logger.vue';
 import Config from './components/config.vue';
+
 </script>
 
 <script lang="ts">

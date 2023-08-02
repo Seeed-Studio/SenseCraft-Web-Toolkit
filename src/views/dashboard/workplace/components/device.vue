@@ -18,14 +18,14 @@
     </a-space>
     <a-space direction="horizontal">
       <a-select
-        default-value="webusb"
         v-model="protocol"
+        default-value="webusb"
         placeholder="Please select ..."
         style="width: 120px"
       >
         <a-option
           v-for="item in PROTOCOL_LIST"
-          :key="item"
+          :key="item.value"
           :value="item.value"
           >{{ item.label }}</a-option
         >
@@ -43,12 +43,13 @@
 <script lang="ts">
   import { defineComponent } from 'vue';
   import { useDeviceStore } from '@/store';
-  import { PROTOCOL_LIST } from '@/api/device';
+  import { PROTOCOL_LIST } from '@/edgelab';
 
   const deviceStore = useDeviceStore();
-  const dev = deviceStore.device;
+  const device = deviceStore.getDevice;
 
   export default defineComponent({
+    name: 'Device',
     data() {
       return {
         port: null as any,
@@ -69,41 +70,17 @@
         ],
       };
     },
-    name: 'Device',
-    methods: {
-      async handleConnect() {
-        try {
-          await dev.requestDevice(this.protocol);
-          await dev.connect();
-          if (dev.connected) {
-            this.connected = true;
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      },
-      async handleDisConnect() {
-        try {
-          await dev.disconnect();
-          if (!dev.connected) {
-            this.connected = false;
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      },
-    },
     computed: {
       devConnected() {
-        return dev.connected;
+        return device.connected;
       },
     },
     watch: {
       async devConnected(val) {
         this.connected = val;
         if (this.connected) {
-          const name = await dev.client.getName();
-          const version = await dev.client.getVersion();
+          const name = await device.client.getName();
+          const version = await device.client.getVersion();
           this.info = [
             {
               label: this.$t('workplace.device.name'),
@@ -118,9 +95,33 @@
       },
     },
     async mounted() {
-      await dev.mount();
-      this.connected = dev.connected;
-      this.protocol = dev.protocol;
+      await device.mount();
+      this.connected = device.connected;
+      this.protocol = device.protocol;
+    },
+    methods: {
+      async handleConnect() {
+        try {
+          await device.requestDevice(this.protocol);
+          await device.connect();
+          if (device.connected) {
+            this.connected = true;
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      async handleDisConnect() {
+        try {
+          await device.disconnect();
+          if (!device.connected) {
+            this.connected = false;
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      },
     },
   });
 </script>
+@/edgelab/device

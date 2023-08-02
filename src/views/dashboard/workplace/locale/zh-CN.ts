@@ -34,4 +34,8 @@ export default {
   'workplace.config.nms.iou.required': '请输入IOU',
   'workplace.config.nms.iou.unit': '%',
   'workplace.config.nms.iou.tip': 'IOU阈值，低于此阈值的结果将被过滤',
+  'workplace.config.pointer.start': '起始点',
+  'workplace.config.pointer.end': '结束点',
+  'workplace.config.pointer.center': '中心点',
+  'workplace.config.pointer.range': '范围',
 };

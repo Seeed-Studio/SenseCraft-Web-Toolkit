@@ -4,20 +4,26 @@
     :title="$t('workplace.monitor.title')"
     :header-style="{ paddingBottom: '0' }"
   >
-    <template v-if="invoke" #extra>
-      <a-dropdown @select="handleInvoke" :disable="invokeDisable">
-        <a-button type="primary">Invoke</a-button>
-        <template #content>
-          <a-doption value="One Shot">One Shot</a-doption>
-          <a-doption value="Continuous">Continuous</a-doption>
-        </template>
-      </a-dropdown>
-    </template>
-    <template v-else #extra>
-      <a-button @click="handleCancel">Cancel</a-button>
+    <template #extra>
+      <a-button
+        v-if="invoke"
+        type="primary"
+        :disabled="invokeDisable"
+        @click="handleInvoke"
+      >
+        Invoke
+      </a-button>
+      <a-button
+        v-else
+        type="secondary"
+        :disabled="invokeDisable"
+        @click="handleStop"
+      >
+        Stop
+      </a-button>
     </template>
     <div class="monitor-wrapper">
-      <canvas ref="canvas" class="monitor-preview" :style="computedStyle" />
+      <canvas ref="canvas" class="monitor-preview" @click="handleClick" />
     </div>
   </a-card>
 </template>
@@ -25,25 +31,45 @@
 <script lang="ts">
   import { defineComponent } from 'vue';
   import { useDeviceStore } from '@/store';
-  import { objectPick } from '@vueuse/core';
+  import { Pointer, ALGORITHM, EVENT } from '@/edgelab';
 
-  const deviceStore = useDeviceStore();
-  const dev = deviceStore.device;
-
-  const colors = [
-    'green',
+  const COLORS = [
     'red',
-    'blue',
-    'yellow',
     'orange',
+    'green',
+    'cyan',
+    'blue',
     'purple',
     'pink',
-    'cyan',
-    'lime',
     'brown',
-    'grey',
-    'white',
+    'black',
+    'lime',
+    'teal',
+    'lavender',
+    'turquoise',
+    'gray',
   ];
+
+  const deviceStore = useDeviceStore();
+  const device = deviceStore.getDevice;
+
+  const centerImg = new Image();
+  centerImg.src = new URL(
+    '@/assets/images/location-blue.svg',
+    import.meta.url
+  ).href;
+
+  const startImg = new Image();
+  startImg.src = new URL(
+    '@/assets/images/location-green.svg',
+    import.meta.url
+  ).href;
+
+  const endImg = new Image();
+  endImg.src = new URL(
+    '@/assets/images/location-red.svg',
+    import.meta.url
+  ).href;
 
   export default defineComponent({
     name: 'Monitor',
@@ -51,41 +77,104 @@
       return {
         canvas: null as HTMLCanvasElement | null,
         ctx: null as CanvasRenderingContext2D | null,
-        img: null as HTMLImageElement | null,
         invoke: true,
         invokeDisable: true,
+        pointer: null as Pointer | null,
         rotate: 0,
+        configPointer: 0,
       };
+    },
+    computed: {
+      connected() {
+        return device.connected;
+      },
+      event() {
+        return device.getEvent();
+      },
+    },
+
+    watch: {
+      async connected(value) {
+        if (value) {
+          const invoke = await device.getInvoke();
+          if (invoke === 0) {
+            this.invokeDisable = false;
+            this.invoke = true;
+          } else {
+            this.invokeDisable = true;
+            this.invoke = false;
+          }
+          this.rotate = await device.getRotate();
+          this.invokeDisable = false;
+        } else {
+          this.invokeDisable = true;
+        }
+      },
+      async event(value: number) {
+        console.log(value);
+        if (value & EVENT.CONFIG_POINTER_START) {
+          this.configPointer = EVENT.CONFIG_POINTER_START;
+          device.clearEvent(EVENT.CONFIG_POINTER_START);
+        }
+        if (value & EVENT.CONFIG_POINTER_END) {
+          this.configPointer = EVENT.CONFIG_POINTER_END;
+          device.clearEvent(EVENT.CONFIG_POINTER_END);
+        }
+        if (value & EVENT.CONFIG_POINTER_CENTER) {
+          this.configPointer = EVENT.CONFIG_POINTER_CENTER;
+          device.clearEvent(EVENT.CONFIG_POINTER_CENTER);
+        }
+        if (value & EVENT.CONFIG_POINTER_CANCEL) {
+          this.configPointer = 0;
+          device.clearEvent(EVENT.CONFIG_POINTER_CANCEL);
+        }
+      },
     },
     mounted() {
       this.monitor = this.monitor.bind(this);
-      dev.onMonitor = this.monitor;
-      dev.onPreview = this.preview;
+      device.onMonitor = this.monitor;
+      device.onPreview = this.preview;
     },
     methods: {
-      monitor(data: string) {
-        this.canvas = this.$refs.canvas as HTMLCanvasElement;
-        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.img = new Image();
-        this.img.src = 'data:image/jpeg;base64,'.concat(data);
-        this.img.onload = () => {
-          this.canvas!.width = this.img!.width;
-          this.canvas!.height = this.img!.height;
-          this.ctx!.drawImage(
-            this.img,
-            0,
-            0,
-            this.img!.width,
-            this.img!.height
-          );
-        };
+      monitor(bold: Blob) {
+        if (bold.type === 'image/jpeg') {
+          this.canvas = this.$refs.canvas as HTMLCanvasElement;
+          this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+          const img = new Image();
+          img.src = URL.createObjectURL(bold);
+          img.onload = () => {
+            if (this.rotate === 270) {
+              this.canvas!.width = img!.width;
+              this.canvas!.height = img!.height;
+              this.ctx!.translate(
+                this.canvas!.width / 2,
+                this.canvas!.height / 2
+              );
+              this.ctx!.rotate((270 * Math.PI) / 180);
+              this.ctx!.drawImage(img, -img!.width / 2, -img!.height / 2);
+              this.ctx!.rotate((-270 * Math.PI) / 180);
+              this.ctx!.translate(
+                -this.canvas!.width / 2,
+                -this.canvas!.height / 2
+              );
+            } else {
+              this.canvas!.width = img!.height;
+              this.canvas!.height = img!.width;
+              this.ctx!.drawImage(img, 0, 0, img!.width, img!.height);
+            }
+          };
+        }
       },
       preview(data: string) {
         const obj = JSON.parse(data);
         if (this.ctx === null) return;
-        if (obj.algorithm === 0) {
+        let algorithm = '';
+        if (typeof obj.algorithm === 'number')
+          algorithm = obj.algorithm.toString();
+        else algorithm = obj.algorithm;
+        if (algorithm === ALGORITHM.OBJECT_DETECTION) {
           for (let i = 0; i < obj.count; i += 1) {
-            const color = `#${(0x1f * obj.object.x[i]).toString(16)}`;
+            const color = COLORS[obj.object.x[i] % COLORS.length];
             this.ctx.strokeStyle = color;
             this.ctx.lineWidth = 2;
             this.ctx.strokeRect(
@@ -97,22 +186,22 @@
             this.ctx.fillStyle = color;
             this.ctx.fillRect(
               obj.object.x[i] - obj.object.w[i] / 2,
-              obj.object.y[i] - obj.object.h[i] / 2,
+              obj.object.y[i] - obj.object.h[i] / 2 - 12,
               obj.object.w[i],
-              16
+              12
             );
             this.ctx.font = 'bold 10px arial';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(
               `${obj.object.target[i]}: ${obj.object.confidence[i]}`,
               obj.object.x[i] - obj.object.w[i] / 2 + 5,
-              obj.object.y[i] - obj.object.h[i] / 2 + 12
+              obj.object.y[i] - obj.object.h[i] / 2 - 2
             );
           }
         }
-        if (obj.algorithm === 1) {
+        if (algorithm === ALGORITHM.OBJECT_COUNTING) {
           for (let i = 0; i < obj.count; i += 1) {
-            this.ctx.fillStyle = colors[obj.object.target[i]];
+            this.ctx.fillStyle = COLORS[obj.object.target[i]];
             this.ctx.fillRect(0, 16 * i, this.canvas!.width, 16 * (i + 1));
             this.ctx.font = 'bold 10px arial';
             this.ctx.fillStyle = '#ffffff';
@@ -123,9 +212,9 @@
             );
           }
         }
-        if (obj.algorithm === 2) {
+        if (algorithm === ALGORITHM.IMAGE_CLASSIFICATION) {
           for (let i = 0; i < obj.count; i += 1) {
-            this.ctx.fillStyle = colors[obj.object.target[i]];
+            this.ctx.fillStyle = COLORS[obj.object.target[i]];
             this.ctx.fillRect(
               (this.canvas!.width / obj.count) * i,
               0,
@@ -141,46 +230,82 @@
             );
           }
         }
-        if (obj.algorithm === 3) {
+        if (algorithm === ALGORITHM.POINTER_METER) {
+          this.ctx.fillStyle = 'red';
+          this.ctx?.fillRect(obj.object.x[0], obj.object.y[0] - 1, 4, 4);
+          this.ctx?.drawImage(
+            centerImg,
+            device.config.pointer.centerX - 20,
+            device.config.pointer.centerY - 40,
+            40,
+            40
+          );
+          this.ctx?.drawImage(
+            startImg,
+            device.config.pointer.startX - 20,
+            device.config.pointer.startY - 40,
+            40,
+            40
+          );
+          this.ctx?.drawImage(
+            endImg,
+            device.config.pointer.endX - 20,
+            device.config.pointer.endY - 40,
+            40,
+            40
+          );
+        }
+        if (algorithm === ALGORITHM.DIGITAL_METER) {
           for (let i = 0; i < obj.count; i += 1) {
-            this.ctx.fillStyle = colors[i];
-            this.ctx.fillRect(obj.object.x[i] - 1, obj.object.y[i] - 1, 4, 4);
+            const color = COLORS[obj.object.target[i]];
+            this.ctx.strokeStyle = color;
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(
+              obj.object.x[i] - obj.object.w[i] / 2,
+              obj.object.y[i] - obj.object.h[i] / 2,
+              obj.object.w[i],
+              obj.object.h[i]
+            );
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(
+              obj.object.x[i] - obj.object.w[i] / 2,
+              obj.object.y[i] - obj.object.h[i] / 2 - 12,
+              obj.object.w[i],
+              12
+            );
+            this.ctx.font = 'bold 10px arial';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(
+              obj.object.target[i],
+              obj.object.x[i] - obj.object.w[i] / 2 + 5,
+              obj.object.y[i] - obj.object.h[i] / 2 - 2
+            );
           }
         }
       },
-      handleInvoke(value: string) {
-        console.log(value);
-        if (value === 'One Shot') {
-          dev.client.invoke(1);
-        } else {
-          this.invoke = false;
-          dev.client.invoke(4294967296);
-        }
+      handleInvoke() {
+        device.invoke(-1);
+        this.invoke = false;
       },
-      handleCancel() {
-        console.log('cancel');
-        dev.client.invoke(0);
+      handleStop() {
+        device.invoke(0);
         this.invoke = true;
       },
-    },
-    computed: {
-      computedStyle() {
-        return {
-          transform: `rotate(${this.rotate}deg)`,
-        };
-      },
-      connected() {
-        return dev.connected;
-      },
-    },
-
-    watch: {
-      async connected(value) {
-        if (value) {
-          this.invokeDisable = false;
-          this.rotate= await dev.client.getRotate();
-        } else {
-          this.invokeDisable = true;
+      handleClick(e: MouseEvent) {
+        if (this.configPointer !== 0) {
+          if (this.configPointer & EVENT.CONFIG_POINTER_START) {
+            device.config.pointer.startX = e.offsetX;
+            device.config.pointer.startY = e.offsetY;
+          }
+          if (this.configPointer & EVENT.CONFIG_POINTER_END) {
+            device.config.pointer.endX = e.offsetX;
+            device.config.pointer.endY = e.offsetY;
+          }
+          if (this.configPointer & EVENT.CONFIG_POINTER_CENTER) {
+            device.config.pointer.centerX = e.offsetX;
+            device.config.pointer.centerY = e.offsetY;
+          }
+          device.setEvent(EVENT.CONFIG_POINTER_DONE);
         }
       },
     },
@@ -191,21 +316,21 @@
   .monitor {
     &-wrapper {
       display: flex;
+      justify-content: center;
+      width: 100%;
       min-width: 320px;
-      min-height: 240px;
       max-width: 640px;
+      min-height: 285px;
       max-height: 480px;
       margin: 0 auto;
       border-radius: 5px;
-      width: 100%;
-      justify-content: center;
     }
 
     &-preview {
-      max-width: 640px;
-      max-height: 480px;
       min-width: 240px;
+      max-width: 640px;
       min-height: 240px;
+      max-height: 480px;
       margin: auto;
       border-radius: 5px;
       // background-color: black;
@@ -218,3 +343,4 @@
     }
   }
 </style>
+@/edgelab/serial

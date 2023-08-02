@@ -40,31 +40,36 @@ export class WebUSB {
         return Promise.resolve();
       })
       .then(() => {
-        const cinterfaces = this.device.configuration.interfaces;
-        cinterfaces.forEach(
-          (element: { alternates: any[]; interfaceNumber: number }) => {
-            element.alternates.forEach(
-              (elementalt: { interfaceClass: number; endpoints: any[] }) => {
-                if (elementalt.interfaceClass === 0xff) {
-                  this.interfaceNumber = element.interfaceNumber;
-                  elementalt.endpoints.forEach(
-                    (elementendpoint: {
-                      direction: string;
-                      endpointNumber: number;
-                    }) => {
-                      if (elementendpoint.direction === 'out') {
-                        this.endpointOut = elementendpoint.endpointNumber;
+        if (
+          this.device.configuration !== undefined &&
+          this.device.configuration!
+        ) {
+          const cinterfaces = this.device.configuration.interfaces;
+          cinterfaces.forEach(
+            (element: { alternates: any[]; interfaceNumber: number }) => {
+              element.alternates.forEach(
+                (elementalt: { interfaceClass: number; endpoints: any[] }) => {
+                  if (elementalt.interfaceClass === 0xff) {
+                    this.interfaceNumber = element.interfaceNumber;
+                    elementalt.endpoints.forEach(
+                      (elementendpoint: {
+                        direction: string;
+                        endpointNumber: number;
+                      }) => {
+                        if (elementendpoint.direction === 'out') {
+                          this.endpointOut = elementendpoint.endpointNumber;
+                        }
+                        if (elementendpoint.direction === 'in') {
+                          this.endpointIn = elementendpoint.endpointNumber;
+                        }
                       }
-                      if (elementendpoint.direction === 'in') {
-                        this.endpointIn = elementendpoint.endpointNumber;
-                      }
-                    }
-                  );
+                    );
+                  }
                 }
-              }
-            );
-          }
-        );
+              );
+            }
+          );
+        }
       })
       .then(() => this.device.claimInterface(this.interfaceNumber))
       .then(() => this.device.selectAlternateInterface(this.interfaceNumber, 0))
@@ -94,8 +99,9 @@ export class WebUSB {
       .then(() => this.device.close());
   }
 
-  public write(data: BufferSource): Promise<void> {
-    return this.device.transferOut(this.endpointOut, data);
+  public write(data: BufferSource): Promise<number> {
+    const res = this.device.transferOut(this.endpointOut, data);
+    return res.then((result: any) => result.bytesWritten);
   }
 }
 

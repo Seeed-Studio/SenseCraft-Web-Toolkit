@@ -1,7 +1,31 @@
 import { ATClient } from './atclient';
+import { Pointer } from '../types';
 
 const JPEG_MAGIC = 0x2b2d2b2d;
 const TEXT_MAGIC = 0x0f100e12;
+
+const ERROR_LIST = [
+  'Success',
+  'Model Invalid Or Not Existent',
+  'Model Parsing Failure',
+  'Memory Allocation Failure',
+  'Pre-processed Data Failure',
+  'Post-processed Data Failure',
+  'Algorithm Initialization Failure',
+  'Algorithm Mismatch With the Model',
+  'Algorithm Parameter Invalid',
+  'Algorithm Invoke Failure',
+  'Algorithm Get Results Failure',
+  'Sensor Not Supported Yet',
+  'Sensor Parameter Invalid',
+  'Camera Initialization Failure',
+  'Camera De-Initialization Failure',
+  'Camera Parameter Invalid',
+  'IMU Initialization Failure',
+  'Watchdog Timeout',
+  'Command CRC checksum error',
+  'Unknown Error',
+];
 
 export class ATClientV2 extends ATClient {
   public port: any;
@@ -31,7 +55,7 @@ export class ATClientV2 extends ATClient {
   public onPreview: any;
 
   constructor(port: any) {
-    super('v1');
+    super('v2');
     this.port = port;
     this.response = '';
     this.ack = false;
@@ -99,22 +123,16 @@ export class ATClientV2 extends ATClient {
       this.execpt_size = 0;
       this.recv_size = 0;
       if (this.status === 1) {
-        const uint8ArrayToBase64 = (arr: Uint8Array) => {
-          const CHUNK_SIZE = 0x8000; // arbitrary number
-          let index = 0;
-          let result = '';
-          while (index < arr.length) {
-            const slice = arr.subarray(
-              index,
-              Math.min(index + CHUNK_SIZE, arr.length)
-            );
-            result += String.fromCharCode.apply(null, slice);
-            index += CHUNK_SIZE;
-          }
-          return btoa(result);
-        };
-        const binaryString = uint8ArrayToBase64(this.data_buffer);
-        if (this.onMonitor !== null) this.onMonitor(binaryString);
+        //  const uint8ArrayToBase64 = (uint8Array: any): string => {
+        //   let binary = '';
+        //   for (let i = 0; i < uint8Array.length; i+=1) {
+        //     binary += String.fromCharCode(uint8Array[i]);
+        //   }
+        //   return btoa(binary);
+        // }
+        // const binaryString = "data:image/jpeg;base64,".concat(uint8ArrayToBase64(this.data_buffer));
+        const blob = new Blob([this.data_buffer], { type: 'image/jpeg' });
+        if (this.onMonitor !== null) this.onMonitor(blob);
       } else if (this.status === 2) {
         const str = this.textDecoder
           .decode(this.data_buffer)
@@ -150,6 +168,12 @@ export class ATClientV2 extends ATClient {
   public async getName(): Promise<string> {
     const response = await this.sendCommand('AT+NAME?\r\n', 2000);
     return response;
+  }
+
+  public async getError(): Promise<string> {
+    const response = await this.sendCommand('AT+ERR?\r\n', 2000);
+    const err = parseInt(response, 10);
+    return ERROR_LIST[err];
   }
 
   public async setModel(model: string): Promise<boolean> {
@@ -261,9 +285,45 @@ export class ATClientV2 extends ATClient {
     return false;
   }
 
+  public async getInvoke(): Promise<number> {
+    const response = await this.sendCommand('AT+INVOKE?\r\n', 2000);
+    return parseInt(response, 10);
+  }
+
   public async getRotate(): Promise<number> {
-    const response = await this.sendCommand('AT+CFG\r\n', 2000);
+    const response = await this.sendCommand('AT+CFG\r\n', 3000);
     return (4 - parseInt(response, 10)) * 90;
+  }
+
+  public async getPointer(): Promise<Pointer> {
+    const response = await this.sendCommand('AT+POINT?\r\n', 2000);
+    const data = response.split(',');
+    const pointer: Pointer = {
+      startX: parseInt(data[0], 10),
+      startY: parseInt(data[1], 10),
+      endX: parseInt(data[2], 10),
+      endY: parseInt(data[3], 10),
+      centerX: parseInt(data[4], 10),
+      centerY: parseInt(data[5], 10),
+      from: parseInt(data[6], 10) / 1000,
+      to: parseInt(data[7], 10) / 1000,
+    };
+    return pointer;
+  }
+
+  public async setPointer(pointer: Pointer): Promise<boolean> {
+    const response = await this.sendCommand(
+      `AT+POINT=${pointer.startX},${pointer.startY},${pointer.endX},${
+        pointer.endY
+      },${pointer.centerX},${pointer.centerY},${pointer.from * 1000},${
+        pointer.to * 1000
+      }\r\n`,
+      2000
+    );
+    if (response === 'OK') {
+      return true;
+    }
+    return false;
   }
 
   private waitAck(timeout: number): Promise<boolean> {
@@ -302,6 +362,7 @@ export class ATClientV2 extends ATClient {
     if (!(await this.waitIdle(timeout))) {
       return '';
     }
+    console.log(`send command: ${command}`);
     this.idle = false;
     this.response = '';
     this.ack = false;
@@ -311,6 +372,7 @@ export class ATClientV2 extends ATClient {
       return '';
     }
     this.idle = true;
+    console.log(`response: ${this.response}`);
     return this.response;
   }
 }

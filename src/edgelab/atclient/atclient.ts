@@ -1,5 +1,4 @@
 export class ATClient {
-
   private version = 'unknown';
 
   constructor(verion: string) {
@@ -23,7 +22,6 @@ export class ATClient {
     this.invoke = this.invoke.bind(this);
   }
 
-
   public async getID(): Promise<string> {
     return 'unknown';
   }
@@ -33,6 +31,10 @@ export class ATClient {
   }
 
   public async getName(): Promise<string> {
+    return 'unknown';
+  }
+
+  public async getError(): Promise<string> {
     return 'unknown';
   }
 
@@ -93,6 +95,10 @@ export class ATClient {
   }
 
   public async getRotate(): Promise<number> {
+    return 0;
+  }
+
+  public async getInvoke(): Promise<number> {
     return 0;
   }
 }

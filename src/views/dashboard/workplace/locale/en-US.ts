@@ -35,4 +35,8 @@ export default {
   'workplace.config.nms.iou.placeholder': 'Please enter IOU',
   'workplace.config.nms.iou.required': 'Please enter IOU',
   'workplace.config.nms.iou.unit': '%',
+  'workplace.config.pointer.start': 'Start Point',
+  'workplace.config.pointer.end': 'End Point',
+  'workplace.config.pointer.center': 'Center Point',
+  'workplace.config.pointer.range': 'Range',
 };
