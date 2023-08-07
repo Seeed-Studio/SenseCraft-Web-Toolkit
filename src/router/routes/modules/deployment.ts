@@ -26,7 +26,7 @@ const VISUALIZATION: AppRouteRecordRaw = {
     {
       path: 'deploy',
       name: 'Deploy',
-      component: () => import('@/views/comming-soon/index.vue'),
+      component: () => import('@/views/deployment/deploy/index.vue'),
       meta: {
         locale: 'menu.deployment.deploy',
         requiresAuth: true,

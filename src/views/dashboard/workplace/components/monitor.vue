@@ -136,12 +136,12 @@
       device.onPreview = this.preview;
     },
     methods: {
-      monitor(bold: Blob) {
-        if (bold.type === 'image/jpeg') {
+      monitor(blob: Blob) {
+        if (blob.type === 'image/jpeg') {
           this.canvas = this.$refs.canvas as HTMLCanvasElement;
           this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
           const img = new Image();
-          img.src = URL.createObjectURL(bold);
+          img.src = URL.createObjectURL(blob);
           img.onload = () => {
             if (this.rotate === 270) {
               this.canvas!.width = img!.width;

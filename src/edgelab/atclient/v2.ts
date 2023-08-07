@@ -1,5 +1,7 @@
 import { ATClient } from './atclient';
 import { Pointer } from '../types';
+import { Serial } from '../serial';
+import { WebUSB } from '../webusb';
 
 const JPEG_MAGIC = 0x2b2d2b2d;
 const TEXT_MAGIC = 0x0f100e12;
@@ -73,83 +75,103 @@ export class ATClientV2 extends ATClient {
   }
 
   private handleReceive(data: any) {
-    // const buffer = new Uint8Array(this.data_buffer.length + data.length);
-    // buffer.set(this.data_buffer);
-    // buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
-    // this.data_buffer = buffer;
-    // const str = this.textDecoder.decode(this.data_buffer);
-    // if (str.includes('}')) {
-    //   this.data_buffer = new Uint8Array(0);
-    //   try {
-    //     const obj = JSON.parse(str);
-    //     if (obj.type === 'AT') {
-    //       this.response = obj.data.trim();
-    //       this.ack = true;
-    //     } else if (obj.type === 'log') {
-    //       if (this.onLogger !== null) this.onLogger(obj);
-    //     } else if (obj.type === 'preview') {
-    //       // if (this.onMonitor !== null) this.onMonitor(obj.data, obj.width);
-    //       console.log(obj);
-    //       this.ack = true;
-    //     }
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    // }
-    if (
-      data.byteLength === 8 &&
-      (data.getUint32(0) === JPEG_MAGIC || data.getUint32(0) === TEXT_MAGIC)
-    ) {
-      this.recv_size = 0;
-      this.execpt_size = data.getUint32(4);
-      this.data_buffer = new Uint8Array(this.execpt_size);
-      if (data.getUint32(0) === JPEG_MAGIC) {
-        this.status = 1;
-      } else if (data.getUint32(0) === TEXT_MAGIC) {
-        this.status = 2;
-      }
-    } else {
-      const available = Math.min(
-        data.byteLength,
-        this.execpt_size - this.recv_size
-      );
-      this.data_buffer.set(
-        new Uint8Array(data.buffer, 0, available),
-        this.recv_size
-      );
-      this.recv_size += available;
-    }
-    if (this.execpt_size !== 0 && this.recv_size >= this.execpt_size) {
-      this.execpt_size = 0;
-      this.recv_size = 0;
-      if (this.status === 1) {
-        //  const uint8ArrayToBase64 = (uint8Array: any): string => {
-        //   let binary = '';
-        //   for (let i = 0; i < uint8Array.length; i+=1) {
-        //     binary += String.fromCharCode(uint8Array[i]);
-        //   }
-        //   return btoa(binary);
-        // }
-        // const binaryString = "data:image/jpeg;base64,".concat(uint8ArrayToBase64(this.data_buffer));
-        const blob = new Blob([this.data_buffer], { type: 'image/jpeg' });
-        if (this.onMonitor !== null) this.onMonitor(blob);
-      } else if (this.status === 2) {
-        const str = this.textDecoder
-          .decode(this.data_buffer)
-          .replace(/\r|\n/g, '');
+    // console.log('r:', data);
+    if (this.port instanceof Serial) {
+      const buffer = new Uint8Array(this.data_buffer.length + data.length);
+      buffer.set(this.data_buffer);
+      buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
+      this.data_buffer = buffer;
+      const str = this.textDecoder.decode(this.data_buffer);
+      if (str.includes('}')) {
+        this.data_buffer = new Uint8Array(0);
         try {
-          const obj = JSON.parse(str);
+          const pe = str.match(/{.*}/g);
+          if (pe === null) return;
+          const res = pe[0];
+          // console.log('s:', res);
+          const obj = JSON.parse(res);
           if (obj.type === 'AT') {
             this.response = obj.data.trim();
+            console.log('s:', res);
             this.ack = true;
           } else if (obj.type === 'log') {
-            if (this.onLogger !== null) this.onLogger(str);
-          } else if (obj.type === 'preview') {
+            if (this.onLogger !== null) this.onLogger(obj);
+          } else if (obj.type === 'result') {
+            // console.log('result:', str);
             if (this.onPreview !== null) this.onPreview(str);
-            this.ack = true;
+          } else if (obj.type === 'preview') {
+            const img = obj.img.replace(/[^A-Za-z0-9+/=]/g, '');
+            const byteCharacters = atob(img);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i += 1) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+            if (this.onMonitor !== null) this.onMonitor(blob);
           }
         } catch (e) {
           console.log(e);
+        }
+      }
+    }
+    if (this.port instanceof WebUSB) {
+      if (
+        data.byteLength === 8 &&
+        (data.getUint32(0) === JPEG_MAGIC || data.getUint32(0) === TEXT_MAGIC)
+      ) {
+        this.recv_size = 0;
+        this.execpt_size = data.getUint32(4);
+        this.data_buffer = new Uint8Array(this.execpt_size);
+        if (data.getUint32(0) === JPEG_MAGIC) {
+          this.status = 1;
+        } else if (data.getUint32(0) === TEXT_MAGIC) {
+          this.status = 2;
+        }
+      } else if (this.execpt_size !== 0) {
+        const available = Math.min(
+          data.byteLength,
+          this.execpt_size - this.recv_size
+        );
+        this.data_buffer.set(
+          new Uint8Array(data.buffer, 0, available),
+          this.recv_size
+        );
+        this.recv_size += available;
+      }
+
+      if (this.execpt_size !== 0 && this.recv_size >= this.execpt_size) {
+        this.execpt_size = 0;
+        this.recv_size = 0;
+        if (this.status === 1) {
+          //  const uint8ArrayToBase64 = (uint8Array: any): string => {
+          //   let binary = '';
+          //   for (let i = 0; i < uint8Array.length; i+=1) {
+          //     binary += String.fromCharCode(uint8Array[i]);
+          //   }
+          //   return btoa(binary);
+          // }
+          // const binaryString = "data:image/jpeg;base64,".concat(uint8ArrayToBase64(this.data_buffer));
+          const blob = new Blob([this.data_buffer], { type: 'image/jpeg' });
+          if (this.onMonitor !== null) this.onMonitor(blob);
+        } else if (this.status === 2) {
+          const str = this.textDecoder
+            .decode(this.data_buffer)
+            .replace(/\r|\n/g, '');
+          try {
+            const obj = JSON.parse(str);
+            if (obj.type === 'AT') {
+              this.response = obj.data.trim();
+              this.ack = true;
+            } else if (obj.type === 'log') {
+              if (this.onLogger !== null) this.onLogger(str);
+            } else if (obj.type === 'preview') {
+              if (this.onPreview !== null) this.onPreview(str);
+              this.ack = true;
+            }
+          } catch (e) {
+            console.log(e);
+          }
         }
       }
     }
@@ -362,13 +384,14 @@ export class ATClientV2 extends ATClient {
     if (!(await this.waitIdle(timeout))) {
       return '';
     }
-    console.log(`send command: ${command}`);
+    console.log(`send: ${command}`);
     this.idle = false;
     this.response = '';
     this.ack = false;
     await this.port.write(this.textEncoder.encode(command));
     if (!(await this.waitAck(timeout))) {
       this.idle = true;
+      console.log('ack timeout');
       return '';
     }
     this.idle = true;
