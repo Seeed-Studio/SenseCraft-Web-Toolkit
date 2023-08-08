@@ -21,7 +21,7 @@
           />
         </a-select>
       </a-form-item>
-      <div v-if="algorithm === '3'">
+      <div>
         <a-space>
           <a-form-item
             :label="$t('workplace.config.confidence.label')"
