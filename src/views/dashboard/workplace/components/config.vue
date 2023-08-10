@@ -30,75 +30,95 @@
             <a-input-number
               v-model="confidence"
               mode="button"
+              style="min-width: 120px"
               :min="0"
               :max="100"
             />
           </a-form-item>
           <a-form-item :label="$t('workplace.config.nms.iou.label')" required>
-            <a-input-number v-model="iou" mode="button" :min="0" :max="100" />
+            <a-input-number
+              v-model="iou"
+              mode="button"
+              style="min-width: 120px"
+              :min="0"
+              :max="100"
+            />
           </a-form-item>
         </a-space>
-        <a-space>
-          <a-form-item :label="$t('workplace.config.pointer.start')" required>
-            <a-input-group style="min-width: 180px">
-              <a-button
-                :type="isStart ? 'secondary' : 'primary'"
-                status="success"
-                style="min-width: 30px"
-                @click="handelPosition('start')"
-                ><template #icon><icon-location /></template
-              ></a-button>
-              <a-input-number v-model="startX" />
-              <a-input-number v-model="startY" />
-            </a-input-group>
-          </a-form-item>
-          <a-form-item :label="$t('workplace.config.pointer.end')" required>
-            <a-input-group style="min-width: 180px">
-              <a-button
-                :type="isEnd ? 'secondary' : 'primary'"
-                status="success"
-                style="min-width: 30px"
-                @click="handelPosition('end')"
-                ><template #icon><icon-location /></template
-              ></a-button>
-              <a-input-number v-model="endX" />
-              <a-input-number v-model="endY" />
-            </a-input-group>
-          </a-form-item>
-        </a-space>
-        <a-space>
-          <a-form-item :label="$t('workplace.config.pointer.center')" required>
-            <a-input-group style="min-width: 180px">
-              <a-button
-                :type="isCenter ? 'secondary' : 'primary'"
-                status="success"
-                style="min-width: 30px"
-                @click="handelPosition('center')"
-                ><template #icon><icon-location /></template
-              ></a-button>
-              <a-input-number v-model="centerX" />
-              <a-input-number v-model="centerY" />
-            </a-input-group>
-          </a-form-item>
-          <a-form-item :label="$t('workplace.config.pointer.range')" required>
-            <a-input-group style="min-width: 180px">
-              <a-button type="primary" status="warning" style="min-width: 30px"
-                ><template #icon><icon-record /></template
-              ></a-button>
-              <a-input-number v-model="from" :step="0.001" :precision="3" />
-              <a-input-number v-model="to" :step="0.001" :precision="3" />
-            </a-input-group>
-          </a-form-item>
-        </a-space>
+        <div v-if="algorithm === ALGORITHM.POINTER_METER">
+          <a-space>
+            <a-form-item :label="$t('workplace.config.pointer.start')" required>
+              <a-input-group style="min-width: 180px">
+                <a-button
+                  :type="isStart ? 'secondary' : 'primary'"
+                  status="success"
+                  style="min-width: 30px"
+                  @click="handelPosition('start')"
+                  ><template #icon><icon-location /></template
+                ></a-button>
+                <a-input-number v-model="startX" />
+                <a-input-number v-model="startY" />
+              </a-input-group>
+            </a-form-item>
+            <a-form-item :label="$t('workplace.config.pointer.end')" required>
+              <a-input-group style="min-width: 180px">
+                <a-button
+                  :type="isEnd ? 'secondary' : 'primary'"
+                  status="success"
+                  style="min-width: 30px"
+                  @click="handelPosition('end')"
+                  ><template #icon><icon-location /></template
+                ></a-button>
+                <a-input-number v-model="endX" />
+                <a-input-number v-model="endY" />
+              </a-input-group>
+            </a-form-item>
+          </a-space>
+          <a-space>
+            <a-form-item
+              :label="$t('workplace.config.pointer.center')"
+              required
+            >
+              <a-input-group style="min-width: 180px">
+                <a-button
+                  :type="isCenter ? 'secondary' : 'primary'"
+                  status="success"
+                  style="min-width: 30px"
+                  @click="handelPosition('center')"
+                  ><template #icon><icon-location /></template
+                ></a-button>
+                <a-input-number v-model="centerX" />
+                <a-input-number v-model="centerY" />
+              </a-input-group>
+            </a-form-item>
+            <a-form-item :label="$t('workplace.config.pointer.range')" required>
+              <a-input-group style="min-width: 180px">
+                <a-button
+                  type="primary"
+                  status="warning"
+                  style="min-width: 30px"
+                  ><template #icon><icon-record /></template
+                ></a-button>
+                <a-input-number v-model="from" :step="0.001" :precision="3" />
+                <a-input-number v-model="to" :step="0.001" :precision="3" />
+              </a-input-group>
+            </a-form-item>
+          </a-space>
+        </div>
       </div>
     </a-form>
-    <a-button type="primary" :loading="saveLoading" @click="handelSave">{{
-      $t('workplace.config.btn.save')
-    }}</a-button>
+    <a-button
+      type="primary"
+      :loading="saveLoading"
+      :disabled="!connected"
+      @click="handelSave"
+      >{{ $t('workplace.config.btn.save') }}</a-button
+    >
     <span :style="{ width: '15px', display: 'inline-block' }"></span>
     <a-button
       type="secondary"
-      :loading="refreshLoading"
+      :loading="saveLoading"
+      :disabled="!connected"
       @click="handelRefresh"
       >{{ $t('workplace.config.btn.refresh') }}</a-button
     >
@@ -106,7 +126,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { watch, ref } from 'vue';
+  import { watch, ref, computed } from 'vue';
   import { useDeviceStore } from '@/store';
   import { Modal } from '@arco-design/web-vue';
   import { ALGORITHM, EVENT } from '@/edgelab';
@@ -274,6 +294,8 @@
       }
     }
   );
+
+  const connected = computed(() => device.connected);
 
   watch(
     () => device.connected,

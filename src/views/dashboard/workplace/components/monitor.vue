@@ -111,7 +111,6 @@
         }
       },
       async event(value: number) {
-        console.log(value);
         if (value & EVENT.CONFIG_POINTER_START) {
           this.configPointer = EVENT.CONFIG_POINTER_START;
           device.clearEvent(EVENT.CONFIG_POINTER_START);
@@ -190,7 +189,7 @@
               obj.object.w[i],
               12
             );
-            this.ctx.font = 'bold 10px arial';
+            this.ctx.font = 'bold 12px arial';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(
               `${obj.object.target[i]}: ${obj.object.confidence[i]}`,
@@ -203,7 +202,7 @@
           for (let i = 0; i < obj.count; i += 1) {
             this.ctx.fillStyle = COLORS[obj.object.target[i]];
             this.ctx.fillRect(0, 16 * i, this.canvas!.width, 16 * (i + 1));
-            this.ctx.font = 'bold 10px arial';
+            this.ctx.font = 'bold 12px arial';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(
               `${obj.object.target[i]}: ${obj.object.count[i]}`,
@@ -273,7 +272,7 @@
               obj.object.w[i],
               12
             );
-            this.ctx.font = 'bold 10px arial';
+            this.ctx.font = 'bold 12px arial';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(
               obj.object.target[i],
