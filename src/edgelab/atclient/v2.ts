@@ -82,22 +82,19 @@ export class ATClientV2 extends ATClient {
       buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
       this.data_buffer = buffer;
       const str = this.textDecoder.decode(this.data_buffer);
-      if (str.includes('}')) {
-        this.data_buffer = new Uint8Array(0);
+
+      if (str.includes('}\r')) {
         try {
-          const pe = str.match(/{.*}/g);
+          const pe = str.match(/\r\n{.*}\r/g);
           if (pe === null) return;
           const res = pe[0];
-          // console.log('s:', res);
           const obj = JSON.parse(res);
           if (obj.type === 'AT') {
             this.response = obj.data.trim();
-            console.log('s:', res);
             this.ack = true;
           } else if (obj.type === 'log') {
             if (this.onLogger !== null) this.onLogger(obj);
           } else if (obj.type === 'result') {
-            // console.log('result:', str);
             if (this.onPreview !== null) this.onPreview(str);
           } else if (obj.type === 'preview') {
             const img = obj.img.replace(/[^A-Za-z0-9+/=]/g, '');
@@ -112,6 +109,8 @@ export class ATClientV2 extends ATClient {
           }
         } catch (e) {
           console.log(e);
+        } finally {
+          this.data_buffer = new Uint8Array(0);
         }
       }
     }
@@ -313,8 +312,9 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getRotate(): Promise<number> {
-    const response = await this.sendCommand('AT+CFG\r\n', 3000);
-    return (4 - parseInt(response, 10)) * 90;
+    // const response = await this.sendCommand('AT+CFG\r\n', 3000);
+    // return (4 - parseInt(response, 10)) * 90;
+    return 0;
   }
 
   public async getPointer(): Promise<Pointer> {
