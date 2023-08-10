@@ -45,7 +45,6 @@ export default class Device {
       confidence: 0.3,
       iou: 0.4,
       invoke: 0,
-      invokeing: false,
       rotate: 0,
       pointer: {
         startX: 0,
@@ -110,7 +109,6 @@ export default class Device {
         if (this.port === null) {
           return Promise.resolve();
         }
-        this.connected = true;
         this.port.onReceiveError = this.onReceiveError.bind(this);
         this.client = new ATClientV2(this.port);
         this.client.onLogger = this.onLogger;
@@ -119,10 +117,13 @@ export default class Device {
         if (this.onConnected !== null) {
           this.onConnected();
         }
-        const err = this.client.getError();
-        if (err === null) {
-          this.onReceiveError(err);
-        }
+        setTimeout(() => {
+          const err = this.client.getError();
+          if (err === null) {
+            this.onReceiveError(err);
+          }
+          this.connected = true;
+        }, 2000);
         return Promise.resolve();
       });
     }
@@ -243,7 +244,6 @@ export default class Device {
   }
 
   public async invoke(times: number): Promise<boolean> {
-    if (times !== 0) this.config.invokeing = true;
     this.config.invoke = times;
     return this.client.invoke(times);
   }

@@ -15,7 +15,6 @@ export interface Config {
   confidence: number;
   iou: number;
   invoke: number;
-  invokeing: boolean;
   rotate: number;
   pointer: Pointer;
 }
