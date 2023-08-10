@@ -177,28 +177,28 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getID(): Promise<string> {
-    const response = await this.sendCommand('AT+ID?\r\n', 2000);
+    const response = await this.sendCommand('AT+ID?\r\n', 500);
     return response;
   }
 
   public async getVersion(): Promise<string> {
-    const response = await this.sendCommand('AT+VER?\r\n', 2000);
+    const response = await this.sendCommand('AT+VER?\r\n', 500);
     return response;
   }
 
   public async getName(): Promise<string> {
-    const response = await this.sendCommand('AT+NAME?\r\n', 2000);
+    const response = await this.sendCommand('AT+NAME?\r\n', 500);
     return response;
   }
 
   public async getError(): Promise<string> {
-    const response = await this.sendCommand('AT+ERR?\r\n', 2000);
+    const response = await this.sendCommand('AT+ERR?\r\n', 500);
     const err = parseInt(response, 10);
     return ERROR_LIST[err];
   }
 
   public async setModel(model: string): Promise<boolean> {
-    const response = await this.sendCommand(`AT+MODEL=${model}\r\n`, 2000);
+    const response = await this.sendCommand(`AT+MODEL=${model}\r\n`, 500);
     if (response === 'OK') {
       return true;
     }
@@ -206,12 +206,12 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getModel(): Promise<string> {
-    const response = await this.sendCommand('AT+MODEL?\r\n', 2000);
+    const response = await this.sendCommand('AT+MODEL?\r\n', 500);
     return response;
   }
 
   public async getModelList(): Promise<any[]> {
-    const response = await this.sendCommand('AT+VMODEL?\r\n', 2000);
+    const response = await this.sendCommand('AT+VMODEL?\r\n', 500);
     const models = response.split(',');
     const result = [];
     for (let i = 0; i < models.length - 1; i += 1) {
@@ -225,7 +225,7 @@ export class ATClientV2 extends ATClient {
   }
 
   public async setAlgorithm(algorithm: string): Promise<boolean> {
-    const response = await this.sendCommand(`AT+ALGO=${algorithm}\r\n`, 2000);
+    const response = await this.sendCommand(`AT+ALGO=${algorithm}\r\n`, 500);
     if (response === 'OK') {
       return true;
     }
@@ -233,12 +233,12 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getAlgorithm(): Promise<string> {
-    const response = await this.sendCommand('AT+ALGO?\r\n', 2000);
+    const response = await this.sendCommand('AT+ALGO?\r\n', 500);
     return response;
   }
 
   public async getAlgorithmList(): Promise<any[]> {
-    const response = await this.sendCommand('AT+VALGO?\r\n', 2000);
+    const response = await this.sendCommand('AT+VALGO?\r\n', 500);
     const algos = response.split(',');
     const result = [];
     for (let i = 0; i < algos.length - 1; i += 1) {
@@ -252,7 +252,7 @@ export class ATClientV2 extends ATClient {
   }
 
   public async setConfidence(confidence: number): Promise<boolean> {
-    const response = await this.sendCommand(`AT+CONF=${confidence}\r\n`, 2000);
+    const response = await this.sendCommand(`AT+CONF=${confidence}\r\n`, 500);
     if (response === 'OK') {
       return true;
     }
@@ -260,12 +260,12 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getConfidence(): Promise<number> {
-    const response = await this.sendCommand('AT+CONF?\r\n', 2000);
+    const response = await this.sendCommand('AT+CONF?\r\n', 500);
     return parseInt(response, 10);
   }
 
   public async setIOU(iou: number): Promise<boolean> {
-    const response = await this.sendCommand(`AT+IOU=${iou}\r\n`, 2000);
+    const response = await this.sendCommand(`AT+IOU=${iou}\r\n`, 500);
     if (response === 'OK') {
       return true;
     }
@@ -273,17 +273,17 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getIOU(): Promise<number> {
-    const response = await this.sendCommand('AT+IOU?\r\n', 2000);
+    const response = await this.sendCommand('AT+IOU?\r\n', 500);
     return parseInt(response, 10);
   }
 
   public async reset(): Promise<boolean> {
-    await this.sendCommand('AT+RST\r\n', 2000);
+    await this.sendCommand('AT+RST\r\n', 3000);
     return true;
   }
 
   public async saveConfig(): Promise<boolean> {
-    const response = await this.sendCommand('AT+SAVE\r\n', 2000);
+    const response = await this.sendCommand('AT+SAVE\r\n', 500);
     if (response === 'OK') {
       return true;
     }
@@ -291,7 +291,7 @@ export class ATClientV2 extends ATClient {
   }
 
   public async clearConfig(): Promise<boolean> {
-    const response = await this.sendCommand('AT+CLEAR\r\n', 2000);
+    const response = await this.sendCommand('AT+CLEAR\r\n', 500);
     if (response === 'OK') {
       return true;
     }
@@ -307,7 +307,7 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getInvoke(): Promise<number> {
-    const response = await this.sendCommand('AT+INVOKE?\r\n', 2000);
+    const response = await this.sendCommand('AT+INVOKE?\r\n', 500);
     return parseInt(response, 10);
   }
 
@@ -318,7 +318,7 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getPointer(): Promise<Pointer> {
-    const response = await this.sendCommand('AT+POINT?\r\n', 2000);
+    const response = await this.sendCommand('AT+POINT?\r\n', 500);
     const data = response.split(',');
     const pointer: Pointer = {
       startX: parseInt(data[0], 10),
@@ -340,12 +340,19 @@ export class ATClientV2 extends ATClient {
       },${pointer.centerX},${pointer.centerY},${pointer.from * 1000},${
         pointer.to * 1000
       }\r\n`,
-      2000
+      500
     );
     if (response === 'OK') {
       return true;
     }
     return false;
+  }
+
+  public async flush(): Promise<void> {
+    await this.port.write(this.textEncoder.encode('\r\n'));
+    await this.port.write(this.textEncoder.encode('\r\n'));
+    await this.port.write(this.textEncoder.encode('\r\n'));
+    return Promise.resolve();
   }
 
   private waitAck(timeout: number): Promise<boolean> {
@@ -381,7 +388,7 @@ export class ATClientV2 extends ATClient {
   }
 
   private async sendCommand(command: string, timeout: number): Promise<string> {
-    if (!(await this.waitIdle(timeout))) {
+    if (!(await this.waitIdle(timeout * 2))) {
       return '';
     }
     console.log(`send: ${command}`);

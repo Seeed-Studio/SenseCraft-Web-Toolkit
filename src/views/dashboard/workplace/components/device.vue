@@ -103,7 +103,7 @@
     },
     async mounted() {
       this.loading = true;
-      await device.mount();
+      this.loading = await device.mount();
       this.protocol = device.protocol;
     },
     methods: {

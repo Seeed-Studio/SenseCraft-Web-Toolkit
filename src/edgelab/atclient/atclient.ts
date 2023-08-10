@@ -101,6 +101,18 @@ export class ATClient {
   public async getInvoke(): Promise<number> {
     return 0;
   }
+
+  public async getPointer(): Promise<any> {
+    return {};
+  }
+
+  public async setPointer(pointer: any): Promise<boolean> {
+    return false;
+  }
+
+  public async flush(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 export default ATClient;

@@ -59,22 +59,22 @@ export default class Device {
     };
   }
 
-  public async mount(): Promise<void> {
+  public async mount(): Promise<boolean> {
+    this.port = null;
     if (this.protocol === 'webusb') {
-      getWebUSBs().then((ports: WebUSB[]) => {
-        if (ports.length > 0) {
-          [this.port] = ports;
-          this.connect();
-        }
-      });
+      const ports = await getWebUSBs();
+      if (ports.length > 0) {
+        [this.port] = ports;
+        this.connect();
+      }
     } else if (this.protocol === 'serial') {
-      getSerials().then((ports: Serial[]) => {
-        if (ports.length > 0) {
-          [this.port] = ports;
-          this.connect();
-        }
-      });
+      const ports = await getSerials();
+      if (ports.length > 0) {
+        [this.port] = ports;
+        this.connect();
+      }
     }
+    return this.port !== null;
   }
 
   public async setEvent(event: number): Promise<void> {
@@ -118,12 +118,13 @@ export default class Device {
           this.onConnected();
         }
         setTimeout(() => {
+          this.client.flush();
           const err = this.client.getError();
           if (err === null) {
             this.onReceiveError(err);
           }
           this.connected = true;
-        }, 2000);
+        }, 1000);
         return Promise.resolve();
       });
     }
