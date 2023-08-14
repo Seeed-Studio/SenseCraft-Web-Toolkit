@@ -267,4 +267,8 @@ export default class Device {
     this.config.pointer = pointer;
     return this.client.setPointer(pointer);
   }
+
+  public async getSerial() {
+    return this.port;
+  }
 }
