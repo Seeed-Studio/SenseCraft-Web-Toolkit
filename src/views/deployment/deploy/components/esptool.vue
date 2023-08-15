@@ -163,7 +163,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useDeviceStore } from '@/store';
+  import { onMounted, onBeforeUnmount, Ref, ref } from 'vue';
   import {
     ESPLoader,
     FlashOptions,
@@ -173,8 +173,8 @@
   import { Terminal } from 'xterm';
   import 'xterm/css/xterm.css';
   import { RequestOption } from '@arco-design/web-vue/es/upload';
-  import { onMounted, onBeforeUnmount, Ref, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
+  import { useDeviceStore } from '@/store';
 
   const deviceStore = useDeviceStore();
   const device = deviceStore.getDevice;
@@ -263,6 +263,7 @@
     try {
       // await device.disconnect();
       if (transport) await transport.disconnect();
+      connected.value = false;
     } catch (error) {
       console.log(error);
     }

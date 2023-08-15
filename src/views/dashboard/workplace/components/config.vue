@@ -127,8 +127,8 @@
 
 <script lang="ts" setup>
   import { watch, ref, computed } from 'vue';
-  import { useDeviceStore } from '@/store';
   import { Modal } from '@arco-design/web-vue';
+  import { useDeviceStore } from '@/store';
   import { ALGORITHM, EVENT } from '@/edgelab';
 
   const deviceStore = useDeviceStore();
