@@ -45,12 +45,20 @@ export class Serial {
       if (this.port === null) {
         return;
       }
-      if (this.port.readable === null || this.port.writable === null) {
-        return;
-      }
-      this.reader = this.port.readable.getReader();
-      this.writer = this.port.writable.getWriter();
-      readLoop();
+      this.port.setSignals({ dataTerminalReady: false }).then(() => {});
+      setTimeout(() => {
+        if (this.port === null) {
+          return;
+        }
+        if (this.port.readable === null || this.port.writable === null) {
+          return;
+        }
+        this.reader = this.port.readable.getReader();
+        this.writer = this.port.writable.getWriter();
+        this.port.setSignals({ dataTerminalReady: true }).then(() => {
+          readLoop();
+        });
+      }, 100);
     });
   }
 

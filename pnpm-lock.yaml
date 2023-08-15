@@ -34,9 +34,9 @@ dependencies:
   echarts:
     specifier: ^5.4.0
     version: registry.npmmirror.com/echarts@5.4.0
-  edgelab-web-app-vue:
-    specifier: 'link:'
-    version: 'link:'
+  esptool-js:
+    specifier: ^0.3.0
+    version: registry.npmmirror.com/esptool-js@0.3.0
   lodash:
     specifier: ^4.17.21
     version: registry.npmmirror.com/lodash@4.17.21
@@ -67,6 +67,9 @@ dependencies:
   vue-router:
     specifier: ^4.0.14
     version: registry.npmmirror.com/vue-router@4.0.14(vue@3.2.40)
+  xterm:
+    specifier: ^5.2.1
+    version: registry.npmmirror.com/xterm@5.2.1
 
 devDependencies:
   '@arco-design/web-vue':
@@ -4723,6 +4726,15 @@ packages:
     hasBin: true
     dev: true
 
+  registry.npmmirror.com/esptool-js@0.3.0:
+    resolution: {integrity: sha512-DQQt/hyh45VvnDv6/lBIhUq9cD7ajZa9x3s/BftvT/zpQN2v5ZnRnBAQsNL0RXwUIGyJoI7MgPp7iGyq0Z2gJg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/esptool-js/-/esptool-js-0.3.0.tgz}
+    name: esptool-js
+    version: 0.3.0
+    dependencies:
+      pako: registry.npmmirror.com/pako@2.1.0
+      tslib: registry.npmmirror.com/tslib@2.6.0
+    dev: false
+
   registry.npmmirror.com/esquery@1.5.0:
     resolution: {integrity: sha512-YQLXUplAwJgCydQ78IMJywZCceoqk1oH01OERdSAJc/7U2AylwjhSCLDEtqwg811idIS/9fIU5GjG73IgjKMVg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/esquery/-/esquery-1.5.0.tgz}
     name: esquery
@@ -8323,6 +8335,12 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
+  registry.npmmirror.com/pako@2.1.0:
+    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/pako/-/pako-2.1.0.tgz}
+    name: pako
+    version: 2.1.0
+    dev: false
+
   registry.npmmirror.com/parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/parent-module/-/parent-module-1.0.1.tgz}
     name: parent-module
@@ -10756,7 +10774,6 @@ packages:
     resolution: {integrity: sha512-7At1WUettjcSRHXCyYtTselblcHl9PJFFVKiCAy/bY97+BPZXSQ2wbq0P9s8tK2G7dFQfNnlJnPAiArVBVBsfA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tslib/-/tslib-2.6.0.tgz}
     name: tslib
     version: 2.6.0
-    dev: true
 
   registry.npmmirror.com/tsutils@3.21.0(typescript@4.8.4):
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tsutils/-/tsutils-3.21.0.tgz}
@@ -11570,6 +11587,12 @@ packages:
     version: 4.0.2
     engines: {node: '>=0.4'}
     dev: true
+
+  registry.npmmirror.com/xterm@5.2.1:
+    resolution: {integrity: sha512-cs5Y1fFevgcdoh2hJROMVIWwoBHD80P1fIP79gopLHJIE4kTzzblanoivxTiQ4+92YM9IxS36H1q0MxIJXQBcA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/xterm/-/xterm-5.2.1.tgz}
+    name: xterm
+    version: 5.2.1
+    dev: false
 
   registry.npmmirror.com/y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/y18n/-/y18n-5.0.8.tgz}

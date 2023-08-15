@@ -60,7 +60,6 @@ export default class Device {
   }
 
   public async mount(): Promise<boolean> {
-    this.port = null;
     if (this.protocol === 'webusb') {
       const ports = await getWebUSBs();
       if (ports.length > 0) {
@@ -269,7 +268,21 @@ export default class Device {
     return this.client.setPointer(pointer);
   }
 
-  public async getSerial() {
-    return this.port;
+  public async getPort(): Promise<Serial | WebUSB | null> {
+    if (this.port !== null) {
+      return this.port;
+    }
+    if (this.protocol === 'webusb') {
+      const ports = await getWebUSBs();
+      if (ports.length > 0) {
+        return ports[0];
+      }
+    } else if (this.protocol === 'serial') {
+      const ports = await getSerials();
+      if (ports.length > 0) {
+        return ports[0];
+      }
+    }
+    return null;
   }
 }

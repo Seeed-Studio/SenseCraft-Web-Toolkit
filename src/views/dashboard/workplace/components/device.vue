@@ -10,12 +10,15 @@
         }}</a-tag>
       </template>
       <a-space direction="vertical">
-        <a-descriptions
-          layout="horizontal"
-          :data="info"
-          :column="1"
-          size="large"
-        />
+        <a-descriptions layout="horizontal" :column="1" size="large">
+          <a-descriptions-item
+            v-for="item in info"
+            :key="item.label"
+            :label="$t(item.label)"
+          >
+            {{ item.value }}
+          </a-descriptions-item>
+        </a-descriptions>
       </a-space>
       <a-space direction="horizontal">
         <a-select
@@ -32,7 +35,7 @@
             >{{ item.label }}</a-option
           >
         </a-select>
-        <a-button v-if="connected" type="secondary" @click="handleDisConnect">{{
+        <a-button v-if="connected" type="secondary" @click="handleDisconnect">{{
           $t('workplace.device.btn.disconnect')
         }}</a-button>
         <a-button
@@ -47,84 +50,64 @@
   </a-spin>
 </template>
 
-<script lang="ts">
-  import { defineComponent } from 'vue';
+<script setup lang="ts">
+  import { ref, reactive, onMounted, computed, watch } from 'vue';
   import { useDeviceStore } from '@/store';
   import { PROTOCOL_LIST } from '@/edgelab';
 
   const deviceStore = useDeviceStore();
   const device = deviceStore.getDevice;
 
-  export default defineComponent({
-    name: 'Device',
-    data() {
-      return {
-        port: null as any,
-        loading: false,
-        protocol: 'webusb',
-        buttonConnect: this.$t('workplace.device.btn.connect'),
-        dataStatus: '',
-        PROTOCOL_LIST,
-        info: [
-          {
-            label: this.$t('workplace.device.name'),
-            value: 'unknown',
-          },
-          {
-            label: this.$t('workplace.device.version'),
-            value: 'unknown',
-          },
-        ],
-      };
+  const loading = ref(false);
+  const protocol = ref('webusb');
+  const info = reactive([
+    {
+      label: 'workplace.device.name',
+      value: 'unknown',
     },
-    computed: {
-      connected() {
-        return device.connected;
-      },
+    {
+      label: 'workplace.device.version',
+      value: 'unknown',
     },
-    watch: {
-      async connected(val) {
-        if (val) {
-          this.loading = false;
-          const name = await device.client.getName();
-          const version = await device.client.getVersion();
-          this.info = [
-            {
-              label: this.$t('workplace.device.name'),
-              value: name,
-            },
-            {
-              label: this.$t('workplace.device.version'),
-              value: version,
-            },
-          ];
-        }
-      },
-    },
-    async mounted() {
-      this.loading = true;
-      this.loading = await device.mount();
-      this.protocol = device.protocol;
-    },
-    methods: {
-      async handleConnect() {
-        try {
-          this.loading = true;
-          await device.requestDevice(this.protocol);
-          await device.connect();
-        } catch (error) {
-          this.loading = false;
-          console.log(error);
-        }
-      },
-      async handleDisConnect() {
-        try {
-          await device.disconnect();
-        } catch (error) {
-          console.log(error);
-        }
-      },
-    },
+  ]);
+
+  const handleConnect = async () => {
+    try {
+      loading.value = true;
+      await device.requestDevice(protocol.value);
+      await device.connect();
+    } catch (error) {
+      loading.value = false;
+      console.log(error);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await device.disconnect();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  onMounted(async () => {
+    loading.value = true;
+    loading.value = await device.mount();
+    protocol.value = device.protocol;
   });
+
+  const connected = computed(() => device.connected);
+
+  watch(
+    () => device.connected,
+    async (val) => {
+      if (val) {
+        loading.value = false;
+        const name = await device.client.getName();
+        const version = await device.client.getVersion();
+        info[0].value = name;
+        info[1].value = version;
+      }
+    }
+  );
 </script>
-@/edgelab/device

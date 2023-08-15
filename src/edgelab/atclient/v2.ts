@@ -75,7 +75,6 @@ export class ATClientV2 extends ATClient {
   }
 
   private handleReceive(data: any) {
-    // console.log('r:', data);
     if (this.port instanceof Serial) {
       const buffer = new Uint8Array(this.data_buffer.length + data.length);
       buffer.set(this.data_buffer);

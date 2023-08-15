@@ -1,11 +1,11 @@
 export const PROTOCOL_LIST = [
   {
-    value: 'webusb',
-    label: 'WebUSB',
-  },
-  {
     value: 'serial',
     label: 'Serial',
+  },
+  {
+    value: 'webusb',
+    label: 'WebUSB',
   },
 ];
 
