@@ -311,9 +311,8 @@ export class ATClientV2 extends ATClient {
   }
 
   public async getRotate(): Promise<number> {
-    // const response = await this.sendCommand('AT+CFG\r\n', 3000);
-    // return (4 - parseInt(response, 10)) * 90;
-    return 0;
+    const response = await this.sendCommand('AT+CFG\r\n', 500);
+    return (4 - parseInt(response, 10)) * 90;
   }
 
   public async getPointer(): Promise<Pointer> {
