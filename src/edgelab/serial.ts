@@ -69,6 +69,10 @@ export class Serial {
     }
     this.writer.write(data);
   }
+
+  public async getSerialPort() {
+    return this.port;
+  }
 }
 
 export async function getSerials(): Promise<Serial[]> {
