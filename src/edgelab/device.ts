@@ -29,7 +29,7 @@ export default class Device {
   public event: number;
 
   constructor() {
-    this.protocol = localStorage.getItem('protocol') || 'webusb';
+    this.protocol = localStorage.getItem('protocol') || 'serial';
     this.port = null;
     this.client = null;
     this.connected = false;
