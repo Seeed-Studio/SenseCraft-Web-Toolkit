@@ -44,7 +44,9 @@
                     <template #icon>
                       <icon-upload />
                     </template>
-                    <template #default>Upload three files</template></a-button>
+                    <template #default>{{
+                      $t('workplace.device.card.binFile')
+                    }}</template></a-button>
                 </div>
               </template>
             </a-upload>
