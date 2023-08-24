@@ -1,5 +1,8 @@
-export class WebUSB {
-  private device: USBDevice;
+import Device from "./device";
+
+export default class WebUSB extends Device {
+
+  public port: USBDevice | null;
 
   private interfaceNumber: number;
 
@@ -11,8 +14,9 @@ export class WebUSB {
 
   public onReceiveError: any;
 
-  constructor(device: USBDevice) {
-    this.device = device;
+  constructor() {
+    super()
+    this.port = null;
     this.interfaceNumber = 0;
     this.endpointIn = 0;
     this.endpointOut = 0;
@@ -20,8 +24,7 @@ export class WebUSB {
 
   public async connect(): Promise<void> {
     const readLoop = () => {
-      this.device
-        .transferIn(this.endpointIn, 2048)
+      this.port?.transferIn(this.endpointIn, 2048)
         .then((result: any) => {
           this.onReceive(result.data);
           readLoop();
@@ -31,20 +34,19 @@ export class WebUSB {
         });
     };
 
-    return this.device
-      .open()
+    return this.port?.open()
       .then(() => {
-        if (this.device.configuration === null) {
-          return this.device.selectConfiguration(1);
+        if (this.port?.configuration === null) {
+          return this.port.selectConfiguration(1);
         }
         return Promise.resolve();
       })
       .then(() => {
         if (
-          this.device.configuration !== undefined &&
-          this.device.configuration!
+          this.port?.configuration !== undefined &&
+          this.port.configuration!
         ) {
-          const cinterfaces = this.device.configuration.interfaces;
+          const cinterfaces = this.port.configuration.interfaces;
           cinterfaces.forEach(
             (element: { alternates: any[]; interfaceNumber: number }) => {
               element.alternates.forEach(
@@ -71,10 +73,10 @@ export class WebUSB {
           );
         }
       })
-      .then(() => this.device.claimInterface(this.interfaceNumber))
-      .then(() => this.device.selectAlternateInterface(this.interfaceNumber, 0))
+      .then(() => this.port?.claimInterface(this.interfaceNumber))
+      .then(() => this.port?.selectAlternateInterface(this.interfaceNumber, 0))
       .then(() =>
-        this.device.controlTransferOut({
+        this.port?.controlTransferOut({
           requestType: 'class',
           recipient: 'interface',
           request: 0x22,
@@ -87,38 +89,24 @@ export class WebUSB {
       });
   }
 
-  public disconnect(): Promise<void> {
-    return this.device
-      .controlTransferOut({
+  public async disconnect() {
+    try {
+      await this.port?.controlTransferOut({
         requestType: 'class',
         recipient: 'interface',
         request: 0x22,
         value: 0x00,
         index: this.interfaceNumber,
       })
-      .then(() => this.device.close());
+      this.port?.close()
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  public write(data: BufferSource): Promise<number> {
-    const res = this.device.transferOut(this.endpointOut, data);
-    return res.then((result: any) => result.bytesWritten);
+  public async write(data: BufferSource): Promise<any> {
+    const res = await this.port?.transferOut(this.endpointOut, data);
+    return res?.bytesWritten
   }
 }
 
-export async function getWebUSBs(): Promise<WebUSB[]> {
-  return navigator.usb.getDevices().then((devices: USBDevice[]) => {
-    return devices.map((device: USBDevice) => new WebUSB(device));
-  });
-}
-
-export async function requestWebUSB(): Promise<WebUSB> {
-  const filters = [{ vendorId: 0x2886 }]; // Seeed studio Grove AI
-  return navigator.usb
-    .requestDevice({ filters })
-    .then((device: USBDevice) => new WebUSB(device));
-}
-
-export default {
-  getWebUSBs,
-  requestWebUSB,
-};

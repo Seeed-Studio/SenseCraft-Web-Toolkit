@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import svgLoader from 'vite-svg-loader';
 import configArcoStyleImportPlugin from './plugin/arcoStyleImport';
+import legacy from 'vite-plugin-legacy-no-module'
 
 export default defineConfig({
   base: './',
@@ -12,6 +13,10 @@ export default defineConfig({
     vueJsx(),
     svgLoader({ svgoConfig: {} }),
     configArcoStyleImportPlugin(),
+    legacy({
+      targets: ['defaults', 'not IE 11'],
+      renderModernChunks: false
+    })
   ],
   resolve: {
     alias: [

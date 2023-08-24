@@ -75,5 +75,9 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': ['off'],
     'no-bitwise': 'off',
-  },
-};
+    "prefer-destructuring": ["error", {
+      "array": false,
+      "object": false
+    }]
+    }
+  };

@@ -46,6 +46,8 @@
     "pinia": "^2.0.23",
     "query-string": "^8.0.3",
     "sortablejs": "^1.15.0",
+    "terser": "^5.19.2",
+    "vite-plugin-legacy-no-module": "^2.4.1",
     "vue": "^3.2.40",
     "vue-echarts": "^6.2.3",
     "vue-i18n": "^9.2.2",

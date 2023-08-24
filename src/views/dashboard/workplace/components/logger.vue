@@ -1,9 +1,5 @@
 <template>
-  <a-card
-    class="general-card"
-    :title="$t('workplace.logger.title')"
-    :header-style="{ paddingBottom: '0' }"
-  >
+  <a-card class="general-card" :title="$t('workplace.logger.title')" :header-style="{ paddingBottom: '0' }">
     <a-scrollbar style="height: 300px; overflow: auto">
       <div class="logger">
         <div v-for="(log, index) in logs" :key="index" class="logger-item">{{
@@ -15,28 +11,31 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import { useDeviceStore } from '@/store';
+import { ref, onMounted } from 'vue';
+import deviceManager from '@/edgelab/deviceManager';
 
-  const deviceStore = useDeviceStore();
-  const device = deviceStore.getDevice;
+const { device } = deviceManager;
 
-  const logs = ref<string[]>([]);
-  const addLog = (log: string) => {
-    logs.value.push(log);
-  };
+const logs = ref<string[]>([]);
+const addLog = (log: string) => {
+  logs.value.push(log);
+};
 
-  device.onLogger = (log: string) => {
-    addLog(log);
-  };
+const onLogger = (log: string) => {
+  addLog(log);
+};
+
+onMounted(() => {
+  device.onLogger = onLogger;
+});
 </script>
 
 <style scoped lang="less">
-  .logger {
-    padding: 20px;
+.logger {
+  padding: 20px;
 
-    &-item {
-      margin-bottom: 8px;
-    }
+  &-item {
+    margin-bottom: 8px;
   }
+}
 </style>
