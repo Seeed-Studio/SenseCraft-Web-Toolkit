@@ -1,18 +1,16 @@
 import { defineStore } from 'pinia';
-import { DEVICESTATUS } from '@/edgelab/enums';
+import { DEVICESTATUS } from '@/senseCraft/enums';
 
 const useDeviceStore = defineStore('device', {
   state: () => ({
-    connectStatus: DEVICESTATUS.UNCONNECTED
+    connectStatus: DEVICESTATUS.UNCONNECTED,
   }),
 
-  getters: {
-
-  },
+  getters: {},
 
   actions: {
     setConnectStatus(connectStatus: DEVICESTATUS) {
-      this.connectStatus = connectStatus
+      this.connectStatus = connectStatus;
     },
   },
 });

@@ -1,5 +1,5 @@
 export default {
-  path: 'https://seeed-studio.github.io/EdgeLab',
+  path: 'https://sensecraftma.seeed.cc/',
   name: 'faq',
   meta: {
     locale: 'menu.faq',

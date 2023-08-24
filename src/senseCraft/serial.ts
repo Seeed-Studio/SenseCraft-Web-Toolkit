@@ -2,13 +2,12 @@ import {
   ESPLoader,
   LoaderOptions,
   Transport,
-  IEspLoaderTerminal
+  IEspLoaderTerminal,
 } from 'esptool-js';
-import Device from "./device";
+import Device from './device';
 import { DEVICESTATUS } from './enums';
 
 export default class Serial extends Device {
-
   public port: SerialPort | null;
 
   public transport: Transport | null;
@@ -24,7 +23,7 @@ export default class Serial extends Device {
   // public onReceiveError: any;
 
   constructor() {
-    super()
+    super();
     this.port = null;
 
     this.transport = null;
@@ -37,16 +36,19 @@ export default class Serial extends Device {
 
   public async connect() {
     if (this.port === null) {
-      const serialPort = await navigator.serial.requestPort()
-      this.port = serialPort
+      const serialPort = await navigator.serial.requestPort();
+      this.port = serialPort;
     }
     // 如果当前在esp连接，需要断开
-    if (this.deviceStore.connectStatus === DEVICESTATUS.ESPCONNECTED && this.transport) {
+    if (
+      this.deviceStore.connectStatus === DEVICESTATUS.ESPCONNECTED &&
+      this.transport
+    ) {
       await this.transport.disconnect();
       this.transport = null;
       this.esploader = null;
     }
-    navigator.serial.ondisconnect = this.ondisconnect.bind(this)
+    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
     this.data_buffer = new Uint8Array(0);
 
     if (this.port?.readable === null || this.port?.writable === null) {
@@ -65,15 +67,15 @@ export default class Serial extends Device {
     this.reader = this.port?.readable?.getReader();
     this.writer = this.port?.writable?.getWriter();
     this.deviceStore.setConnectStatus(DEVICESTATUS.SERIALCONNECTED);
-    this.readLoop()
+    this.readLoop();
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {
     if (this.port === null) {
-      const serialPort = await navigator.serial.requestPort()
-      this.port = serialPort
+      const serialPort = await navigator.serial.requestPort();
+      this.port = serialPort;
     }
-    navigator.serial.ondisconnect = this.ondisconnect.bind(this)
+    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
     // 如果当前在串口连接，需要断开
     if (this.deviceStore.connectStatus === DEVICESTATUS.SERIALCONNECTED) {
       this.reader?.releaseLock();
@@ -101,7 +103,7 @@ export default class Serial extends Device {
       this.port = null;
       this.transport = null;
       this.esploader = null;
-    })
+    });
   }
 
   public async disconnect() {
@@ -111,7 +113,7 @@ export default class Serial extends Device {
       this.writer?.releaseLock();
       await this.port?.close();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -128,11 +130,11 @@ export default class Serial extends Device {
           this.handleReceive(value);
         }
       } catch (error) {
-        console.log('error', error)
-        flag = false
+        console.log('error', error);
+        flag = false;
       }
     }
-  }
+  };
 
   public handleReceive(data: Uint8Array) {
     const buffer = new Uint8Array(this.data_buffer.length + data.length);
@@ -140,7 +142,7 @@ export default class Serial extends Device {
     buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
     this.data_buffer = buffer;
     const str = this.textDecoder.decode(this.data_buffer);
-    console.log('handleReceive', str)
+    console.log('handleReceive', str);
 
     if (str.includes('}\r')) {
       try {
@@ -181,4 +183,3 @@ export default class Serial extends Device {
     this.writer?.write(data);
   }
 }
-

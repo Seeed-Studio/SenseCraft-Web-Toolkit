@@ -1,7 +1,6 @@
-import Device from "./device";
+import Device from './device';
 
 export default class WebUSB extends Device {
-
   public port: USBDevice | null;
 
   private interfaceNumber: number;
@@ -15,7 +14,7 @@ export default class WebUSB extends Device {
   public onReceiveError: any;
 
   constructor() {
-    super()
+    super();
     this.port = null;
     this.interfaceNumber = 0;
     this.endpointIn = 0;
@@ -24,7 +23,8 @@ export default class WebUSB extends Device {
 
   public async connect(): Promise<void> {
     const readLoop = () => {
-      this.port?.transferIn(this.endpointIn, 2048)
+      this.port
+        ?.transferIn(this.endpointIn, 2048)
         .then((result: any) => {
           this.onReceive(result.data);
           readLoop();
@@ -34,7 +34,8 @@ export default class WebUSB extends Device {
         });
     };
 
-    return this.port?.open()
+    return this.port
+      ?.open()
       .then(() => {
         if (this.port?.configuration === null) {
           return this.port.selectConfiguration(1);
@@ -97,16 +98,15 @@ export default class WebUSB extends Device {
         request: 0x22,
         value: 0x00,
         index: this.interfaceNumber,
-      })
-      this.port?.close()
+      });
+      this.port?.close();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   public async write(data: BufferSource): Promise<any> {
     const res = await this.port?.transferOut(this.endpointOut, data);
-    return res?.bytesWritten
+    return res?.bytesWritten;
   }
 }
-

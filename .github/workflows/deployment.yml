@@ -36,11 +36,11 @@ jobs:
           node-version: 18
           cache: 'npm'
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g yarn
       - name: Install dependencies
-        run: pnpm install
+        run: yarn install
       - name: Build
-        run: pnpm run build
+        run: yarn run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact

@@ -1,5 +1,5 @@
 import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
-import localeDeviceConfig from '@/edgelab/atclient/locale/en-US';
+import localeDeviceConfig from '@/senseCraft/atclient/locale/en-US';
 import localeSettings from './en-US/settings';
 
 export default {

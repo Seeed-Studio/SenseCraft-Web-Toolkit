@@ -1,5 +1,5 @@
 import localeWorkplace from '@/views/dashboard/workplace/locale/zh-CN';
-import localeDeviceConfig from '@/edgelab/atclient/locale/zh-CN';
+import localeDeviceConfig from '@/senseCraft/atclient/locale/zh-CN';
 import localeSettings from './zh-CN/settings';
 
 export default {
