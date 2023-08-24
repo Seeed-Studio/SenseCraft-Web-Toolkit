@@ -4,7 +4,7 @@ import { Pointer } from '../types';
 const JPEG_MAGIC = 0x2b2d2b2d;
 const TEXT_MAGIC = 0x0f100e12;
 
-const ERROR_LIST = [
+export const ERROR_LIST = [
   'Success',
   'Model Invalid Or Not Existent',
   'Model Parsing Failure',
@@ -28,10 +28,8 @@ const ERROR_LIST = [
 ];
 
 export class ATClientV2 extends ATClient {
-
   constructor() {
     super('v2');
-
   }
 
   public getID(): string {
@@ -119,9 +117,11 @@ export class ATClientV2 extends ATClient {
   }
 
   public setPointer(pointer: Pointer): string {
-    return `AT+POINT=${pointer.startX},${pointer.startY},${pointer.endX},${pointer.endY
-      },${pointer.centerX},${pointer.centerY},${pointer.from * 1000},${pointer.to * 1000
-      }\r\n`;
+    return `AT+POINT=${pointer.startX},${pointer.startY},${pointer.endX},${
+      pointer.endY
+    },${pointer.centerX},${pointer.centerY},${pointer.from * 1000},${
+      pointer.to * 1000
+    }\r\n`;
   }
 }
 

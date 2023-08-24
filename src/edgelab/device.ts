@@ -1,11 +1,10 @@
 import { Notification } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { ATClientV2 } from './atclient/v2';
+import { ATClientV2, ERROR_LIST } from './atclient/v2';
 import { Pointer, Config } from './types';
 import { EVENT } from './enums';
 
 export default class Device {
-
   public deviceStore;
 
   public port: SerialPort | USBDevice | null;
@@ -81,8 +80,7 @@ export default class Device {
     this.idle = true;
   }
 
-  public handleReceive(data: any) {
-  }
+  public handleReceive(data: any) {}
 
   public async setEvent(event: number): Promise<void> {
     this.event |= event;
@@ -96,8 +94,6 @@ export default class Device {
     return this.event;
   }
 
-
-
   public onReceiveError(error: any) {
     // this.client = null;
     if (this.onDisconnected !== null) {
@@ -110,17 +106,11 @@ export default class Device {
     console.log(error);
   }
 
-  public async connect() {
+  public async connect() {}
 
-  }
+  public disconnect() {}
 
-  public disconnect() {
-
-  }
-
-  public async write(data: BufferSource) {
-
-  }
+  public async write(data: BufferSource) {}
 
   public async flush() {
     await this.write(this.textEncoder.encode('\r\n'));
@@ -162,7 +152,7 @@ export default class Device {
 
   public async sendCommand(command: string | undefined, timeout: number) {
     if (!command) {
-      return ''
+      return '';
     }
     if (!(await this.waitIdle(timeout * 2))) {
       return '';
@@ -184,48 +174,48 @@ export default class Device {
   }
 
   public async getID(): Promise<string> {
-    const command = this.client.getID()
+    const command = this.client.getID();
     const response = await this.sendCommand(command, 500);
     return response;
   }
 
   public async getVersion(): Promise<string> {
-    const command = this.client.getVersion()
+    const command = this.client.getVersion();
     const response = await this.sendCommand(command, 500);
     return response;
   }
 
   public async getName(): Promise<string> {
-    const command = this.client.getName()
+    const command = this.client.getName();
     const response = await this.sendCommand(command, 500);
     return response;
   }
 
   public async getError(): Promise<string> {
-    const command = this.client.getError()
+    const command = this.client.getError();
     const response = await this.sendCommand(command, 500);
-    return response;
+    return ERROR_LIST[parseInt(response, 10)];
   }
 
   public async setModel(model: string): Promise<boolean> {
-    const command = this.client.setModel(model)
+    const command = this.client.setModel(model);
     const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.model = model;
     }
-    return ret
+    return ret;
   }
 
   public async getModel(): Promise<string> {
-    const command = this.client.getModel()
+    const command = this.client.getModel();
     const response = await this.sendCommand(command, 500);
     this.config.model = response;
     return this.config.model;
   }
 
   public async getModelList(): Promise<any[]> {
-    const command = this.client.getModelList()
+    const command = this.client.getModelList();
     const response = await this.sendCommand(command, 500);
     const models = response.split(',');
     const result = [];
@@ -240,9 +230,9 @@ export default class Device {
   }
 
   public async setAlgorithm(algorithm: string): Promise<boolean> {
-    const command = this.client.setAlgorithm(algorithm)
+    const command = this.client.setAlgorithm(algorithm);
     const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.algorithm = algorithm;
     }
@@ -250,13 +240,13 @@ export default class Device {
   }
 
   public async getAlgorithm(): Promise<string> {
-    const command = this.client.getAlgorithm()
+    const command = this.client.getAlgorithm();
     const response = await this.sendCommand(command, 500);
     return response;
   }
 
   public async getAlgorithmList(): Promise<any[]> {
-    const command = this.client.getAlgorithmList()
+    const command = this.client.getAlgorithmList();
     const response = await this.sendCommand(command, 500);
     const algos = response.split(',');
     const result = [];
@@ -271,9 +261,9 @@ export default class Device {
   }
 
   public async setConfidence(confidence: number): Promise<boolean> {
-    const command = this.client.setConfidence(confidence)
+    const command = this.client.setConfidence(confidence);
     const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.confidence = confidence;
     }
@@ -281,16 +271,16 @@ export default class Device {
   }
 
   public async getConfidence(): Promise<number> {
-    const command = this.client.getConfidence()
+    const command = this.client.getConfidence();
     const response = await this.sendCommand(command, 500);
     this.config.confidence = parseInt(response, 10);
     return this.config.confidence;
   }
 
   public async setIOU(iou: number): Promise<boolean> {
-    const command = this.client.setIOU(iou)
+    const command = this.client.setIOU(iou);
     const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.iou = iou;
     }
@@ -298,34 +288,34 @@ export default class Device {
   }
 
   public async getIOU(): Promise<number> {
-    const command = this.client.getIOU()
+    const command = this.client.getIOU();
     const response = await this.sendCommand(command, 500);
     this.config.iou = parseInt(response, 10);
     return this.config.iou;
   }
 
   public async reset() {
-    const command = this.client.reset()
+    const command = this.client.reset();
     const response = await this.sendCommand(command, 3000);
-    return response
+    return response;
   }
 
   public async saveConfig(): Promise<boolean> {
-    const command = this.client.saveConfig()
+    const command = this.client.saveConfig();
     const response = await this.sendCommand(command, 500);
     return response === 'OK';
   }
 
   public async clearConfig(): Promise<boolean> {
-    const command = this.client.clearConfig()
+    const command = this.client.clearConfig();
     const response = await this.sendCommand(command, 500);
     return response === 'OK';
   }
 
   public async invoke(times: number): Promise<boolean> {
-    const command = this.client.invoke(times)
+    const command = this.client.invoke(times);
     const response = await this.sendCommand(command, 3000);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.invoke = times;
     }
@@ -333,23 +323,23 @@ export default class Device {
   }
 
   public async getInvoke(): Promise<number> {
-    const command = this.client.getInvoke()
+    const command = this.client.getInvoke();
     const response = await this.sendCommand(command, 500);
     this.config.invoke = parseInt(response, 10);
     return this.config.invoke;
   }
 
   public async getRotate(): Promise<number> {
-    const command = this.client.getRotate()
+    const command = this.client.getRotate();
     const response = await this.sendCommand(command, 500);
     this.config.rotate = (4 - parseInt(response, 10)) * 90;
     return this.config.rotate;
   }
 
   public async setPointer(pointer: Pointer): Promise<boolean> {
-    const command = this.client.setPointer(pointer)
+    const command = this.client.setPointer(pointer);
     const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK'
+    const ret = response === 'OK';
     if (ret) {
       this.config.pointer = pointer;
     }
@@ -357,7 +347,7 @@ export default class Device {
   }
 
   public async getPointer(): Promise<Pointer> {
-    const command = this.client.getPointer()
+    const command = this.client.getPointer();
     const response = await this.sendCommand(command, 500);
     const data = response.split(',');
     const pointer: Pointer = {
