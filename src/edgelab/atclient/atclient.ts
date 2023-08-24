@@ -1,117 +1,113 @@
 export class ATClient {
-  private version = 'unknown';
+  public version = 'unknown';
 
   constructor(verion: string) {
     this.version = verion;
-    this.getID = this.getID.bind(this);
-    this.getVersion = this.getVersion.bind(this);
-    this.getName = this.getName.bind(this);
-    this.setModel = this.setModel.bind(this);
-    this.getModel = this.getModel.bind(this);
-    this.getModelList = this.getModelList.bind(this);
-    this.getAlgorithm = this.getAlgorithm.bind(this);
-    this.setAlgorithm = this.setAlgorithm.bind(this);
-    this.getAlgorithmList = this.getAlgorithmList.bind(this);
-    this.getConfidence = this.getConfidence.bind(this);
-    this.setConfidence = this.setConfidence.bind(this);
-    this.getIOU = this.getIOU.bind(this);
-    this.setIOU = this.setIOU.bind(this);
-    this.reset = this.reset.bind(this);
-    this.saveConfig = this.saveConfig.bind(this);
-    this.clearConfig = this.clearConfig.bind(this);
-    this.invoke = this.invoke.bind(this);
+    // this.getID = this.getID.bind(this);
+    // this.getVersion = this.getVersion.bind(this);
+    // this.getName = this.getName.bind(this);
+    // this.setModel = this.setModel.bind(this);
+    // this.getModel = this.getModel.bind(this);
+    // this.getModelList = this.getModelList.bind(this);
+    // this.getAlgorithm = this.getAlgorithm.bind(this);
+    // this.setAlgorithm = this.setAlgorithm.bind(this);
+    // this.getAlgorithmList = this.getAlgorithmList.bind(this);
+    // this.getConfidence = this.getConfidence.bind(this);
+    // this.setConfidence = this.setConfidence.bind(this);
+    // this.getIOU = this.getIOU.bind(this);
+    // this.setIOU = this.setIOU.bind(this);
+    // this.reset = this.reset.bind(this);
+    // this.saveConfig = this.saveConfig.bind(this);
+    // this.clearConfig = this.clearConfig.bind(this);
+    // this.invoke = this.invoke.bind(this);
   }
 
-  public async getID(): Promise<string> {
+  public getID(): string {
     return 'unknown';
   }
 
-  public async getVersion(): Promise<string> {
+  public getVersion(): string {
     return 'unknown';
   }
 
-  public async getName(): Promise<string> {
+  public getName(): string {
     return 'unknown';
   }
 
-  public async getError(): Promise<string> {
+  public getError(): string {
     return 'unknown';
   }
 
-  public async setModel(model: string): Promise<boolean> {
-    return false;
+  public setModel(model: string): string {
+    return 'unknown';
   }
 
-  public async getModel(): Promise<string> {
-    return '';
+  public getModel(): string {
+    return 'unknown';
   }
 
-  public async getModelList(): Promise<any[]> {
-    return [];
+  public getModelList(): string {
+    return 'unknown';
   }
 
-  public async getAlgorithm(): Promise<string> {
-    return '';
+  public getAlgorithm(): string {
+    return 'unknown';
   }
 
-  public async setAlgorithm(algorithm: string): Promise<boolean> {
-    return false;
+  public setAlgorithm(algorithm: string): string {
+    return 'unknown';
   }
 
-  public async getAlgorithmList(): Promise<any[]> {
-    return [];
+  public getAlgorithmList(): string {
+    return 'unknown';
   }
 
-  public async getConfidence(): Promise<number> {
-    return 0;
+  public getConfidence(): string {
+    return 'unknown';
   }
 
-  public async setConfidence(confidence: number): Promise<boolean> {
-    return false;
+  public setConfidence(confidence: number): string {
+    return 'unknown';
   }
 
-  public async getIOU(): Promise<number> {
-    return 0;
+  public getIOU(): string {
+    return 'unknown';
   }
 
-  public async setIOU(iou: number): Promise<boolean> {
-    return false;
+  public setIOU(iou: number): string {
+    return 'unknown';
   }
 
-  public async reset(): Promise<boolean> {
-    return false;
+  public reset(): string {
+    return 'unknown';
   }
 
-  public async saveConfig(): Promise<boolean> {
-    return false;
+  public saveConfig(): string {
+    return 'unknown';
   }
 
-  public async clearConfig(): Promise<boolean> {
-    return false;
+  public clearConfig(): string {
+    return 'unknown';
   }
 
-  public async invoke(times: number): Promise<boolean> {
-    return false;
+  public invoke(times: number): string {
+    return 'unknown';
   }
 
-  public async getRotate(): Promise<number> {
-    return 0;
+  public getRotate(): string {
+    return 'unknown';
   }
 
-  public async getInvoke(): Promise<number> {
-    return 0;
+  public getInvoke(): string {
+    return 'unknown';
   }
 
-  public async getPointer(): Promise<any> {
-    return {};
+  public getPointer(): string {
+    return 'unknown';
   }
 
-  public async setPointer(pointer: any): Promise<boolean> {
-    return false;
-  }
-
-  public async flush(): Promise<void> {
-    return Promise.resolve();
+  public setPointer(pointer: any): string {
+    return 'unknown';
   }
 }
 

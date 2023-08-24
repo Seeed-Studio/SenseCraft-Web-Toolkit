@@ -1,18 +1,17 @@
 import { Notification } from '@arco-design/web-vue';
-import { ATClientV2 } from './atclient/v2';
-import { Serial, getSerials, requestSerial } from './serial';
-import { WebUSB, getWebUSBs, requestWebUSB } from './webusb';
+import { useDeviceStore } from '@/store';
+import { ATClientV2, ERROR_LIST } from './atclient/v2';
 import { Pointer, Config } from './types';
 import { EVENT } from './enums';
 
 export default class Device {
-  public port: Serial | WebUSB | null;
+  public deviceStore;
 
-  public client: any;
+  public port: SerialPort | USBDevice | null;
+
+  public client: ATClientV2;
 
   public protocol: string;
-
-  public connected: boolean;
 
   public onLogger: any;
 
@@ -24,15 +23,31 @@ export default class Device {
 
   public onDisconnected: any;
 
+  public onReceive: any;
+
   public config: Config;
 
   public event: number;
 
+  public data_buffer: Uint8Array;
+
+  public textEncoder: TextEncoder;
+
+  public textDecoder: TextDecoder;
+
+  public response: string;
+
+  public ack: boolean;
+
+  private idle: boolean;
+
   constructor() {
     this.protocol = localStorage.getItem('protocol') || 'serial';
     this.port = null;
-    this.client = null;
-    this.connected = false;
+    this.deviceStore = useDeviceStore();
+    // this.port = null;
+    this.client = new ATClientV2();
+    // this.connected = false;
     this.onLogger = null;
     this.onMonitor = null;
     this.onPreview = null;
@@ -57,24 +72,15 @@ export default class Device {
         to: 0,
       },
     };
+    this.data_buffer = new Uint8Array(0);
+    this.textDecoder = new TextDecoder();
+    this.textEncoder = new TextEncoder();
+    this.response = '';
+    this.ack = false;
+    this.idle = true;
   }
 
-  public async mount(): Promise<boolean> {
-    if (this.protocol === 'webusb') {
-      const ports = await getWebUSBs();
-      if (ports.length > 0) {
-        [this.port] = ports;
-        this.connect();
-      }
-    } else if (this.protocol === 'serial') {
-      const ports = await getSerials();
-      if (ports.length > 0) {
-        [this.port] = ports;
-        this.connect();
-      }
-    }
-    return this.port !== null;
-  }
+  public handleReceive(data: any) {}
 
   public async setEvent(event: number): Promise<void> {
     this.event |= event;
@@ -88,51 +94,8 @@ export default class Device {
     return this.event;
   }
 
-  public async requestDevice(protocol: string | null): Promise<any> {
-    if (protocol !== null) {
-      this.protocol = protocol;
-    }
-    this.port = null;
-    if (this.protocol === 'webusb') {
-      this.port = await requestWebUSB();
-    } else if (this.protocol === 'serial') {
-      this.port = await requestSerial();
-    }
-    return this.port;
-  }
-
-  public async connect(): Promise<void> {
-    localStorage.setItem('protocol', this.protocol);
-    if (this.port !== null) {
-      await this.port.connect().then(() => {
-        if (this.port === null) {
-          return Promise.resolve();
-        }
-        this.port.onReceiveError = this.onReceiveError.bind(this);
-        this.client = new ATClientV2(this.port);
-        this.client.onLogger = this.onLogger;
-        this.client.onMonitor = this.onMonitor;
-        this.client.onPreview = this.onPreview;
-        if (this.onConnected !== null) {
-          this.onConnected();
-        }
-        setTimeout(() => {
-          this.client.flush();
-          const err = this.client.getError();
-          if (err === null) {
-            this.onReceiveError(err);
-          }
-          this.connected = true;
-        }, 1000);
-        return Promise.resolve();
-      });
-    }
-  }
-
   public onReceiveError(error: any) {
-    this.connected = false;
-    this.port = null;
-    this.client = null;
+    // this.client = null;
     if (this.onDisconnected !== null) {
       this.onDisconnected();
     }
@@ -140,149 +103,264 @@ export default class Device {
       title: 'Error',
       content: 'Device disconnected',
     });
-    console.error(error);
+    console.log(error);
   }
 
-  public async disconnect(): Promise<void> {
-    if (this.port === null) {
-      return;
-    }
-    this.port.onReceive = () => {};
-    this.port.onReceiveError = () => {};
-    await this.port
-      .disconnect()
-      .then(() => {
-        this.connected = false;
-        this.port = null;
-        this.client = null;
-        if (this.onDisconnected !== null) {
-          this.onDisconnected();
+  public async connect() {}
+
+  public disconnect() {}
+
+  public async write(data: BufferSource) {}
+
+  public async flush() {
+    await this.write(this.textEncoder.encode('\r\n'));
+    await this.write(this.textEncoder.encode('\r\n'));
+    await this.write(this.textEncoder.encode('\r\n'));
+  }
+
+  public waitAck(timeout: number): Promise<boolean> {
+    const start = new Date().getTime();
+    return new Promise<boolean>((resolve) => {
+      const intervalId = setInterval(() => {
+        if (this.ack) {
+          clearInterval(intervalId);
+          resolve(true);
         }
-      })
-      .catch((error: any) => {
-        Notification.error({
-          title: 'Error',
-          content: error,
-        });
-      });
+        if (new Date().getTime() - start > timeout) {
+          clearInterval(intervalId);
+          resolve(false);
+        }
+      }, 10);
+    });
+  }
+
+  public waitIdle(timeout: number): Promise<boolean> {
+    const start = new Date().getTime();
+    return new Promise<boolean>((resolve) => {
+      const intervalId = setInterval(() => {
+        if (this.idle) {
+          clearInterval(intervalId);
+          resolve(true);
+        }
+        if (new Date().getTime() - start > timeout) {
+          clearInterval(intervalId);
+          resolve(false);
+        }
+      }, 10);
+    });
+  }
+
+  public async sendCommand(command: string | undefined, timeout: number) {
+    if (!command) {
+      return '';
+    }
+    if (!(await this.waitIdle(timeout * 2))) {
+      return '';
+    }
+    console.log(`send: ${command}`);
+    this.idle = false;
+    this.response = '';
+    this.ack = false;
+    await this.write(this.textEncoder.encode(command));
+
+    if (!(await this.waitAck(timeout))) {
+      this.idle = true;
+      console.log('ack timeout');
+      return '';
+    }
+    this.idle = true;
+    console.log(`response: ${this.response}`);
+    return this.response;
   }
 
   public async getID(): Promise<string> {
-    return this.client.getID();
+    const command = this.client.getID();
+    const response = await this.sendCommand(command, 500);
+    return response;
   }
 
   public async getVersion(): Promise<string> {
-    return this.client.getVersion();
+    const command = this.client.getVersion();
+    const response = await this.sendCommand(command, 500);
+    return response;
   }
 
   public async getName(): Promise<string> {
-    return this.client.getName();
+    const command = this.client.getName();
+    const response = await this.sendCommand(command, 500);
+    return response;
   }
 
   public async getError(): Promise<string> {
-    return this.client.getError();
+    const command = this.client.getError();
+    const response = await this.sendCommand(command, 500);
+    return ERROR_LIST[parseInt(response, 10)];
   }
 
   public async setModel(model: string): Promise<boolean> {
-    this.config.model = model;
-    return this.client.setModel(model);
+    const command = this.client.setModel(model);
+    const response = await this.sendCommand(command, 500);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.model = model;
+    }
+    return ret;
   }
 
   public async getModel(): Promise<string> {
-    this.config.model = await this.client.getModel();
+    const command = this.client.getModel();
+    const response = await this.sendCommand(command, 500);
+    this.config.model = response;
     return this.config.model;
   }
 
   public async getModelList(): Promise<any[]> {
-    return this.client.getModelList();
-  }
-
-  public async getAlgorithm(): Promise<string> {
-    this.config.algorithm = await this.client.getAlgorithm();
-    return this.config.algorithm;
+    const command = this.client.getModelList();
+    const response = await this.sendCommand(command, 500);
+    const models = response.split(',');
+    const result = [];
+    for (let i = 0; i < models.length - 1; i += 1) {
+      const model = models[i];
+      result.push({
+        value: model,
+        label: `workplace.config.model.${model}`,
+      });
+    }
+    return result;
   }
 
   public async setAlgorithm(algorithm: string): Promise<boolean> {
-    this.config.algorithm = algorithm;
-    return this.client.setAlgorithm(algorithm);
+    const command = this.client.setAlgorithm(algorithm);
+    const response = await this.sendCommand(command, 500);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.algorithm = algorithm;
+    }
+    return ret;
+  }
+
+  public async getAlgorithm(): Promise<string> {
+    const command = this.client.getAlgorithm();
+    const response = await this.sendCommand(command, 500);
+    return response;
   }
 
   public async getAlgorithmList(): Promise<any[]> {
-    return this.client.getAlgorithmList();
-  }
-
-  public async getConfidence(): Promise<number> {
-    this.config.confidence = await this.client.getConfidence();
-    return this.config.confidence;
+    const command = this.client.getAlgorithmList();
+    const response = await this.sendCommand(command, 500);
+    const algos = response.split(',');
+    const result = [];
+    for (let i = 0; i < algos.length - 1; i += 1) {
+      const algo = algos[i];
+      result.push({
+        value: algo,
+        label: `workplace.config.algorithm.${algo}`,
+      });
+    }
+    return result;
   }
 
   public async setConfidence(confidence: number): Promise<boolean> {
-    this.config.confidence = confidence;
-    return this.client.setConfidence(confidence);
+    const command = this.client.setConfidence(confidence);
+    const response = await this.sendCommand(command, 500);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.confidence = confidence;
+    }
+    return ret;
   }
 
-  public async getIOU(): Promise<number> {
-    this.config.iou = await this.client.getIOU();
-    return this.config.iou;
+  public async getConfidence(): Promise<number> {
+    const command = this.client.getConfidence();
+    const response = await this.sendCommand(command, 500);
+    this.config.confidence = parseInt(response, 10);
+    return this.config.confidence;
   }
 
   public async setIOU(iou: number): Promise<boolean> {
-    this.config.iou = iou;
-    return this.client.setIOU(iou);
+    const command = this.client.setIOU(iou);
+    const response = await this.sendCommand(command, 500);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.iou = iou;
+    }
+    return ret;
   }
 
-  public async reset(): Promise<boolean> {
-    return this.client.reset();
+  public async getIOU(): Promise<number> {
+    const command = this.client.getIOU();
+    const response = await this.sendCommand(command, 500);
+    this.config.iou = parseInt(response, 10);
+    return this.config.iou;
+  }
+
+  public async reset() {
+    const command = this.client.reset();
+    const response = await this.sendCommand(command, 3000);
+    return response;
   }
 
   public async saveConfig(): Promise<boolean> {
-    return this.client.saveConfig();
+    const command = this.client.saveConfig();
+    const response = await this.sendCommand(command, 500);
+    return response === 'OK';
   }
 
   public async clearConfig(): Promise<boolean> {
-    return this.client.clearConfig();
+    const command = this.client.clearConfig();
+    const response = await this.sendCommand(command, 500);
+    return response === 'OK';
   }
 
   public async invoke(times: number): Promise<boolean> {
-    this.config.invoke = times;
-    return this.client.invoke(times);
-  }
-
-  public async getRotate(): Promise<number> {
-    this.config.rotate = await this.client.getRotate();
-    return this.config.rotate;
+    const command = this.client.invoke(times);
+    const response = await this.sendCommand(command, 3000);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.invoke = times;
+    }
+    return ret;
   }
 
   public async getInvoke(): Promise<number> {
-    this.config.invoke = await this.client.getInvoke();
+    const command = this.client.getInvoke();
+    const response = await this.sendCommand(command, 500);
+    this.config.invoke = parseInt(response, 10);
     return this.config.invoke;
   }
 
-  public async getPointer(): Promise<Pointer> {
-    this.config.pointer = await this.client.getPointer();
-    return this.config.pointer;
+  public async getRotate(): Promise<number> {
+    const command = this.client.getRotate();
+    const response = await this.sendCommand(command, 500);
+    this.config.rotate = (4 - parseInt(response, 10)) * 90;
+    return this.config.rotate;
   }
 
   public async setPointer(pointer: Pointer): Promise<boolean> {
-    this.config.pointer = pointer;
-    return this.client.setPointer(pointer);
+    const command = this.client.setPointer(pointer);
+    const response = await this.sendCommand(command, 500);
+    const ret = response === 'OK';
+    if (ret) {
+      this.config.pointer = pointer;
+    }
+    return ret;
   }
 
-  public async getPort(): Promise<Serial | WebUSB | null> {
-    if (this.port !== null) {
-      return this.port;
-    }
-    if (this.protocol === 'webusb') {
-      const ports = await getWebUSBs();
-      if (ports.length > 0) {
-        return ports[0];
-      }
-    } else if (this.protocol === 'serial') {
-      const ports = await getSerials();
-      if (ports.length > 0) {
-        return ports[0];
-      }
-    }
-    return null;
+  public async getPointer(): Promise<Pointer> {
+    const command = this.client.getPointer();
+    const response = await this.sendCommand(command, 500);
+    const data = response.split(',');
+    const pointer: Pointer = {
+      startX: parseInt(data[0], 10),
+      startY: parseInt(data[1], 10),
+      endX: parseInt(data[2], 10),
+      endY: parseInt(data[3], 10),
+      centerX: parseInt(data[4], 10),
+      centerY: parseInt(data[5], 10),
+      from: parseInt(data[6], 10) / 1000,
+      to: parseInt(data[7], 10) / 1000,
+    };
+    this.config.pointer = pointer;
+    return this.config.pointer;
   }
 }

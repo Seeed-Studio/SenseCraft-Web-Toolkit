@@ -9,4 +9,4 @@ export const PROTOCOL_LIST = [
   },
 ];
 
-export const DEFAULT_PROTOCOL = localStorage.getItem('protocol') || 'webusb';
+export const DEFAULT_PROTOCOL = localStorage.getItem('protocol') || 'serial';

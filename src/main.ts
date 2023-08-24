@@ -6,7 +6,6 @@ import store from './store';
 import i18n from './locale';
 import directive from './directive';
 import App from './App.vue';
-
 import '@/assets/style/global.less';
 
 const app = createApp(App);

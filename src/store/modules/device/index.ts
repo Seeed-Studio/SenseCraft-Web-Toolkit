@@ -1,24 +1,18 @@
 import { defineStore } from 'pinia';
-import { Device } from '@/edgelab';
+import { DEVICESTATUS } from '@/edgelab/enums';
 
 const useDeviceStore = defineStore('device', {
-  state: () => {
-    return {
-      device: new Device(),
-    };
-  },
+  state: () => ({
+    connectStatus: DEVICESTATUS.UNCONNECTED
+  }),
 
   getters: {
-    getDevice(state) {
-      return state.device;
-    },
+
   },
 
   actions: {
-    // Update app settings
-    updateSettings(partial: any) {
-      // @ts-ignore-next-line
-      this.$patch(partial);
+    setConnectStatus(connectStatus: DEVICESTATUS) {
+      this.connectStatus = connectStatus
     },
   },
 });
