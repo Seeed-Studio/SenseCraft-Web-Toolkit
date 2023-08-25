@@ -142,7 +142,7 @@ export default class Serial extends Device {
     buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
     this.data_buffer = buffer;
     const str = this.textDecoder.decode(this.data_buffer);
-    console.log('handleReceive', str);
+    // console.log('handleReceive', str);
 
     if (str.includes('}\r')) {
       try {
