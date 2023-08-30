@@ -72,6 +72,8 @@
     import.meta.url
   ).href;
 
+  const img = new Image();
+
   const canvas = ref<HTMLCanvasElement | null>(null);
   const ctx = ref<CanvasRenderingContext2D | null>(null);
   const invoke = ref<boolean>(true);
@@ -127,7 +129,7 @@
   const monitor = (blob: Blob) => {
     if (blob.type === 'image/jpeg') {
       ctx.value = canvas.value?.getContext('2d') as CanvasRenderingContext2D;
-      const img = new Image();
+
       img.onload = () => {
         if (rotate.value === 270) {
           canvas.value!.width = img!.width;
