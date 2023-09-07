@@ -5,9 +5,10 @@ import {
   IEspLoaderTerminal,
 } from 'esptool-js';
 import Device from './device';
-import { DEVICESTATUS } from './enums';
+import { DEVICESTATUS } from './types';
 
 export default class Serial extends Device {
+
   public port: SerialPort | null;
 
   public transport: Transport | null;
@@ -18,9 +19,9 @@ export default class Serial extends Device {
 
   private writer: WritableStreamDefaultWriter | null | undefined;
 
-  public onReceive: any;
-
-  // public onReceiveError: any;
+  private hasStart: boolean;
+  private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
+  private cacheData: Array<number>;
 
   constructor() {
     super();
@@ -31,70 +32,78 @@ export default class Serial extends Device {
 
     this.reader = null;
     this.writer = null;
-    this.onReceive = null;
+
+    this.hasStart = false;
+    this.lastCode = -1;
+    this.cacheData = [];
   }
 
   public async connect() {
-    if (this.port === null) {
-      const serialPort = await navigator.serial.requestPort();
-      this.port = serialPort;
-    }
-    // 如果当前在esp连接，需要断开
-    if (
-      this.deviceStore.connectStatus === DEVICESTATUS.ESPCONNECTED &&
-      this.transport
-    ) {
-      await this.transport.disconnect();
-      this.transport = null;
-      this.esploader = null;
-    }
-    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
-    this.data_buffer = new Uint8Array(0);
+    try {
+      if (this.port === null) {
+        const serialPort = await navigator.serial.requestPort();
+        this.port = serialPort;
+      }
+      // 如果当前在esp连接，需要断开
+      if (
+        this.deviceStore.connectStatus === DEVICESTATUS.ESPCONNECTED &&
+        this.transport
+      ) {
+        await this.transport.disconnect();
+        this.transport = null;
+        this.esploader = null;
+      }
+      navigator.serial.ondisconnect = this.ondisconnect.bind(this);
+      this.cacheData = [];
+      if (this.port?.readable === null || this.port?.writable === null) {
+        await this.port.open({ baudRate: 115200 });
+      }
 
-    if (this.port?.readable === null || this.port?.writable === null) {
-      await this.port.open({ baudRate: 115200 });
+      await this.port?.setSignals({ dataTerminalReady: false });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+      await this.port?.setSignals({ dataTerminalReady: true });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+
+      this.reader = this.port?.readable?.getReader();
+      this.writer = this.port?.writable?.getWriter();
+      this.deviceStore.setConnectStatus(DEVICESTATUS.SERIALCONNECTED);
+      this.readLoop();
+    } catch (error) {
+      console.log(error)
     }
-
-    await this.port?.setSignals({ dataTerminalReady: false });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
-    await this.port?.setSignals({ dataTerminalReady: true });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2000);
-    });
-
-    this.reader = this.port?.readable?.getReader();
-    this.writer = this.port?.writable?.getWriter();
-    this.deviceStore.setConnectStatus(DEVICESTATUS.SERIALCONNECTED);
-    this.readLoop();
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {
-    if (this.port === null) {
-      const serialPort = await navigator.serial.requestPort();
-      this.port = serialPort;
+    try {
+      if (this.port === null) {
+        const serialPort = await navigator.serial.requestPort();
+        this.port = serialPort;
+      }
+      navigator.serial.ondisconnect = this.ondisconnect.bind(this);
+      // 如果当前在串口连接，需要断开
+      if (this.deviceStore.connectStatus === DEVICESTATUS.SERIALCONNECTED) {
+        this.reader?.releaseLock();
+        this.writer?.releaseLock();
+        await this.port?.close();
+      }
+      if (!this.transport || !this.esploader) {
+        this.transport = new Transport(this.port);
+        const flashOptions = {
+          transport: this.transport,
+          baudrate: 115200,
+          terminal,
+        } as LoaderOptions;
+        this.esploader = new ESPLoader(flashOptions);
+      }
+      await this.esploader.main_fn();
+      this.deviceStore.setConnectStatus(DEVICESTATUS.ESPCONNECTED);
+    } catch (error) {
+      console.log(error)
     }
-    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
-    // 如果当前在串口连接，需要断开
-    if (this.deviceStore.connectStatus === DEVICESTATUS.SERIALCONNECTED) {
-      this.reader?.releaseLock();
-      this.writer?.releaseLock();
-      await this.port?.close();
-    }
-
-    if (!this.transport || !this.esploader) {
-      this.transport = new Transport(this.port);
-      const flashOptions = {
-        transport: this.transport,
-        baudrate: 115200,
-        terminal,
-      } as LoaderOptions;
-      this.esploader = new ESPLoader(flashOptions);
-    }
-
-    await this.esploader.main_fn();
-    this.deviceStore.setConnectStatus(DEVICESTATUS.ESPCONNECTED);
   }
 
   // 串口断开事件
@@ -130,49 +139,63 @@ export default class Serial extends Device {
           this.handleReceive(value);
         }
       } catch (error) {
-        console.log('error', error);
+        console.log(error);
         flag = false;
       }
     }
   };
 
   public handleReceive(data: Uint8Array) {
-    const buffer = new Uint8Array(this.data_buffer.length + data.length);
-    buffer.set(this.data_buffer);
-    buffer.set(new Uint8Array(data.buffer), this.data_buffer.length);
-    this.data_buffer = buffer;
-    const str = this.textDecoder.decode(this.data_buffer);
+    // const str = this.textDecoder.decode(data);
     // console.log('handleReceive', str);
-
-    if (str.includes('}\r')) {
-      try {
-        const pe = str.match(/\r\n{.*}\r/g);
-        if (pe === null) return;
-        const res = pe[0];
-        const obj = JSON.parse(res);
-        if (obj.type === 'AT') {
-          this.response = obj.data.trim();
-          this.ack = true;
-        } else if (obj.type === 'log') {
-          if (this.onLogger !== null) this.onLogger(obj);
-        } else if (obj.type === 'result') {
-          if (this.onPreview !== null) this.onPreview(str);
-        } else if (obj.type === 'preview') {
-          const img = obj.img.replace(/[^A-Za-z0-9+/=]/g, '');
-          const byteCharacters = atob(img);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i += 1) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
+    try {
+      let index = 0
+      while (index < data.length) {
+        const num = data[index];
+        if (num === 0x7b) {// \{
+          if (this.lastCode === 0x0d) {// \r
+            this.hasStart = true;
+            this.cacheData.push(num);
+          } else if (this.hasStart) {
+            this.cacheData.push(num);
           }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'image/jpeg' });
-          if (this.onMonitor !== null) this.onMonitor(blob);
+        } else if (num === 0x0a) { // \n
+          if (this.lastCode === 0x7d) {// }
+            this.hasStart = false;
+            try {
+              const buffer = new Uint8Array(this.cacheData);
+              const str = this.textDecoder.decode(buffer);
+              const obj = JSON.parse(str);
+              const type = obj?.type;
+              const name = obj?.name;
+              if (type === 0) {// 指令响应
+                console.log('handleReceive:', obj)
+                const resolve = this.resolveMap.get(name)
+                if (resolve) resolve(obj)
+              } else if (type === 1) { // 事件
+                const code = obj?.code;
+                if (code === 0) {
+                  const listener = this.eventMap.get(name);
+                  listener?.(obj.data)
+                }
+              }
+            } catch (error) {
+              console.log(error)
+            }
+            this.cacheData = [];
+          } else if (this.hasStart) {
+            this.cacheData.push(num);
+          }
+        } else if (this.hasStart) {
+          this.cacheData.push(num);
         }
-      } catch (e) {
-        console.log(e);
-      } finally {
-        this.data_buffer = new Uint8Array(0);
+        this.lastCode = num;
+        index += 1;
       }
+    } catch (error) {
+      // 解析报错也不知道是哪个指令，只能等请求超时
+      console.log(error)
+      // this.cacheReject?.('')
     }
   }
 
@@ -180,6 +203,8 @@ export default class Serial extends Device {
     if (this.writer === null) {
       return;
     }
+    const str = this.textDecoder.decode(data);
+    console.log('handleWrite:', str);
     this.writer?.write(data);
   }
 }

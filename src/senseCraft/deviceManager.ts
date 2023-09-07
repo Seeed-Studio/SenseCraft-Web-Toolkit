@@ -1,13 +1,14 @@
+import { Terminal } from 'xterm';
 import Serial from './serial';
 import Device from './device';
 
 class DeviceManager {
-  public protocol: string;
   public device: Device;
+  public term: Terminal;
 
   constructor() {
-    this.protocol = localStorage.getItem('protocol') || 'serial';
     this.device = new Serial();
+    this.term = new Terminal({ cols: 78, rows: 30 });
   }
 }
 

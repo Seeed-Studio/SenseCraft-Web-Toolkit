@@ -42,6 +42,9 @@ const useAppStore = defineStore('app', {
     toggleMenu(value: boolean) {
       this.hideMenu = value;
     },
+    toggleLog(value: boolean) {
+      this.log = value;
+    },
     async fetchServerMenuConfig() {
       
     },

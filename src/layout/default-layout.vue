@@ -41,6 +41,7 @@
         </a-layout>
       </a-layout>
     </a-layout>
+    <Logger v-show="appStore.log" />
   </a-layout>
 </template>
 
@@ -51,6 +52,7 @@
   import Menu from '@/components/menu/index.vue';
   import Footer from '@/components/footer/index.vue';
   import TabBar from '@/components/tab-bar/index.vue';
+  import Logger from '@/components/logger/index.vue';
   import PageLayout from './page-layout.vue';
 
   const isInit = ref(false);
@@ -158,7 +160,7 @@
   .layout-content {
     min-height: 100vh;
     overflow-y: hidden;
-    background-color: var(--color-fill-2);
+    background-color: var(--color-fill-1);
     transition: padding 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
   }
 </style>

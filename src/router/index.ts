@@ -17,7 +17,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: 'dashboard',
+      redirect: '/setup/process',
     },
     ...appRoutes,
     REDIRECT_MAIN,

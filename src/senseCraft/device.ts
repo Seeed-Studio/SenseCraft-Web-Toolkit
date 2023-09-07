@@ -1,116 +1,55 @@
-import { Notification } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { ATClientV2, ERROR_LIST } from './atclient/v2';
-import { Pointer, Config } from './types';
-import { EVENT } from './enums';
+import { ATClient, ERROR_LIST } from './atclient';
+import { Algo } from './types';
 
 export default class Device {
+
   public deviceStore;
 
   public port: SerialPort | USBDevice | null;
 
-  public client: ATClientV2;
-
-  public protocol: string;
-
-  public onLogger: any;
-
-  public onMonitor: any;
-
-  public onPreview: any;
-
-  public onConnected: any;
-
-  public onDisconnected: any;
-
-  public onReceive: any;
-
-  public config: Config;
-
-  public event: number;
-
-  public data_buffer: Uint8Array;
+  public client: ATClient;
 
   public textEncoder: TextEncoder;
 
   public textDecoder: TextDecoder;
 
-  public response: string;
-
-  public ack: boolean;
-
-  private idle: boolean;
+  public resolveMap: Map<string, (value: unknown) => void>;
+  public rejectMap: Map<string, (value: unknown) => void>;
+  public timeoutMap: Map<string, NodeJS.Timeout>;
+  public eventMap: Map<string, (event: any) => void>;
 
   constructor() {
-    this.protocol = localStorage.getItem('protocol') || 'serial';
     this.port = null;
     this.deviceStore = useDeviceStore();
-    // this.port = null;
-    this.client = new ATClientV2();
-    // this.connected = false;
-    this.onLogger = null;
-    this.onMonitor = null;
-    this.onPreview = null;
-    this.onConnected = null;
-    this.onDisconnected = null;
-    this.event = EVENT.NONE;
-    this.config = {
-      model: '0',
-      algorithm: '2',
-      confidence: 0.3,
-      iou: 0.4,
-      invoke: 0,
-      rotate: 0,
-      pointer: {
-        startX: 0,
-        startY: 0,
-        endX: 0,
-        endY: 0,
-        centerX: 0,
-        centerY: 0,
-        from: 0,
-        to: 0,
-      },
-    };
-    this.data_buffer = new Uint8Array(0);
+    this.client = new ATClient();
+
     this.textDecoder = new TextDecoder();
     this.textEncoder = new TextEncoder();
-    this.response = '';
-    this.ack = false;
-    this.idle = true;
+
+    this.resolveMap = new Map();
+    this.rejectMap = new Map();
+    this.timeoutMap = new Map();
+    this.eventMap = new Map();
   }
 
-  public handleReceive(data: any) {}
-
-  public async setEvent(event: number): Promise<void> {
-    this.event |= event;
+  public addEventListener(type: string, listener: (event: any) => any) {
+    this.eventMap.set(type, listener)
   }
 
-  public async clearEvent(event: number): Promise<void> {
-    this.event &= ~event;
+  public removeEventListener(type: string) {
+    this.eventMap.delete(type)
   }
 
-  public getEvent(): number {
-    return this.event;
+  public handleReceive(data: any) {
+
   }
 
-  public onReceiveError(error: any) {
-    // this.client = null;
-    if (this.onDisconnected !== null) {
-      this.onDisconnected();
-    }
-    Notification.error({
-      title: 'Error',
-      content: 'Device disconnected',
-    });
-    console.log(error);
-  }
+  public async connect() { }
 
-  public async connect() {}
+  public disconnect() { }
 
-  public disconnect() {}
-
-  public async write(data: BufferSource) {}
+  public async write(data: BufferSource) { }
 
   public async flush() {
     await this.write(this.textEncoder.encode('\r\n'));
@@ -118,249 +57,495 @@ export default class Device {
     await this.write(this.textEncoder.encode('\r\n'));
   }
 
-  public waitAck(timeout: number): Promise<boolean> {
-    const start = new Date().getTime();
-    return new Promise<boolean>((resolve) => {
-      const intervalId = setInterval(() => {
-        if (this.ack) {
-          clearInterval(intervalId);
-          resolve(true);
-        }
-        if (new Date().getTime() - start > timeout) {
-          clearInterval(intervalId);
-          resolve(false);
-        }
-      }, 10);
-    });
+  public async sendCommand(command: string | undefined, tag: string, timeout = 5000): Promise<any> {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      if (!command) {
+        reject(new Error('invalid parameter'));
+        return
+      }
+      const timer = setTimeout(() => {
+        reject(new Error('timeout'));
+        this.resolveMap.delete(tag)
+        this.rejectMap.delete(tag)
+        this.timeoutMap.delete(tag);
+      }, timeout);
+
+      this.timeoutMap.set(tag, timer)
+      this.resolveMap.set(tag, resolve)
+      this.rejectMap.set(tag, reject)
+
+      await this.write(this.textEncoder.encode(command));
+    })
   }
 
-  public waitIdle(timeout: number): Promise<boolean> {
-    const start = new Date().getTime();
-    return new Promise<boolean>((resolve) => {
-      const intervalId = setInterval(() => {
-        if (this.idle) {
-          clearInterval(intervalId);
-          resolve(true);
-        }
-        if (new Date().getTime() - start > timeout) {
-          clearInterval(intervalId);
-          resolve(false);
-        }
-      }, 10);
-    });
-  }
-
-  public async sendCommand(command: string | undefined, timeout: number) {
-    if (!command) {
-      return '';
+  public deleteMap(tag: string) {
+    this.resolveMap.delete(tag);
+    this.rejectMap.delete(tag);
+    const timeout = this.timeoutMap.get(tag)
+    if (timeout) {
+      clearTimeout(timeout)
+      this.timeoutMap.delete(tag);
     }
-    if (!(await this.waitIdle(timeout * 2))) {
-      return '';
-    }
-    console.log(`send: ${command}`);
-    this.idle = false;
-    this.response = '';
-    this.ack = false;
-    await this.write(this.textEncoder.encode(command));
-
-    if (!(await this.waitAck(timeout))) {
-      this.idle = true;
-      console.log('ack timeout');
-      return '';
-    }
-    this.idle = true;
-    console.log(`response: ${this.response}`);
-    return this.response;
   }
 
   public async getID(): Promise<string> {
-    const command = this.client.getID();
-    const response = await this.sendCommand(command, 500);
-    return response;
-  }
-
-  public async getVersion(): Promise<string> {
-    const command = this.client.getVersion();
-    const response = await this.sendCommand(command, 500);
-    return response;
+    try {
+      const tag = 'ID?';
+      const command = this.client.getID();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return ''
+    }
   }
 
   public async getName(): Promise<string> {
-    const command = this.client.getName();
-    const response = await this.sendCommand(command, 500);
-    return response;
-  }
-
-  public async getError(): Promise<string> {
-    const command = this.client.getError();
-    const response = await this.sendCommand(command, 500);
-    return ERROR_LIST[parseInt(response, 10)];
-  }
-
-  public async setModel(model: string): Promise<boolean> {
-    const command = this.client.setModel(model);
-    const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.model = model;
+    try {
+      const tag = 'NAME?';
+      const command = this.client.getName();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return '';
+    } catch (error) {
+      return ''
     }
-    return ret;
   }
 
-  public async getModel(): Promise<string> {
-    const command = this.client.getModel();
-    const response = await this.sendCommand(command, 500);
-    this.config.model = response;
-    return this.config.model;
-  }
-
-  public async getModelList(): Promise<any[]> {
-    const command = this.client.getModelList();
-    const response = await this.sendCommand(command, 500);
-    const models = response.split(',');
-    const result = [];
-    for (let i = 0; i < models.length - 1; i += 1) {
-      const model = models[i];
-      result.push({
-        value: model,
-        label: `workplace.config.model.${model}`,
-      });
+  public async getStat(): Promise<string | object> {
+    try {
+      const tag = 'STAT?';
+      const command = this.client.getStat();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
     }
-    return result;
   }
 
-  public async setAlgorithm(algorithm: string): Promise<boolean> {
-    const command = this.client.setAlgorithm(algorithm);
-    const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.algorithm = algorithm;
+  public async getVersion(): Promise<string> {
+    try {
+      const tag = 'VER?';
+      const command = this.client.getVersion();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        if (data?.software) {
+          return data.software
+        }
+        return 'unknown';
+      }
+      return '';
+    } catch (error) {
+      return ''
     }
-    return ret;
   }
 
-  public async getAlgorithm(): Promise<string> {
-    const command = this.client.getAlgorithm();
-    const response = await this.sendCommand(command, 500);
-    return response;
-  }
-
-  public async getAlgorithmList(): Promise<any[]> {
-    const command = this.client.getAlgorithmList();
-    const response = await this.sendCommand(command, 500);
-    const algos = response.split(',');
-    const result = [];
-    for (let i = 0; i < algos.length - 1; i += 1) {
-      const algo = algos[i];
-      result.push({
-        value: algo,
-        label: `workplace.config.algorithm.${algo}`,
-      });
+  public async getAlgorithms(): Promise<Algo[]> {
+    try {
+      const tag = 'ALGOS?';
+      const command = this.client.getAlgorithms();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data as Algo[]
+        return data;
+      }
+      return []
+    } catch (error) {
+      return []
     }
-    return result;
   }
 
-  public async setConfidence(confidence: number): Promise<boolean> {
-    const command = this.client.setConfidence(confidence);
-    const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.confidence = confidence;
+  public async getModels(): Promise<any> {
+    try {
+      const tag = 'MODELS?';
+      const command = this.client.getModels();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return []
+    } catch (error) {
+      return []
     }
-    return ret;
   }
 
-  public async getConfidence(): Promise<number> {
-    const command = this.client.getConfidence();
-    const response = await this.sendCommand(command, 500);
-    this.config.confidence = parseInt(response, 10);
-    return this.config.confidence;
-  }
-
-  public async setIOU(iou: number): Promise<boolean> {
-    const command = this.client.setIOU(iou);
-    const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.iou = iou;
+  public async getModel(): Promise<any> {
+    try {
+      const tag = 'MODEL?';
+      const command = this.client.getModel();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return null
+    } catch (error) {
+      return error
     }
-    return ret;
   }
 
-  public async getIOU(): Promise<number> {
-    const command = this.client.getIOU();
-    const response = await this.sendCommand(command, 500);
-    this.config.iou = parseInt(response, 10);
-    return this.config.iou;
-  }
-
-  public async reset() {
-    const command = this.client.reset();
-    const response = await this.sendCommand(command, 3000);
-    return response;
-  }
-
-  public async saveConfig(): Promise<boolean> {
-    const command = this.client.saveConfig();
-    const response = await this.sendCommand(command, 500);
-    return response === 'OK';
-  }
-
-  public async clearConfig(): Promise<boolean> {
-    const command = this.client.clearConfig();
-    const response = await this.sendCommand(command, 500);
-    return response === 'OK';
-  }
-
-  public async invoke(times: number): Promise<boolean> {
-    const command = this.client.invoke(times);
-    const response = await this.sendCommand(command, 3000);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.invoke = times;
+  public async getSensors(): Promise<any> {
+    try {
+      const tag = 'SENSORS?';
+      const command = this.client.getSensors();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
     }
-    return ret;
   }
 
-  public async getInvoke(): Promise<number> {
-    const command = this.client.getInvoke();
-    const response = await this.sendCommand(command, 500);
-    this.config.invoke = parseInt(response, 10);
-    return this.config.invoke;
-  }
-
-  public async getRotate(): Promise<number> {
-    const command = this.client.getRotate();
-    const response = await this.sendCommand(command, 500);
-    this.config.rotate = (4 - parseInt(response, 10)) * 90;
-    return this.config.rotate;
-  }
-
-  public async setPointer(pointer: Pointer): Promise<boolean> {
-    const command = this.client.setPointer(pointer);
-    const response = await this.sendCommand(command, 500);
-    const ret = response === 'OK';
-    if (ret) {
-      this.config.pointer = pointer;
+  public async getSensor(): Promise<any> {
+    try {
+      const tag = 'SENSOR?';
+      const command = this.client.getSensor();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return null
+    } catch (error) {
+      return error
     }
-    return ret;
   }
 
-  public async getPointer(): Promise<Pointer> {
-    const command = this.client.getPointer();
-    const response = await this.sendCommand(command, 500);
-    const data = response.split(',');
-    const pointer: Pointer = {
-      startX: parseInt(data[0], 10),
-      startY: parseInt(data[1], 10),
-      endX: parseInt(data[2], 10),
-      endY: parseInt(data[3], 10),
-      centerX: parseInt(data[4], 10),
-      centerY: parseInt(data[5], 10),
-      from: parseInt(data[6], 10) / 1000,
-      to: parseInt(data[7], 10) / 1000,
-    };
-    this.config.pointer = pointer;
-    return this.config.pointer;
+  public async isSample(): Promise<boolean> {
+    try {
+      const tag = 'SAMPLE?';
+      const command = this.client.getSampleState();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        return response.data === 1
+      }
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+
+  public async isInvoke(): Promise<boolean> {
+    try {
+      const tag = 'INVOKE?';
+      const command = this.client.getInvokeState();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        return response.data === 1
+      }
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+
+  public async getInfo(): Promise<any> {
+    try {
+      const tag = 'INFO?';
+      const command = this.client.getInfo();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0 && response.data) {
+        return response.data.info;
+      }
+      return null
+    } catch (error) {
+      return null
+    }
+  }
+
+  public async getScore(): Promise<string> {
+    try {
+      const tag = 'TSCORE?';
+      const command = this.client.getScore();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async getIOU(): Promise<string> {
+    try {
+      const tag = 'TIOU?';
+      const command = this.client.getIOU();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async setModel(modelId: string): Promise<any> {
+    try {
+      const tag = 'MODEL';
+      const command = this.client.setModel(modelId);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async setSensor(sensorId: string, state: number): Promise<any> {
+    try {
+      const tag = 'SENSOR';
+      const command = this.client.setSensor(sensorId, state);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async sample(times: number): Promise<any> {
+    try {
+      const tag = 'SAMPLE';
+      const command = this.client.sample(times);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return null;
+    } catch (error) {
+      return null
+    }
+  }
+
+  public async invoke(times: number): Promise<any> {
+    try {
+      const tag = 'INVOKE';
+      const command = this.client.invoke(times);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data;
+        if (data) {
+          const config = data.algorithm?.config;
+          if (config) {
+            const tiou = config.tiou || 0;
+            const tscore = config.tscore || 0;
+            this.deviceStore.setIOU(tiou);
+            this.deviceStore.setScore(tscore);
+          }
+          this.deviceStore.setIsInvoke(true);
+        }
+        return data;
+      }
+      return null;
+    } catch (error) {
+      return null
+    }
+  }
+
+  public async setInfo(info: string): Promise<any> {
+    try {
+      const tag = 'INFO';
+      const command = this.client.setInfo(info);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
+    }
+  }
+
+  public async deleteInfo(): Promise<any> {
+    try {
+      const tag = 'INFO!';
+      const command = this.client.deleteInfo();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
+    }
+  }
+
+  public async setScore(score: number): Promise<string> {
+    try {
+      const timestamp = new Date().getTime();
+      const tag = `${timestamp}@TSCORE`;
+      const command = this.client.setScore(score, tag);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async setIOU(iou: number): Promise<string> {
+    try {
+      const timestamp = new Date().getTime();
+      const tag = `${timestamp}@TIOU`;
+      const command = this.client.setIOU(iou, tag);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.deleteMap(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return 'error'
+    }
+  }
+
+  public async setLed(state: number): Promise<any> {
+    try {
+      const tag = 'LED';
+      const command = this.client.setLed(state);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
+    }
+  }
+
+  public async reset(): Promise<any> {
+    try {
+      const tag = 'RST';
+      const command = this.client.reset();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
+    }
+  }
+
+  public async break(): Promise<any> {
+    try {
+      const tag = 'BREAK';
+      const command = this.client.break();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as (keyof typeof ERROR_LIST);
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error
+    }
   }
 }

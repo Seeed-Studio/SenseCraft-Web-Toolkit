@@ -9,10 +9,6 @@ export default class WebUSB extends Device {
 
   private endpointOut: number;
 
-  public onReceive: any;
-
-  public onReceiveError: any;
-
   constructor() {
     super();
     this.port = null;
@@ -26,11 +22,10 @@ export default class WebUSB extends Device {
       this.port
         ?.transferIn(this.endpointIn, 2048)
         .then((result: any) => {
-          this.onReceive(result.data);
           readLoop();
         })
         .catch((error: any) => {
-          this.onReceiveError(error);
+          console.log(error)
         });
     };
 

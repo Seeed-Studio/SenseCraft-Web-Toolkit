@@ -1,19 +1,17 @@
-import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
-import localeDeviceConfig from '@/senseCraft/atclient/locale/en-US';
+import localeWorkplace from '@/views/setup/process/locale/en-US';
 import localeSettings from './en-US/settings';
 
 export default {
-  'menu.dashboard': 'Dashboard',
-  'menu.server.dashboard': 'Dashboard-Server',
-  'menu.server.workplace': 'Workplace-Server',
-  'menu.server.monitor': 'Monitor-Server',
+  'menu.setup': 'Setup',
+  'menu.setup.process': 'Process',
+  'menu.setup.output': 'Output',
+  'menu.firmware': 'Flash Firmware',
   'menu.data': 'Data Acquisition',
   'menu.data.vision': 'Vision',
   'menu.data.sensor': 'Sensor',
   'menu.data.audio': 'Audio',
   'menu.model': 'Model',
   'menu.model.train': 'Train',
-  'menu.deployment': 'Deployment',
   'menu.deployment.deploy': 'Deploy',
   'menu.deployment.convert': 'Convert',
   'menu.faq': 'FAQ',
@@ -21,5 +19,5 @@ export default {
   'navbar.action.locale': 'Switch to English',
   ...localeSettings,
   ...localeWorkplace,
-  ...localeDeviceConfig,
 };
+
