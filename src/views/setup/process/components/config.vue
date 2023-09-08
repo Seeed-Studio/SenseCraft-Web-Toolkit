@@ -28,11 +28,11 @@ const confidence = ref(deviceStore.tscore);
 const iou = ref(deviceStore.tiou);
 
 const setConfidence = (value: number | [number, number]) => {
-  device?.setScore(value as number);
+  device.setScore(value as number);
 }
 
 const setIou = (value: number | [number, number]) => {
-  device?.setIOU(value as number);
+  device.setIOU(value as number);
 }
 
 const handelConfidenceChange = throttle(setConfidence, 1000);

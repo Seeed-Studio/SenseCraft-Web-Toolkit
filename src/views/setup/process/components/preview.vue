@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onBeforeUnmount, watch, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, watch, ref } from 'vue';
 import { useDeviceStore } from '@/store';
 import { DEVICESTATUS } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
@@ -46,6 +46,9 @@ const canvas = ref<HTMLCanvasElement | null>(null);
 const invoke = ref<boolean>(false);
 const invokeDisable = ref<boolean>(true);
 
+const classes = computed(() => deviceStore.currentModel?.classes || []);
+const length = computed(() => classes.value.length);
+
 const onInvoke = (data: any) => {
   if (!data?.boxes || !data?.image) {
     return
@@ -62,16 +65,22 @@ const onInvoke = (data: any) => {
     ctx.drawImage(img, 0, 0, img.width, img.height);
     for (let i = 0; i < boxes.length; i += 1) {
       const rect = boxes[i];
-      const color = COLORS[Math.floor((Math.random() * COLORS.length))];
       if (rect?.length === 6) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
         const x = rect[0];
         const y = rect[1];
         const w = rect[2];
         const h = rect[3];
         const score = rect[4];
-        const tar = rect[5];
+        const tar = parseInt(rect[5], 10);
+        const color = COLORS[x % COLORS.length];
+        let tarStr = ''
+        if (classes.value && tar < length.value) {
+          tarStr = classes.value[tar]
+        } else {
+          tarStr = tar.toString()
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
         ctx.strokeRect(
           x - w / 2,
           y - h / 2,
@@ -88,7 +97,7 @@ const onInvoke = (data: any) => {
         ctx.font = 'bold 12px arial';
         ctx.fillStyle = '#ffffff';
         ctx.fillText(
-          `${tar}: ${score}`,
+          `${tarStr}: ${score}`,
           x - w / 2 + 5,
           y - h / 2 - 2
         );
@@ -154,37 +163,27 @@ const handleStop = () => {
   deviceStore.setIsInvoke(false);
 };
 
-
 </script>
 
 <style scoped lang="less">
-.monitor {
-  &-wrapper {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    min-width: 320px;
-    max-width: 640px;
-    min-height: 285px;
-    max-height: 480px;
-    margin: 0 auto;
-    border-radius: 5px;
-  }
+.monitor-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 320px;
+  max-width: 640px;
+  min-height: 285px;
+  max-height: 480px;
+  margin: 0 auto;
+  border-radius: 5px;
 
-  &-preview {
+  .monitor-preview {
     min-width: 240px;
     max-width: 640px;
     min-height: 240px;
     max-height: 480px;
     margin: auto;
     border-radius: 5px;
-    // background-color: black;
-  }
-
-  &-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
   }
 }
 </style>

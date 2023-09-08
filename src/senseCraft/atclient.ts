@@ -69,6 +69,10 @@ export class ATClient {
     return 'AT+TIOU?\r';
   }
 
+  public getAction(): string {
+    return 'AT+ACTION?\r';
+  }
+
   public setModel(modelId: string): string {
     return `AT+MODEL=${modelId}\r`;
   }
@@ -92,7 +96,15 @@ export class ATClient {
   }
 
   public deleteInfo(): string {
-    return 'AT+INFO!\r';
+    return 'AT+INFO=""\r';
+  }
+
+  public setAction(target: number, condition: string, score: number): string {
+    return `AT+ACTION="max_score(target,${target})${condition}${score}","LED=1","LED=0"\r`;
+  }
+
+  public deleteAction(): string {
+    return 'AT+ACTION="","",""\r';
   }
 
   public setScore(score: number, tag: string): string {

@@ -28,6 +28,7 @@ export interface Model {
   name: string;
   version: string;
   category: string;
+  classes: string[];
   model_type: string;
   algoritham: string;
   description: string;

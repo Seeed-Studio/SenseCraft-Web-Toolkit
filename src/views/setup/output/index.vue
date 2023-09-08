@@ -21,13 +21,10 @@
               {{ item.object }}
             </div>
             <div>
-              {{ item.condition }}
+              {{ $t(`workplace.output.model.condition.${item.condition}`) }}
             </div>
             <div class="conditions-item-confidence">
               {{ item.confidence }}
-            </div>
-            <div>
-              {{ item.duration }}
             </div>
           </div>
 
@@ -67,36 +64,25 @@
     </a-list>
 
     <div class="bottom">
-      <a-button type="primary">Send</a-button>
+      <a-button type="primary" @click="handleSubmit" :loading="loading">Send</a-button>
     </div>
 
-    <a-modal v-model:visible="visible" title="Trigger Condition" @cancel="handleCancel" @ok="handleOk">
+    <a-modal v-model:visible="modalVisible" title="Trigger Condition" @cancel="handleCancel" @ok="handleOk">
       <a-form :model="form">
-        <a-form-item field="object" label="Object" :label-col-props="{ span: 12 }" :wrapper-col-props="{ span: 12 }">
+        <a-form-item field="object" label="Object" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.object">
-            <a-option value="Person">Person</a-option>
-            <a-option value="Car">Car</a-option>
-            <a-option value="TV">TV</a-option>
+            <a-option v-for="item of classes" :key="item" :value="item" :label="item" />
           </a-select>
         </a-form-item>
-        <a-form-item field="condition" label="Condition" :label-col-props="{ span: 12 }"
-          :wrapper-col-props="{ span: 12 }">
+        <a-form-item field="condition" label="Condition" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.condition">
-            <a-option value="Greater than">Greater than</a-option>
-            <a-option value="Less than">Less than</a-option>
-            <a-option value="Equal to">Equal to</a-option>
+            <a-option v-for="item of conditionData" :key="item" :value="item"
+              :label="$t(`workplace.output.model.condition.${item}`)" />
           </a-select>
         </a-form-item>
         <a-form-item field="confidence" label="Trigger Confidence" :label-col-props="{ span: 12 }"
           :wrapper-col-props="{ span: 12 }">
           <a-slider class="confidence-slider" v-model="form.confidence" :min="1" :max="100" show-input />
-        </a-form-item>
-        <a-form-item field="duration" label="Duration" :label-col-props="{ span: 12 }" :wrapper-col-props="{ span: 12 }">
-          <a-input-number v-model="form.duration" :default-value="2" :min="1" :max="100" mode="button">
-            <template #suffix>
-              <div>s</div>
-            </template>
-          </a-input-number>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -104,49 +90,137 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, reactive, ref, Ref } from 'vue';
+import { computed, onMounted, watch, reactive, ref, Ref } from 'vue';
+import { Message } from '@arco-design/web-vue';
+import { useDeviceStore } from '@/store';
+import { DEVICESTATUS } from '@/senseCraft';
+import { deviceManager } from '@/senseCraft';
+
+const deviceStore = useDeviceStore();
+const { device } = deviceManager;
 
 const data: Ref<{
   object: string;
   condition: string;
   confidence: number;
-  duration: number;
-
 }[]> = ref([]);
 
-const visible = ref(false);
+const modalVisible = ref(false);
+const loaded = ref(false);
+const loading = ref(false);
+const conditionData = ['>=', '<=', '=='];
+
+const classes = computed(() => deviceStore.currentModel?.classes || []);
+
 const form = reactive({
-  object: "Person",
-  condition: "Greater than",
+  object: '',
+  condition: '>=',
   confidence: 50,
-  duration: 1
 });
 
 const handleOpenModal = () => {
-  visible.value = true;
+  modalVisible.value = true;
 };
 
 const handleOk = () => {
   data.value = [
     {
-      object: 'Person',
-      condition: 'Greater than',
-      confidence: 50,
-      duration: 1,
+      object: form.object,
+      condition: form.condition,
+      confidence: form.confidence,
     }
   ]
 };
+
 const handleCancel = () => {
-  visible.value = false;
+  modalVisible.value = false;
 }
 
 const handleEdit = () => {
-  visible.value = true;
+  modalVisible.value = true;
 }
 
-const handleDelete = () => {
-  data.value = []
+const handleDelete = async () => {
+  const ret = await device.deleteAction();
+  if (ret) {
+    data.value = [];
+    Message.success('Delete action successful');
+  } else {
+    Message.error('Delete action failed');
+  }
 }
+
+const handleSubmit = async () => {
+  loading.value = true;
+  const ret = await device.setAction(0, '>=', form.confidence);
+  if (ret) {
+    Message.success('Set action successful');
+  } else {
+    Message.error('Set action failed');
+  }
+  loading.value = false;
+}
+
+const handelRefresh = async (connectStatus: DEVICESTATUS) => {
+  if (connectStatus === DEVICESTATUS.SERIALCONNECTED && !loaded.value) {
+    const base64Str = await device.getInfo();
+    let classes;
+    if (base64Str) {
+      const str = atob(base64Str);
+      const model = JSON.parse(str);
+      deviceStore.setCurrentModel(model);
+      classes = model.classes;
+    }
+    const cond = await device.getAction();
+    if (cond?.length > 0) {
+      const condFlag = cond.indexOf('=');
+      if (condFlag > 0) {
+        const condition = cond.slice(condFlag - 1, condFlag)
+        if (condition === '>' || condition === '<' || condition === '=') {
+          const maxScoreFlag = cond.indexOf('max_score');
+          if (maxScoreFlag > -1) {
+            const leftFlag = cond.indexOf('(');
+            const rightFlag = cond.indexOf(')');
+            if (leftFlag > maxScoreFlag && rightFlag > leftFlag + 8) {
+              const target = cond.slice(leftFlag + 8, rightFlag)
+              const confidence = cond.slice(condFlag + 1);
+              let tarStr = ''
+              if (classes && target < classes.length) {
+                tarStr = classes[target]
+              } else {
+                tarStr = target
+              }
+              data.value = [
+                {
+                  object: tarStr,
+                  condition: `${condition}=`,
+                  confidence
+                }
+              ]
+              form.object = tarStr;
+              form.condition = `${condition}=`;
+              form.confidence = parseInt(confidence, 10);
+            }
+          }
+        }
+      }
+    } else {
+      data.value = [];
+    }
+    loaded.value = true
+  }
+}
+
+watch(
+  () => deviceStore.connectStatus,
+  (val) => {
+    handelRefresh(val);
+  }
+);
+
+onMounted(async () => {
+  handelRefresh(deviceStore.connectStatus);
+});
 
 </script>
 <style lang="less">

@@ -10,6 +10,7 @@ const useDeviceStore = defineStore('device', {
     hasLoadModel: false,
     models: [] as Model[],
     firmware: null as Firmware | null,
+    currentModel: null as Model | null,
   }),
 
   getters: {},
@@ -35,6 +36,9 @@ const useDeviceStore = defineStore('device', {
     },
     setFirmware(firmware: Firmware) {
       this.firmware = firmware;
+    },
+    setCurrentModel(currentModel: Model) {
+      this.currentModel = currentModel;
     },
   },
 });

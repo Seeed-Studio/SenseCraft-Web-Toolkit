@@ -332,6 +332,23 @@ export default class Device {
     }
   }
 
+  public async getAction(): Promise<any> {
+    try {
+      const tag = 'ACTION?';
+      const command = this.client.getAction();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const cond = response.data?.cond
+        return cond;
+      }
+      return null;
+    } catch (error) {
+      return null
+    }
+  }
+
   public async setModel(modelId: string): Promise<any> {
     try {
       const tag = 'MODEL';
@@ -470,6 +487,32 @@ export default class Device {
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
       return 'error'
+    }
+  }
+
+  public async setAction(target: number, condition: string, score: number): Promise<boolean> {
+    try {
+      const tag = 'ACTION';
+      const command = this.client.setAction(target, condition, score);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      return code === 0;
+    } catch (error) {
+      return false
+    }
+  }
+
+  public async deleteAction(): Promise<boolean> {
+    try {
+      const tag = 'ACTION';
+      const command = this.client.deleteAction();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      return code === 0;
+    } catch (error) {
+      return false
     }
   }
 

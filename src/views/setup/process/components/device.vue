@@ -11,11 +11,11 @@
       </a-space>
       <a-space class="device-item">
         <div class="device-item-title">{{ $t('workplace.device.model.name') }}</div>
-        <div class="device-item-value">{{ displayModel?.name }}</div>
+        <div class="device-item-value">{{ deviceStore.currentModel?.name }}</div>
       </a-space>
       <a-space class="device-item">
         <div class="device-item-title">{{ $t('workplace.device.model.version') }} </div>
-        <div class="device-item-value"> {{ displayModel?.version }}</div>
+        <div class="device-item-value"> {{ deviceStore.currentModel?.version }}</div>
       </a-space>
     </a-space>
     <a-typography-title class="models-item-title" :heading="6">Ready to use AI models</a-typography-title>
@@ -45,7 +45,7 @@ import { Navigation } from 'swiper/modules';
 import { FlashOptions } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { DEVICESTATUS, Serial, Bin, Firmware, Model } from '@/senseCraft';
+import { DEVICESTATUS, Serial, Bin, Model } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
 
 const { device, term } = deviceManager;
@@ -67,7 +67,6 @@ const loading = ref(false);
 const selectedModel = ref(0);
 const deviceName = ref('');
 const deviceVersion = ref('');
-const displayModel: Ref<Model | null> = ref(null);
 
 const readFile = (blob: Blob): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
@@ -167,7 +166,8 @@ const burnFirmware = async () => {
       try {
         const info = btoa(JSON.stringify(model));
         device.setInfo(info);
-        displayModel.value = model;
+        device.deleteAction();
+        deviceStore.setCurrentModel(model);
       } catch (error) {
         console.log(error)
       }
@@ -203,7 +203,7 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
       if (base64Str) {
         const str = atob(base64Str);
         const model = JSON.parse(str)
-        displayModel.value = model
+        deviceStore.setCurrentModel(model)
       }
     } catch (error) {
       console.log(error)
