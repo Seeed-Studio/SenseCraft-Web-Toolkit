@@ -1,43 +1,45 @@
 <template>
-  <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.title')">
-    <a-space direction="vertical" size="large">
-      <a-space class="device-item">
-        <div class="device-item-title">{{ $t('workplace.device.name') }}</div>
-        <div class="device-item-value">{{ deviceName }}</div>
+  <a-spin :loading="loading" tip="This may take a while...">
+    <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.title')">
+      <a-space direction="vertical" size="large">
+        <a-space class="device-item">
+          <div class="device-item-title">{{ $t('workplace.device.name') }}</div>
+          <div class="device-item-value">{{ deviceName }}</div>
+        </a-space>
+        <a-space class="device-item">
+          <div class="device-item-title">{{ $t('workplace.device.version') }} </div>
+          <div class="device-item-value"> {{ deviceVersion }}</div>
+        </a-space>
+        <a-space class="device-item">
+          <div class="device-item-title">{{ $t('workplace.device.model.name') }}</div>
+          <div class="device-item-value">{{ deviceStore.currentModel?.name }}</div>
+        </a-space>
+        <a-space class="device-item">
+          <div class="device-item-title">{{ $t('workplace.device.model.version') }} </div>
+          <div class="device-item-value"> {{ deviceStore.currentModel?.version }}</div>
+        </a-space>
       </a-space>
-      <a-space class="device-item">
-        <div class="device-item-title">{{ $t('workplace.device.version') }} </div>
-        <div class="device-item-value"> {{ deviceVersion }}</div>
-      </a-space>
-      <a-space class="device-item">
-        <div class="device-item-title">{{ $t('workplace.device.model.name') }}</div>
-        <div class="device-item-value">{{ deviceStore.currentModel?.name }}</div>
-      </a-space>
-      <a-space class="device-item">
-        <div class="device-item-title">{{ $t('workplace.device.model.version') }} </div>
-        <div class="device-item-value"> {{ deviceStore.currentModel?.version }}</div>
-      </a-space>
-    </a-space>
-    <a-typography-title class="models-item-title" :heading="6">Ready to use AI models</a-typography-title>
-    <div class="device-item">Please select an preset AI model
-      <!-- or upload <span class="ai-label">Custom AI Model</span> -->
-    </div>
-    <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
-      <swiper-slide v-for="(item, index) in deviceStore.models"
-        :class="['carousel-item', { 'carousel-item-selected': selectedModel === index }]" :key="index"
-        :onclick="() => handleSelectedModel(index)" :virtualIndex="index">
-        <img :src="item.image" class="carousel-item-image" />
-        <div class="carousel-item-name">{{ item.name }}</div>
-      </swiper-slide>
-    </swiper>
-    <div class="bottom">
-      <a-button type="primary" @click="handleUpload" :loading="loading">Send</a-button>
-    </div>
-  </a-card>
+      <a-typography-title class="models-item-title" :heading="6">Ready to use AI models</a-typography-title>
+      <div class="device-item">Please select an preset AI model
+        <!-- or upload <span class="ai-label">Custom AI Model</span> -->
+      </div>
+      <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
+        <swiper-slide v-for="(item, index) in deviceStore.models"
+          :class="['carousel-item', { 'carousel-item-selected': selectedModel === index }]" :key="index"
+          :onclick="() => handleSelectedModel(index)" :virtualIndex="index">
+          <img :src="item.image" class="carousel-item-image" />
+          <div class="carousel-item-name">{{ item.name }}</div>
+        </swiper-slide>
+      </swiper>
+      <div class="bottom">
+        <a-button type="primary" @click="handleUpload">Send</a-button>
+      </div>
+    </a-card>
+  </a-spin>
 </template>
 
 <script lang="ts" setup>
-import { Ref, ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -64,6 +66,7 @@ const espLoaderTerminal = {
 };
 
 const loading = ref(false);
+const loadingTip = ref('');
 const selectedModel = ref(0);
 const deviceName = ref('');
 const deviceVersion = ref('');
@@ -98,6 +101,7 @@ const downloadModel = async (model: Model) => {
 
 const burnFirmware = async () => {
   loading.value = true;
+  loadingTip.value = 'connecting';
   if (deviceStore.connectStatus !== DEVICESTATUS.ESPCONNECTED) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
   }
@@ -121,6 +125,7 @@ const burnFirmware = async () => {
       return
     }
     // 下载固件
+    loadingTip.value = 'downloading firmware';
     const firmwareArray = await downloadFirmware(bins);
     fileArray = fileArray.concat(firmwareArray)
   }
@@ -128,6 +133,7 @@ const burnFirmware = async () => {
   // 下载模型
   let model;
   if (deviceStore.models.length > 0) {
+    loadingTip.value = 'downloading model';
     model = deviceStore.models[selectedModel.value];
     const modelfile = await downloadModel(model);
     fileArray.push(modelfile)
@@ -135,6 +141,7 @@ const burnFirmware = async () => {
 
   let result;
   try {
+    loadingTip.value = 'burning';
     const flashOptions: FlashOptions = {
       fileArray,
       flashSize: 'keep',
@@ -152,6 +159,7 @@ const burnFirmware = async () => {
   } finally {
     // 烧录完重置设备
     if (result) {
+      loadingTip.value = 'resetting';
       await transport?.setDTR(false);
       await new Promise((resolve) => {
         setTimeout(resolve, 100);
@@ -160,6 +168,7 @@ const burnFirmware = async () => {
     }
     // 连接设备
     if (deviceStore.connectStatus !== DEVICESTATUS.SERIALCONNECTED) {
+      loadingTip.value = 'connecting';
       await (device as Serial).connect();
     }
     if (model) {
@@ -172,6 +181,7 @@ const burnFirmware = async () => {
         console.log(error)
       }
     }
+    loadingTip.value = '';
     loading.value = false;
   }
 };

@@ -12,7 +12,9 @@
       <a-space direction="vertical" size="mini" class="aimodel">
         <label>{{ $t('workplace.device.card.chooseAImodel') }}</label>
         <a-space class="aimodel-button">
-          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite" @before-upload="(file) => beforeUpload(file, FILE_TYPE.MODEL_FILE)" @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.MODEL_FILE)">
+          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite"
+            @before-upload="(file) => beforeUpload(file, FILE_TYPE.MODEL_FILE)"
+            @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.MODEL_FILE)">
             <template #upload-button>
               <div>
                 <a-button type="primary">
@@ -32,7 +34,9 @@
       <a-space direction="vertical" size="mini" class="aimodel">
         <label>{{ $t('workplace.device.card.chooseBootloader') }}</label>
         <a-space>
-          <a-upload :custom-request="fileChangeHandler" multiple :limit="3" accept=".bin" @before-upload="(file) => beforeUpload(file, FILE_TYPE.FIRMWARE_FILE)" @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.FIRMWARE_FILE)">
+          <a-upload :custom-request="fileChangeHandler" multiple :limit="3" accept=".bin"
+            @before-upload="(file) => beforeUpload(file, FILE_TYPE.FIRMWARE_FILE)"
+            @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.FIRMWARE_FILE)">
             <template #upload-button>
               <div>
                 <a-button type="primary">
@@ -172,6 +176,9 @@ const burnFirmware = async () => {
         setTimeout(resolve, 100);
       });
       await transport?.setDTR(true);
+      Message.success('Erase Flash successful');
+    } else {
+      Message.error('Erase Flash failed');
     }
   }
   binFileUploading.value = false;

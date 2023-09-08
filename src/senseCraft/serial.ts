@@ -4,6 +4,7 @@ import {
   Transport,
   IEspLoaderTerminal,
 } from 'esptool-js';
+import { Message } from '@arco-design/web-vue';
 import Device from './device';
 import { DEVICESTATUS } from './types';
 
@@ -41,8 +42,14 @@ export default class Serial extends Device {
   public async connect() {
     try {
       if (this.port === null) {
-        const serialPort = await navigator.serial.requestPort();
-        this.port = serialPort;
+        try {
+          const serialPort = await navigator.serial.requestPort();
+          this.port = serialPort;
+        } catch (error) {
+          console.log(error)
+          Message.error('request serial port failed');
+          return
+        }
       }
       // 如果当前在esp连接，需要断开
       if (
@@ -74,14 +81,21 @@ export default class Serial extends Device {
       this.readLoop();
     } catch (error) {
       console.log(error)
+      Message.error('device connect failed');
     }
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {
     try {
       if (this.port === null) {
-        const serialPort = await navigator.serial.requestPort();
-        this.port = serialPort;
+        try {
+          const serialPort = await navigator.serial.requestPort();
+          this.port = serialPort;
+        } catch (error) {
+          console.log(error)
+          Message.error('request serial port failed');
+          return
+        }
       }
       navigator.serial.ondisconnect = this.ondisconnect.bind(this);
       // 如果当前在串口连接，需要断开
@@ -103,6 +117,7 @@ export default class Serial extends Device {
       this.deviceStore.setConnectStatus(DEVICESTATUS.ESPCONNECTED);
     } catch (error) {
       console.log(error)
+      Message.error('device connect failed');
     }
   }
 
@@ -112,6 +127,7 @@ export default class Serial extends Device {
       this.port = null;
       this.transport = null;
       this.esploader = null;
+      Message.error('Device is disconnected!');
     });
   }
 
@@ -122,6 +138,7 @@ export default class Serial extends Device {
       this.writer?.releaseLock();
       await this.port?.close();
     } catch (error) {
+      this.port = null;
       console.log(error);
     }
   }
@@ -177,6 +194,8 @@ export default class Serial extends Device {
                 if (code === 0) {
                   const listener = this.eventMap.get(name);
                   listener?.(obj.data)
+                } else {
+                  Message.error(`Please check device connection status, errorCode[${code}]`);
                 }
               }
             } catch (error) {
