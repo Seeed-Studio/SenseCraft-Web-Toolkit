@@ -24,18 +24,19 @@ export interface Firmware {
 }
 
 export interface Model {
-  uuid: string;
+  uuid?: string;
   name: string;
   version: string;
   category: string;
   classes: string[];
-  model_type: string;
-  algoritham: string;
-  description: string;
-  image: string;
-  url: string;
-  checksum: string;
+  model_type?: string;
+  algorithm?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  checksum?: string;
   size: string;
+  isCustom?: boolean,
 }
 
 export enum AlgoType {

@@ -1,5 +1,5 @@
 <template>
-  <a-spin :loading="loading" tip="This may take a while...">
+  <a-spin :loading="loading" :tip="loadingTip" class="item-card">
     <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.title')">
       <a-space direction="vertical" size="large">
         <a-space class="device-item">
@@ -20,8 +20,9 @@
         </a-space>
       </a-space>
       <a-typography-title class="models-item-title" :heading="6">Ready to use AI models</a-typography-title>
-      <div class="device-item">Please select an preset AI model
-        <!-- or upload <span class="ai-label">Custom AI Model</span> -->
+      <div class="device-item">Please select an preset AI model or
+        <!-- <span class="ai-label">Upload Custom AI Model</span> -->
+        <a-button type="primary" @click="handleShowCustomModel">Upload Custom AI Model</a-button>
       </div>
       <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
         <swiper-slide v-for="(item, index) in deviceStore.models"
@@ -31,16 +32,79 @@
           <div class="carousel-item-name">{{ item.name }}</div>
         </swiper-slide>
       </swiper>
+      <div v-if="deviceStore.currentModel?.isCustom" class="custom-model-wrapper">
+        <img :src="customModelIcon" class="custom-model-image" />
+        <div class="custom-model-name">{{ deviceStore.currentModel?.name }}</div>
+      </div>
       <div class="bottom">
         <a-button type="primary" @click="handleUpload">Send</a-button>
       </div>
     </a-card>
+
+    <a-modal v-model:visible="modalVisible" title="Custom AI Model" @cancel="handleCustomModelCancel"
+      :on-before-ok="handleCustomModelOk">
+      <a-row>
+        <a-col :span="6" class="grid-left">
+          <div>Model Name</div>
+        </a-col>
+        <a-col :span="18">
+          <a-input v-model="modalName" placeholder="please enter model name" />
+        </a-col>
+      </a-row>
+      <a-row>
+        <a-col :span="6" class="grid-left">
+          <div>Model File</div>
+        </a-col>
+        <a-col :span="18">
+          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite" @before-upload="beforeUpload"
+            @before-remove="beforeRemove">
+            <template #upload-button>
+              <div>
+                <a-button type="primary">
+                  <template #icon>
+                    <icon-upload />
+                  </template>
+                  <template #default>{{
+                    $t('workplace.device.card.chooseAImodel')
+                  }}</template>
+                </a-button>
+              </div>
+            </template>
+          </a-upload>
+        </a-col>
+      </a-row>
+      <a-row>
+        <a-col :span="6" class="grid-left">
+          <div>ID:Object</div>
+        </a-col>
+        <a-col :span="18">
+          <a-space wrap>
+            <a-tag v-for="(tag, index) of modelObjects" :key="tag" closable @close="handleRemove(tag)">
+              {{ index + ':' + tag }}
+            </a-tag>
+            <a-input v-if="showInput" ref="inputRef" :style="{ width: '90px' }" size="mini" v-model.trim="inputVal"
+              @keyup.enter="handleAdd" @blur="handleAdd" />
+            <a-tag v-else :style="{
+              backgroundColor: 'var(--color-fill-2)',
+              border: '1px dashed var(--color-fill-3)',
+              cursor: 'pointer',
+            }" @click="handleAddClass">
+              <template #icon>
+                <icon-plus />
+              </template>
+              Add Object
+            </a-tag>
+          </a-space>
+        </a-col>
+      </a-row>
+    </a-modal>
   </a-spin>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue';
+import { Ref, ref, nextTick, onMounted, watch, reactive } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
@@ -49,6 +113,7 @@ import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
 import { DEVICESTATUS, Serial, Bin, Model } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
+import customModelIcon from '@/assets/images/custom-model.png';
 
 const { device, term } = deviceManager;
 const deviceStore = useDeviceStore();
@@ -67,11 +132,20 @@ const espLoaderTerminal = {
 
 const loading = ref(false);
 const loadingTip = ref('');
-const selectedModel = ref(0);
+const selectedModel = ref(-1);
 const deviceName = ref('');
 const deviceVersion = ref('');
 
-const readFile = (blob: Blob): Promise<string> => {
+// custom model
+const modalVisible = ref(false);
+const modalName = ref('');
+const modelFile: Ref<File | null> = ref(null);
+const modelObjects: Ref<string[]> = ref([]);
+const inputRef = ref(null);
+const showInput = ref(false);
+const inputVal = ref('');
+
+const readFile = (blob: Blob | File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent<FileReader>) => {
@@ -99,7 +173,7 @@ const downloadModel = async (model: Model) => {
   return { data, address: deviceStore.firmware?.model_slots[0].address || 4194304 };
 }
 
-const burnFirmware = async () => {
+const burnFirmware = async (isCustom = false) => {
   loading.value = true;
   loadingTip.value = 'connecting';
   if (deviceStore.connectStatus !== DEVICESTATUS.ESPCONNECTED) {
@@ -130,13 +204,38 @@ const burnFirmware = async () => {
     fileArray = fileArray.concat(firmwareArray)
   }
 
-  // 下载模型
+  // 模型对象
   let model;
-  if (deviceStore.models.length > 0) {
-    loadingTip.value = 'downloading model';
-    model = deviceStore.models[selectedModel.value];
-    const modelfile = await downloadModel(model);
-    fileArray.push(modelfile)
+  if (isCustom) {
+    if (!modelFile.value) {
+      loading.value = false;
+      return
+    }
+    const data = await readFile(modelFile.value);
+    fileArray.push({ data, address: 0x400000 });
+    model = {
+      "name": modalName.value,
+      "version": "1.0.0",
+      "category": "Object Detection",
+      "model_type": "TFLite",
+      "algorithm": "YOLO",
+      "description": "Custom Model",
+      "classes": modelObjects.value,
+      "size": modelFile.value.size.toString(),
+      "isCustom": true,
+    }
+  } else {
+    if (selectedModel.value < 0) {
+      loading.value = false;
+      Message.error('Please select a model');
+      return
+    }
+    if (deviceStore.models.length > 0) {
+      loadingTip.value = 'downloading model';
+      model = deviceStore.models[selectedModel.value];
+      const modelfile = await downloadModel(model);
+      fileArray.push(modelfile)
+    }
   }
 
   let result;
@@ -186,10 +285,6 @@ const burnFirmware = async () => {
   }
 };
 
-const handleUploadCustomModel = async () => {
-
-};
-
 const handleSelectedModel = (index: number) => {
   selectedModel.value = index;
 }
@@ -199,6 +294,8 @@ const handleUpload = async () => {
     burnFirmware()
   } catch (error) {
     console.log(error);
+    loadingTip.value = '';
+    loading.value = false;
   }
 };
 
@@ -220,6 +317,77 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
     }
   }
 }
+
+const handleShowCustomModel = () => {
+  modalVisible.value = true;
+};
+
+const handleCustomModelOk = async () => {
+  if (modalName.value == null || modalName.value === '') {
+    Message.error('Please enter modal name');
+    return false
+  }
+  if (!modelFile.value) {
+    Message.error('Please choose modal file');
+    return false
+  }
+  if (modelObjects.value.length === 0) {
+    Message.error('Please enter at least one object');
+    return false
+  }
+  burnFirmware(true);
+  return true
+};
+
+const handleCustomModelCancel = () => {
+  modalVisible.value = false;
+}
+
+const fileChangeHandler = (option: RequestOption) => {
+  const { onSuccess } = option;
+  onSuccess(true);
+  return {};
+};
+
+const beforeUpload = (file: File): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (file) {
+      modelFile.value = file;
+      resolve(true);
+    }
+  });
+};
+
+const beforeRemove = (fileItem: FileItem): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const file = fileItem.file;
+    if (file) {
+      modelFile.value = null;
+      resolve(true);
+    }
+  });
+};
+
+const handleAddClass = () => {
+  showInput.value = true;
+  nextTick(() => {
+    if (inputRef.value) {
+      (inputRef.value as HTMLElement).focus();
+    }
+  });
+};
+
+const handleAdd = () => {
+  if (inputVal.value) {
+    modelObjects.value.push(inputVal.value);
+    inputVal.value = '';
+  }
+  showInput.value = false;
+};
+
+const handleRemove = (key: any) => {
+  modelObjects.value = modelObjects.value.filter((tag) => tag !== key);
+};
 
 onMounted(() => {
   if (!deviceStore.hasLoadModel) {
@@ -263,7 +431,7 @@ watch(
 }
 
 .models-item-title {
-  margin-top: 80px;
+  margin-top: 30px;
 }
 
 .item-card-bottom {
@@ -317,10 +485,37 @@ watch(
   }
 }
 
+.custom-model-wrapper {
+  width: 150px;
+  height: 150px;
+  border: 1px solid var(--color-neutral-3);
+  border-radius: var(--border-radius-small);
+  margin-left: 45px;
+
+  .custom-model-image {
+    width: 100%;
+    height: 75%;
+  }
+
+  .custom-model-name {
+    height: 25%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
+  }
+}
+
 .bottom {
   height: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.grid-left {
+  height: 48px;
+  color: var(--color-text-2);
 }
 </style>
