@@ -18,7 +18,7 @@
         <a-list-item class="list-item">
           <div class="conditions-item-content">
             <div class="conditions-item-object">
-              {{ item.object }}
+              {{ classes.length > 0 ? classes[item.object] : '' }}
             </div>
             <div>
               {{ $t(`workplace.output.model.condition.${item.condition}`) }}
@@ -71,7 +71,7 @@
       <a-form :model="form">
         <a-form-item field="object" label="Object" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.object">
-            <a-option v-for="item of classes" :key="item" :value="item" :label="item" />
+            <a-option v-for="(item, index) of classes" :key="item" :value="index" :label="item" />
           </a-select>
         </a-form-item>
         <a-form-item field="condition" label="Condition" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
@@ -100,7 +100,7 @@ const deviceStore = useDeviceStore();
 const { device } = deviceManager;
 
 const data: Ref<{
-  object: string;
+  object: number;
   condition: string;
   confidence: number;
 }[]> = ref([]);
@@ -113,7 +113,7 @@ const conditionData = ['>=', '<=', '=='];
 const classes = computed(() => deviceStore.currentModel?.classes || []);
 
 const form = reactive({
-  object: '',
+  object: 0,
   condition: '>=',
   confidence: 50,
 });
@@ -151,8 +151,12 @@ const handleDelete = async () => {
 }
 
 const handleSubmit = async () => {
+  if (deviceStore.connectStatus !== DEVICESTATUS.SERIALCONNECTED) {
+    Message.error('Please connect the device');
+    return
+  }
   loading.value = true;
-  const ret = await device.setAction(0, '>=', form.confidence);
+  const ret = await device.setAction(form.object, form.condition, form.confidence);
   if (ret) {
     Message.success('Set action successful');
   } else {
@@ -182,24 +186,24 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
             const leftFlag = cond.indexOf('(');
             const rightFlag = cond.indexOf(')');
             if (leftFlag > maxScoreFlag && rightFlag > leftFlag + 8) {
-              const target = cond.slice(leftFlag + 8, rightFlag)
-              const confidence = cond.slice(condFlag + 1);
-              let tarStr = ''
-              if (classes && target < classes.length) {
-                tarStr = classes[target]
-              } else {
-                tarStr = target
+              let target = cond.slice(leftFlag + 8, rightFlag);
+              if (target.length > 0) {
+                target = parseInt(target, 10) || 0;
+              }
+              let confidence = cond.slice(condFlag + 1);
+              if (confidence.length > 0) {
+                confidence = parseInt(confidence, 10) || 0;
               }
               data.value = [
                 {
-                  object: tarStr,
+                  object: target,
                   condition: `${condition}=`,
                   confidence
                 }
               ]
-              form.object = tarStr;
+              form.object = target;
               form.condition = `${condition}=`;
-              form.confidence = parseInt(confidence, 10);
+              form.confidence = confidence;
             }
           }
         }
