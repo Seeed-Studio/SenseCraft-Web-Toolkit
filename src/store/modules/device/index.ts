@@ -1,23 +1,23 @@
 import { defineStore } from 'pinia';
-import { DEVICESTATUS, Model, Firmware } from '@/senseCraft/types';
+import { DeviceStatus, Model, Firmware } from '@/senseCraft/types';
 
 const useDeviceStore = defineStore('device', {
   state: () => ({
-    connectStatus: DEVICESTATUS.UNCONNECTED,
+    deviceStatus: DeviceStatus.UnConnected,
     tiou: 0,
     tscore: 0,
     isInvoke: false,
     hasLoadModel: false,
     models: [] as Model[],
-    firmware: null as Firmware | null,
-    currentModel: null as Model | null,
+    firmware: null as Firmware | null | undefined,
+    currentModel: null as Model | null | undefined,
   }),
 
   getters: {},
 
   actions: {
-    setConnectStatus(connectStatus: DEVICESTATUS) {
-      this.connectStatus = connectStatus;
+    setDeviceStatus(deviceStatus: DeviceStatus) {
+      this.deviceStatus = deviceStatus;
     },
     setIOU(tiou: number) {
       this.tiou = tiou;
@@ -37,7 +37,7 @@ const useDeviceStore = defineStore('device', {
     setFirmware(firmware: Firmware) {
       this.firmware = firmware;
     },
-    setCurrentModel(currentModel: Model) {
+    setCurrentModel(currentModel?: Model) {
       this.currentModel = currentModel;
     },
   },

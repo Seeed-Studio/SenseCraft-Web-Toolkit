@@ -107,7 +107,7 @@ export default class Device {
     }
   }
 
-  public async getName(): Promise<string> {
+  public async getName(): Promise<string | null> {
     try {
       const tag = 'NAME?';
       const command = this.client.getName();
@@ -118,9 +118,9 @@ export default class Device {
         const data = response.data
         return data;
       }
-      return '';
+      return null;
     } catch (error) {
-      return ''
+      return null
     }
   }
 
@@ -142,7 +142,7 @@ export default class Device {
     }
   }
 
-  public async getVersion(): Promise<string> {
+  public async getVersion(): Promise<string | null> {
     try {
       const tag = 'VER?';
       const command = this.client.getVersion();
@@ -154,11 +154,11 @@ export default class Device {
         if (data?.software) {
           return data.software
         }
-        return 'unknown';
+        return null;
       }
-      return '';
+      return null;
     } catch (error) {
-      return ''
+      return null
     }
   }
 

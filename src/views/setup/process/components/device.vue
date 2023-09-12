@@ -1,28 +1,40 @@
 <template>
   <a-spin :loading="loading" :tip="loadingTip" class="item-card">
     <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.title')">
-      <a-space direction="vertical" size="large">
-        <a-space class="device-item">
-          <div class="device-item-title">{{ $t('workplace.device.name') }}</div>
-          <div class="device-item-value">{{ deviceName }}</div>
-        </a-space>
-        <a-space class="device-item">
-          <div class="device-item-title">{{ $t('workplace.device.version') }} </div>
-          <div class="device-item-value"> {{ deviceVersion }}</div>
-        </a-space>
-        <a-space class="device-item">
-          <div class="device-item-title">{{ $t('workplace.device.model.name') }}</div>
-          <div class="device-item-value">{{ deviceStore.currentModel?.name }}</div>
-        </a-space>
-        <a-space class="device-item">
-          <div class="device-item-title">{{ $t('workplace.device.model.version') }} </div>
-          <div class="device-item-value"> {{ deviceStore.currentModel?.version }}</div>
-        </a-space>
+      <a-space v-if="deviceStore.deviceStatus === DeviceStatus.UnConnected" direction="vertical" size="large">
+        <div class="device-item">
+          Please connect the device to your PC
+        </div>
       </a-space>
-      <a-typography-title class="models-item-title" :heading="6">Ready to use AI models</a-typography-title>
-      <div class="device-item">Please select an preset AI model or
-        <!-- <span class="ai-label">Upload Custom AI Model</span> -->
+      <div v-else>
+        <a-space v-if="hasDeviceContent" direction="vertical" size="large">
+          <a-space class="device-item">
+            <div class="device-item-title">{{ $t('workplace.device.name') }}</div>
+            <div class="device-item-value">{{ deviceName }}</div>
+          </a-space>
+          <a-space class="device-item">
+            <div class="device-item-title">{{ $t('workplace.device.version') }} </div>
+            <div class="device-item-value"> {{ deviceVersion }}</div>
+          </a-space>
+          <a-space class="device-item">
+            <div class="device-item-title">{{ $t('workplace.device.model.name') }}</div>
+            <div class="device-item-value">{{ deviceStore.currentModel?.name }}</div>
+          </a-space>
+          <a-space class="device-item">
+            <div class="device-item-title">{{ $t('workplace.device.model.version') }} </div>
+            <div class="device-item-value"> {{ deviceStore.currentModel?.version }}</div>
+          </a-space>
+        </a-space>
+        <div v-else class="device-item">
+          Your device does not have a deployment model, please select a model and click the send button
+        </div>
+      </div>
+      <div class="models-item-title">
+        <a-typography-title :heading="6">Ready to use AI models</a-typography-title>
         <a-button type="primary" @click="handleShowCustomModel">Upload Custom AI Model</a-button>
+      </div>
+      <div class="device-item">Please select an preset AI model or
+        <span class="ai-label">Upload Custom AI Model</span>
       </div>
       <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
         <swiper-slide v-for="(item, index) in deviceStore.models"
@@ -42,7 +54,7 @@
     </a-card>
 
     <a-modal v-model:visible="modalVisible" title="Custom AI Model" @cancel="handleCustomModelCancel"
-      :on-before-ok="handleCustomModelOk">
+      :on-before-ok="handleCustomModelOk" ok-text="Send Model">
       <a-row>
         <a-col :span="6" class="grid-left">
           <div>Model Name</div>
@@ -102,7 +114,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, ref, nextTick, onMounted, watch, reactive } from 'vue';
+import { Ref, ref, nextTick, computed, onMounted, watch } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
 import 'swiper/css';
@@ -111,7 +123,7 @@ import { Navigation } from 'swiper/modules';
 import { FlashOptions } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { DEVICESTATUS, Serial, Bin, Model } from '@/senseCraft';
+import { DeviceStatus, Serial, Bin, Model } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
 import customModelIcon from '@/assets/images/custom-model.png';
 
@@ -133,8 +145,8 @@ const espLoaderTerminal = {
 const loading = ref(false);
 const loadingTip = ref('');
 const selectedModel = ref(-1);
-const deviceName = ref('');
-const deviceVersion = ref('');
+const deviceName: Ref<string | null> = ref('');
+const deviceVersion: Ref<string | null> = ref('');
 
 // custom model
 const modalVisible = ref(false);
@@ -144,6 +156,13 @@ const modelObjects: Ref<string[]> = ref([]);
 const inputRef = ref(null);
 const showInput = ref(false);
 const inputVal = ref('');
+
+const hasDeviceContent = computed(() => {
+  if (deviceName.value === null || deviceVersion.value === null || deviceStore.currentModel === undefined) {
+    return false
+  }
+  return true
+});
 
 const readFile = (blob: Blob | File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
@@ -176,7 +195,7 @@ const downloadModel = async (model: Model) => {
 const burnFirmware = async (isCustom = false) => {
   loading.value = true;
   loadingTip.value = 'connecting';
-  if (deviceStore.connectStatus !== DEVICESTATUS.ESPCONNECTED) {
+  if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
   }
   const esploader = (device as Serial).esploader;
@@ -239,6 +258,7 @@ const burnFirmware = async (isCustom = false) => {
   }
 
   let result;
+  deviceStore.setDeviceStatus(DeviceStatus.Burning);
   try {
     loadingTip.value = 'burning';
     const flashOptions: FlashOptions = {
@@ -266,7 +286,7 @@ const burnFirmware = async (isCustom = false) => {
       await transport?.setDTR(true);
     }
     // 连接设备
-    if (deviceStore.connectStatus !== DEVICESTATUS.SERIALCONNECTED) {
+    if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
       loadingTip.value = 'connecting';
       await (device as Serial).connect();
     }
@@ -299,8 +319,8 @@ const handleUpload = async () => {
   }
 };
 
-const handelRefresh = async (connectStatus: DEVICESTATUS) => {
-  if (connectStatus === DEVICESTATUS.SERIALCONNECTED) {
+const handelRefresh = async (deviceStatus: DeviceStatus) => {
+  if (deviceStatus === DeviceStatus.SerialConnected) {
     try {
       const name = await device.getName();
       const version = await device.getVersion();
@@ -311,6 +331,8 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
         const str = atob(base64Str);
         const model = JSON.parse(str)
         deviceStore.setCurrentModel(model)
+      } else {
+        deviceStore.setCurrentModel(undefined)
       }
     } catch (error) {
       console.log(error)
@@ -402,11 +424,11 @@ onMounted(() => {
         }
       });
   }
-  handelRefresh(deviceStore.connectStatus);
+  handelRefresh(deviceStore.deviceStatus);
 });
 
 watch(
-  () => deviceStore.connectStatus,
+  () => deviceStore.deviceStatus,
   async (val) => {
     handelRefresh(val);
   }
@@ -432,6 +454,9 @@ watch(
 
 .models-item-title {
   margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .item-card-bottom {

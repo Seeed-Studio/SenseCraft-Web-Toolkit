@@ -1,7 +1,8 @@
-export enum DEVICESTATUS {
-  UNCONNECTED = 0,
-  SERIALCONNECTED = 1,
-  ESPCONNECTED = 2,
+export enum DeviceStatus {
+  UnConnected = 0, // 设备串口未连接
+  SerialConnected = 1, // 串口连接状态，可以下发指令
+  EspConnected = 2,// esp连接状态，可以烧录固件和模型
+  Burning = 3,// 烧录状态，不能做别的操作
 }
 
 export interface Bin {

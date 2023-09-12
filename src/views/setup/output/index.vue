@@ -93,7 +93,7 @@
 import { computed, onMounted, watch, reactive, ref, Ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { DEVICESTATUS } from '@/senseCraft';
+import { DeviceStatus } from '@/senseCraft';
 import { deviceManager } from '@/senseCraft';
 
 const deviceStore = useDeviceStore();
@@ -151,7 +151,7 @@ const handleDelete = async () => {
 }
 
 const handleSubmit = async () => {
-  if (deviceStore.connectStatus !== DEVICESTATUS.SERIALCONNECTED) {
+  if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
     Message.error('Please connect the device');
     return
   }
@@ -165,15 +165,13 @@ const handleSubmit = async () => {
   loading.value = false;
 }
 
-const handelRefresh = async (connectStatus: DEVICESTATUS) => {
-  if (connectStatus === DEVICESTATUS.SERIALCONNECTED && !loaded.value) {
+const handelRefresh = async (deviceStatus: DeviceStatus) => {
+  if (deviceStatus === DeviceStatus.SerialConnected && !loaded.value) {
     const base64Str = await device.getInfo();
-    let classes;
     if (base64Str) {
       const str = atob(base64Str);
       const model = JSON.parse(str);
       deviceStore.setCurrentModel(model);
-      classes = model.classes;
     }
     const cond = await device.getAction();
     if (cond?.length > 0) {
@@ -216,14 +214,14 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
 }
 
 watch(
-  () => deviceStore.connectStatus,
+  () => deviceStore.deviceStatus,
   (val) => {
     handelRefresh(val);
   }
 );
 
 onMounted(async () => {
-  handelRefresh(deviceStore.connectStatus);
+  handelRefresh(deviceStore.deviceStatus);
 });
 
 </script>

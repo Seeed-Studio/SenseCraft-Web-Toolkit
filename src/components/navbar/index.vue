@@ -86,7 +86,7 @@
         </a-select>
       </li>
       <li>
-        <a-button v-if="deviceStore.connectStatus === DEVICESTATUS.SERIALCONNECTED" type="primary" status="danger"
+        <a-button v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected" type="primary" status="danger"
           @click="handleDisconnect">{{
             $t('workplace.device.btn.disconnect') }}</a-button>
         <a-button v-else type="primary" :loading="loading" @click="handleConnect">{{ $t('workplace.device.btn.connect')
@@ -104,7 +104,7 @@ import { LOCALE_OPTIONS } from '@/locale';
 import useLocale from '@/hooks/locale';
 import Menu from '@/components/menu/index.vue';
 import { useDeviceStore } from '@/store';
-import { deviceManager, DEVICESTATUS } from '@/senseCraft';
+import { deviceManager, DeviceStatus } from '@/senseCraft';
 
 const appStore = useAppStore();
 const deviceStore = useDeviceStore();

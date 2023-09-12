@@ -61,7 +61,7 @@ import { FlashOptions } from 'esptool-js';
 import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
 import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
-import { DEVICESTATUS, Serial, deviceManager } from '@/senseCraft';
+import { DeviceStatus, Serial, deviceManager } from '@/senseCraft';
 
 
 const deviceStore = useDeviceStore();
@@ -101,7 +101,7 @@ const haveBurnFile = computed(() => {
 
 const handleEraseflash = async () => {
   try {
-    if (deviceStore.connectStatus !== DEVICESTATUS.ESPCONNECTED) {
+    if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
       await (device as Serial).esploaderConnect(espLoaderTerminal);
     }
     const esploader = (device as Serial).esploader;
@@ -123,7 +123,7 @@ const readFile = (file: File): Promise<string> => {
 };
 
 const burnFirmware = async () => {
-  if (deviceStore.connectStatus !== DEVICESTATUS.ESPCONNECTED) {
+  if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
   }
   const esploader = (device as Serial).esploader;
@@ -153,6 +153,7 @@ const burnFirmware = async () => {
   }
   binFileUploading.value = true;
   let result;
+  deviceStore.setDeviceStatus(DeviceStatus.Burning);
   try {
     const flashOptions: FlashOptions = {
       fileArray,
@@ -179,6 +180,10 @@ const burnFirmware = async () => {
       Message.success('Erase Flash successful');
     } else {
       Message.error('Erase Flash failed');
+    }
+    // 连接设备
+    if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
+      await (device as Serial).connect();
     }
   }
   binFileUploading.value = false;

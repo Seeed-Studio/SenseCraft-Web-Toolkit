@@ -6,7 +6,7 @@ import {
 } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
 import Device from './device';
-import { DEVICESTATUS } from './types';
+import { DeviceStatus } from './types';
 
 export default class Serial extends Device {
 
@@ -53,7 +53,7 @@ export default class Serial extends Device {
       }
       // 如果当前在esp连接，需要断开
       if (
-        this.deviceStore.connectStatus === DEVICESTATUS.ESPCONNECTED &&
+        this.deviceStore.deviceStatus === DeviceStatus.EspConnected &&
         this.transport
       ) {
         await this.transport.disconnect();
@@ -77,7 +77,7 @@ export default class Serial extends Device {
 
       this.reader = this.port?.readable?.getReader();
       this.writer = this.port?.writable?.getWriter();
-      this.deviceStore.setConnectStatus(DEVICESTATUS.SERIALCONNECTED);
+      this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
       this.readLoop();
     } catch (error) {
       console.log(error)
@@ -99,7 +99,7 @@ export default class Serial extends Device {
       }
       navigator.serial.ondisconnect = this.ondisconnect.bind(this);
       // 如果当前在串口连接，需要断开
-      if (this.deviceStore.connectStatus === DEVICESTATUS.SERIALCONNECTED) {
+      if (this.deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         this.reader?.releaseLock();
         this.writer?.releaseLock();
         await this.port?.close();
@@ -114,7 +114,7 @@ export default class Serial extends Device {
         this.esploader = new ESPLoader(flashOptions);
       }
       await this.esploader.main_fn();
-      this.deviceStore.setConnectStatus(DEVICESTATUS.ESPCONNECTED);
+      this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
     } catch (error) {
       console.log(error)
       Message.error('device connect failed');
@@ -133,7 +133,7 @@ export default class Serial extends Device {
 
   public async disconnect() {
     try {
-      this.deviceStore.setConnectStatus(DEVICESTATUS.UNCONNECTED);
+      this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
       this.reader?.releaseLock();
       this.writer?.releaseLock();
       await this.port?.close();
