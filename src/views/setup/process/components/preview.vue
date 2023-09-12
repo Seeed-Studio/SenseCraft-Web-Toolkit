@@ -1,7 +1,7 @@
 <template>
   <a-card class="general-card" :title="$t('workplace.preview.title')" :header-style="{ paddingBottom: '0' }">
     <template #extra>
-      <a-button v-if="invoke" type="secondary" :disabled="invokeDisable" @click="handleStop">
+      <a-button v-if="invoke" type="secondary" status="danger" :disabled="invokeDisable" @click="handleStop">
         Stop
       </a-button>
       <a-button v-else type="primary" :disabled="invokeDisable" @click="handleInvoke">
@@ -17,7 +17,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, onBeforeUnmount, watch, ref } from 'vue';
 import { useDeviceStore } from '@/store';
-import { DEVICESTATUS } from '@/senseCraft';
+import { DeviceStatus } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
 
 const COLORS = [
@@ -50,66 +50,82 @@ const classes = computed(() => deviceStore.currentModel?.classes || []);
 const length = computed(() => classes.value.length);
 
 const onInvoke = (data: any) => {
-  if (!data?.boxes || !data?.image) {
-    return
-  }
-  const boxes = data.boxes;
-  const image = data.image;
-  img.onload = () => {
-    if (!canvas.value) return
-    const ctx = canvas.value?.getContext('2d')
-    if (!ctx) return
+  if (data?.image) {
+    const image = data.image;
+    img.onload = () => {
+      if (!canvas.value) return;
+      const ctx = canvas.value?.getContext('2d');
+      if (!ctx) return;
 
-    canvas.value.width = img.height;
-    canvas.value.height = img.width;
-    ctx.drawImage(img, 0, 0, img.width, img.height);
-    for (let i = 0; i < boxes.length; i += 1) {
-      const rect = boxes[i];
-      if (rect?.length === 6) {
-        const x = rect[0];
-        const y = rect[1];
-        const w = rect[2];
-        const h = rect[3];
-        const score = rect[4];
-        const tar = parseInt(rect[5], 10);
-        const color = COLORS[x % COLORS.length];
-        let tarStr = ''
-        if (classes.value && tar < length.value) {
-          tarStr = classes.value[tar]
-        } else {
-          tarStr = tar.toString()
+      canvas.value.width = img.height;
+      canvas.value.height = img.width;
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      if (data?.boxes) {
+        const boxes = data.boxes;
+        for (let i = 0; i < boxes.length; i += 1) {
+          const rect = boxes[i];
+          if (rect?.length === 6) {
+            const x = rect[0];
+            const y = rect[1];
+            const w = rect[2];
+            const h = rect[3];
+            const score = rect[4];
+            const tar = parseInt(rect[5], 10);
+            const color = COLORS[x % COLORS.length];
+            let tarStr = '';
+            if (classes.value && tar < length.value) {
+              tarStr = classes.value[tar];
+            } else {
+              tarStr = tar.toString();
+            }
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+            ctx.fillStyle = color;
+            ctx.fillRect(x - w / 2, y - h / 2 - 12, w, 12);
+            ctx.font = 'bold 12px arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`${tarStr}: ${score}`, x - w / 2 + 5, y - h / 2 - 2);
+          }
         }
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(
-          x - w / 2,
-          y - h / 2,
-          w,
-          h
-        );
-        ctx.fillStyle = color;
-        ctx.fillRect(
-          x - w / 2,
-          y - h / 2 - 12,
-          w,
-          12
-        );
-        ctx.font = 'bold 12px arial';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(
-          `${tarStr}: ${score}`,
-          x - w / 2 + 5,
-          y - h / 2 - 2
-        );
       }
-    }
-  };
+      if (data?.classes) {
+        const tagets = data.classes;
+        for (let i = 0; i < tagets.length; i += 1) {
+          const tar = tagets[i][1];
+          const score = tagets[i][0];
+          let tarStr = '';
+          if (classes.value && tar < length.value) {
+            tarStr = classes.value[tar];
+          } else {
+            tarStr = tar.toString();
+          }
+          ctx.globalAlpha = 0.3;
+          ctx.fillStyle = COLORS[tar % COLORS.length];
+          ctx.fillRect(
+            (canvas.value!.width / tagets.length) * i,
+            0,
+            (canvas.value!.width / tagets.length) * (i + 1),
+            canvas.value!.height / 10
+          );
+          ctx.globalAlpha = 1;
+          ctx.font = `bold ${canvas.value!.height / 16}px arial`;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(
+            `${tarStr}: ${score}`,
+            (canvas.value!.width / tagets.length) * i,
+            canvas.value!.height / 16
+          );
+        }
+      }
+    };
 
-  img.src = `data:image/jpg;base64,${image}`;
+    img.src = `data:image/jpg;base64,${image}`;
+  }
 }
 
-const handelRefresh = async (connectStatus: DEVICESTATUS) => {
-  if (connectStatus === DEVICESTATUS.SERIALCONNECTED) {
+const handelRefresh = async (deviceStatus: DeviceStatus) => {
+  if (deviceStatus === DeviceStatus.SerialConnected) {
     const isInvoke = await device.isInvoke();
     if (isInvoke) {
       invokeDisable.value = false;
@@ -132,7 +148,7 @@ const handelRefresh = async (connectStatus: DEVICESTATUS) => {
 }
 
 watch(
-  () => deviceStore.connectStatus,
+  () => deviceStore.deviceStatus,
   (val) => {
     handelRefresh(val);
   }
@@ -140,7 +156,7 @@ watch(
 
 onMounted(async () => {
   device.addEventListener('INVOKE', onInvoke);
-  handelRefresh(deviceStore.connectStatus);
+  handelRefresh(deviceStore.deviceStatus);
 });
 
 onBeforeUnmount(() => {
