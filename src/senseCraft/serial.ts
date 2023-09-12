@@ -53,7 +53,7 @@ export default class Serial extends Device {
       }
       // 如果当前在esp连接，需要断开
       if (
-        this.deviceStore.deviceStatus === DeviceStatus.EspConnected &&
+        (this.deviceStore.deviceStatus === DeviceStatus.EspConnected || this.deviceStore.deviceStatus === DeviceStatus.Burning) &&
         this.transport
       ) {
         await this.transport.disconnect();

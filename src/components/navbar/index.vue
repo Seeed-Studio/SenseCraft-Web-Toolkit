@@ -89,7 +89,7 @@
         <a-button v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected" type="primary" status="danger"
           @click="handleDisconnect">{{
             $t('workplace.device.btn.disconnect') }}</a-button>
-        <a-button v-else type="primary" :loading="loading" @click="handleConnect">{{ $t('workplace.device.btn.connect')
+        <a-button v-else type="primary" :loading="loading" :disabled="deviceStore.deviceStatus === DeviceStatus.Burning" @click="handleConnect">{{ $t('workplace.device.btn.connect')
         }}</a-button>
       </li>
     </ul>

@@ -38,13 +38,15 @@
       </div>
       <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
         <swiper-slide v-for="(item, index) in deviceStore.models"
-          :class="['carousel-item', { 'carousel-item-selected': selectedModel === index }]" :key="index"
-          :onclick="() => handleSelectedModel(index)" :virtualIndex="index">
+          :class="['carousel-item', { 'carousel-item-selected': selectedModel === index && !isSelectedCustomModel }]"
+          :key="index" :onclick="() => handleSelectedModel(index)" :virtualIndex="index">
           <img :src="item.image" class="carousel-item-image" />
           <div class="carousel-item-name">{{ item.name }}</div>
         </swiper-slide>
       </swiper>
-      <div v-if="deviceStore.currentModel?.isCustom" class="custom-model-wrapper">
+      <div v-if="deviceStore.currentModel?.isCustom"
+        :class="['custom-model-wrapper', { 'custom-model-selected': isSelectedCustomModel }]"
+        :onclick="() => handleSelectedCustomModel()">
         <img :src="customModelIcon" class="custom-model-image" />
         <div class="custom-model-name">{{ deviceStore.currentModel?.name }}</div>
       </div>
@@ -145,6 +147,7 @@ const espLoaderTerminal = {
 const loading = ref(false);
 const loadingTip = ref('');
 const selectedModel = ref(-1);
+const isSelectedCustomModel = ref(false);
 const deviceName: Ref<string | null> = ref('');
 const deviceVersion: Ref<string | null> = ref('');
 
@@ -307,9 +310,26 @@ const burnFirmware = async (isCustom = false) => {
 
 const handleSelectedModel = (index: number) => {
   selectedModel.value = index;
+  isSelectedCustomModel.value = false;
+}
+
+const handleSelectedCustomModel = () => {
+  selectedModel.value = -1;
+  isSelectedCustomModel.value = true;
 }
 
 const handleUpload = async () => {
+  if (isSelectedCustomModel.value) {
+    Message.info('The device is running the current model');
+    return
+  }
+  if (selectedModel.value > -1) {
+    const model = deviceStore.models[selectedModel.value];
+    if (model.uuid === deviceStore.currentModel?.uuid) {
+      Message.info('The device is running the current model');
+      return
+    }
+  }
   try {
     burnFirmware()
   } catch (error) {
@@ -433,6 +453,20 @@ watch(
     handelRefresh(val);
   }
 );
+
+watch(
+  () => deviceStore.currentModel,
+  (currentModel) => {
+    if (currentModel?.isCustom) {
+      isSelectedCustomModel.value = currentModel?.isCustom
+    } else {
+      const index = deviceStore.models.findIndex((model) => {
+        return model.uuid === currentModel?.uuid
+      })
+      selectedModel.value = index
+    }
+  }
+);
 </script>
 
 <style scoped lang="less">
@@ -530,6 +564,11 @@ watch(
     align-items: center;
     margin: 0 5px;
   }
+}
+
+.custom-model-selected {
+  border-color: rgb(var(--primary-6));
+  border-width: 2px;
 }
 
 .bottom {
