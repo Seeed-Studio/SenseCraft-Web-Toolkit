@@ -320,13 +320,13 @@ const handleSelectedCustomModel = () => {
 
 const handleUpload = async () => {
   if (isSelectedCustomModel.value) {
-    Message.info('The device is running the current model');
+    Message.warning('The device is running the current model');
     return
   }
   if (selectedModel.value > -1) {
     const model = deviceStore.models[selectedModel.value];
-    if (model.uuid === deviceStore.currentModel?.uuid) {
-      Message.info('The device is running the current model');
+    if (model.checksum === deviceStore.currentModel?.checksum) {
+      Message.warning('The device is running the current model');
       return
     }
   }

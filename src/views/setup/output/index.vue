@@ -1,7 +1,17 @@
 <template>
-  <a-card :class="['general-card', 'item-card']" :title="$t('workplace.output.title')">
-    <a-typography-title class="list-title" :heading="6">{{ $t('workplace.output.conditions') }}</a-typography-title>
+  <a-card :class="['general-card', 'item-card']">
+    <a-typography-title :heading="6">{{ $t('workplace.output.conditions') }}</a-typography-title>
     <a-list class="list" :data="data">
+      <template #header>
+        <div class="list-header">
+          <div class="list-header-content">
+            <div class="list-header-item">Object</div>
+            <div class="list-header-item">Condition</div>
+            <div class="list-header-item">Confidence</div>
+          </div>
+          <div class="list-header-operation">Operation</div>
+        </div>
+      </template>
       <template #empty>
         <div class="list-empty">
           <a-button type="text" @click="handleOpenModal">
@@ -17,34 +27,30 @@
       <template #item="{ item }">
         <a-list-item class="list-item">
           <div class="conditions-item-content">
-            <div class="conditions-item-object">
+            <div :class="['conditions-item', 'conditions-item-object']">
               {{ classes.length > 0 ? classes[item.object] : '' }}
             </div>
-            <div>
+            <div class="conditions-item">
               {{ $t(`workplace.output.model.condition.${item.condition}`) }}
             </div>
-            <div class="conditions-item-confidence">
+            <div :class="['conditions-item', 'conditions-item-confidence']">
               {{ item.confidence }}
             </div>
           </div>
-
           <template #actions>
-            <a-button type="text" @click="handleEdit">
-              <template #icon>
-                <icon-edit class="edit-icon" />
-              </template>
-            </a-button>
-            <a-button type="text" @click="handleDelete">
-              <template #icon>
-                <icon-delete class="delete-icon" />
-              </template>
-            </a-button>
+            <div class="list-actions">
+              <a-button type="text" @click="handleEdit">
+                <template #icon>
+                  <icon-edit class="edit-icon" />
+                </template>
+              </a-button>
+            </div>
           </template>
         </a-list-item>
       </template>
     </a-list>
 
-    <a-typography-title :class="['list-title', 'list-actions-title']" :heading="6">{{ $t('workplace.output.actions')
+    <a-typography-title class="list-actions-title" :heading="6">{{ $t('workplace.output.actions')
     }}</a-typography-title>
     <a-list class="list">
       <a-list-item class="list-item">
@@ -62,12 +68,21 @@
         </template>
       </a-list-item>
     </a-list>
-
+    <div v-if="data.length > 0" class="list-footer-des">
+      {{ `If the device detects ${classes[data[0].object]} and the confidence is ${data[0].condition}
+            ${data[0].confidence}, then light up the device's yellow led` }}
+    </div>
     <div class="bottom">
-      <a-button type="primary" @click="handleSubmit" :loading="loading">Send</a-button>
+      <a-button type="primary" @click="handleSubmit" :loading="loading"
+        :disabled="data.length === 0 || deviceStore.deviceStatus !== DeviceStatus.SerialConnected">Send</a-button>
+      <a-popconfirm content="Can you confirm the deletion?" type="warning" ok-text="Confirm" @ok="handleDelete">
+        <a-button v-if="data.length > 0" class="deleteBtn" type="primary" status="danger">
+          Delete
+        </a-button>
+      </a-popconfirm>
     </div>
 
-    <a-modal v-model:visible="modalVisible" title="Trigger Condition" @cancel="handleCancel" @ok="handleOk">
+    <a-modal v-model:visible="modalVisible" title="Trigger Condition" @cancel="handleModalCancel" @ok="handleModalOk">
       <a-form :model="form">
         <a-form-item field="object" label="Object" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.object">
@@ -106,6 +121,7 @@ const data: Ref<{
 }[]> = ref([]);
 
 const modalVisible = ref(false);
+
 const loaded = ref(false);
 const loading = ref(false);
 const conditionData = ['>=', '<=', '=='];
@@ -122,7 +138,7 @@ const handleOpenModal = () => {
   modalVisible.value = true;
 };
 
-const handleOk = () => {
+const handleModalOk = () => {
   data.value = [
     {
       object: form.object,
@@ -132,7 +148,7 @@ const handleOk = () => {
   ]
 };
 
-const handleCancel = () => {
+const handleModalCancel = () => {
   modalVisible.value = false;
 }
 
@@ -141,6 +157,10 @@ const handleEdit = () => {
 }
 
 const handleDelete = async () => {
+  if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
+    Message.error('Please connect the device');
+    return
+  }
   const ret = await device.deleteAction();
   if (ret) {
     data.value = [];
@@ -229,6 +249,11 @@ onMounted(async () => {
 .arco-form-item-label-col {
   justify-content: flex-start;
 }
+
+.arco-list-medium .arco-list-content-wrapper .arco-list-header {
+  background-color: var(--color-neutral-2);
+  padding: 6px 20px;
+}
 </style>
 
 <style scoped lang="less">
@@ -236,10 +261,7 @@ onMounted(async () => {
   width: 680px;
   height: 100%;
   margin: 16px;
-
-  .list-title {
-    margin-left: 10px;
-  }
+  padding-top: 1px;
 
   .list-actions-title {
     margin-top: 48px;
@@ -247,6 +269,30 @@ onMounted(async () => {
 
   .list {
     margin-left: 10px;
+
+    .list-header {
+      display: flex;
+
+      .list-header-content {
+        font-weight: 500;
+        line-height: 1.5715;
+        text-align: left;
+        background-color: var(--color-neutral-2);
+        display: flex;
+        justify-content: space-between;
+        flex: 1;
+
+        .list-header-item {
+          flex: 1;
+          text-align: left;
+        }
+      }
+
+      .list-header-operation {
+        width: 100px;
+        text-align: center;
+      }
+    }
 
     .list-empty {
       display: flex;
@@ -256,6 +302,11 @@ onMounted(async () => {
       height: 100px;
     }
 
+    .list-actions {
+      width: 100px;
+      text-align: center;
+    }
+
     .list-item {
       align-items: center;
 
@@ -263,7 +314,11 @@ onMounted(async () => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-right: 50px;
+
+        .conditions-item {
+          flex: 1;
+          text-align: left;
+        }
 
         .conditions-item-object {
           font-weight: bold;
@@ -302,12 +357,21 @@ onMounted(async () => {
 
   }
 
+  .list-footer-des {
+    margin-top: 10px;
+    margin-left: 10px;
+  }
+
   .bottom {
     height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 60px;
+
+    .deleteBtn {
+      margin-left: 80px;
+    }
   }
 }
 

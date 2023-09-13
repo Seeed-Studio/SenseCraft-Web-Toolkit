@@ -89,8 +89,9 @@
         <a-button v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected" type="primary" status="danger"
           @click="handleDisconnect">{{
             $t('workplace.device.btn.disconnect') }}</a-button>
-        <a-button v-else type="primary" :loading="loading" :disabled="deviceStore.deviceStatus === DeviceStatus.Burning" @click="handleConnect">{{ $t('workplace.device.btn.connect')
-        }}</a-button>
+        <a-button v-else type="primary" :loading="loading" :disabled="deviceStore.deviceStatus === DeviceStatus.Burning"
+          @click="handleConnect">{{ $t('workplace.device.btn.connect')
+          }}</a-button>
       </li>
     </ul>
   </div>
@@ -99,6 +100,7 @@
 <script lang="ts" setup>
 import { computed, ref, inject } from 'vue';
 import { useDark, useToggle, useFullscreen } from '@vueuse/core';
+import { Message } from '@arco-design/web-vue';
 import { useAppStore } from '@/store';
 import { LOCALE_OPTIONS } from '@/locale';
 import useLocale from '@/hooks/locale';
@@ -163,6 +165,9 @@ const handleConnect = async () => {
   try {
     loading.value = true;
     await device.connect();
+    if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+      Message.success('Device connected successfully');
+    }
     loading.value = false;
   } catch (error) {
     loading.value = false;

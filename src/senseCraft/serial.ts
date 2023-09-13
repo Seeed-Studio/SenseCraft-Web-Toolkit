@@ -47,7 +47,7 @@ export default class Serial extends Device {
           this.port = serialPort;
         } catch (error) {
           console.log(error)
-          Message.error('request serial port failed');
+          Message.error('Request serial port failed');
           return
         }
       }
@@ -81,7 +81,7 @@ export default class Serial extends Device {
       this.readLoop();
     } catch (error) {
       console.log(error)
-      Message.error('device connect failed');
+      Message.error('Device connect failed');
     }
   }
 
@@ -93,7 +93,7 @@ export default class Serial extends Device {
           this.port = serialPort;
         } catch (error) {
           console.log(error)
-          Message.error('request serial port failed');
+          Message.error('Request serial port failed');
           return
         }
       }
@@ -117,7 +117,7 @@ export default class Serial extends Device {
       this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
     } catch (error) {
       console.log(error)
-      Message.error('device connect failed');
+      Message.error('Device connect failed');
     }
   }
 
@@ -127,7 +127,7 @@ export default class Serial extends Device {
       this.port = null;
       this.transport = null;
       this.esploader = null;
-      Message.error('Device is disconnected!');
+      Message.error('Device is disconnected');
     });
   }
 
