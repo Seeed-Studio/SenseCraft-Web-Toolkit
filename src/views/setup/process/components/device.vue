@@ -33,15 +33,30 @@
         <a-typography-title :heading="6">Ready to use AI models</a-typography-title>
         <a-button type="primary" @click="handleShowCustomModel">Upload Custom AI Model</a-button>
       </div>
-      <div class="device-item">Please select an preset AI model or
-        <span class="ai-label">Upload Custom AI Model</span>
-      </div>
-      <swiper class="carousel" :slides-per-view="3" :space-between="50" :navigation="true" :modules="[Navigation]">
+      <div class="device-item">Please select an preset AI model or upload custom AI Model</div>
+      <swiper class="carousel" :slides-per-view="3" :space-between="30" :navigation="true" :modules="[Navigation]" :breakpoints="{
+        1080: {
+          slidesPerView: 3,
+          spaceBetween: 30
+        },
+        1920: {
+          slidesPerView: 4,
+          spaceBetween: 40
+        },
+        3840: {
+          slidesPerView: 7,
+          spaceBetween: 50
+        }
+      }">
         <swiper-slide v-for="(item, index) in deviceStore.models"
-          :class="['carousel-item', { 'carousel-item-selected': selectedModel === index && !isSelectedCustomModel }]"
+          :class="['carousel-item-wrapper', { 'carousel-item-selected': selectedModel === index && !isSelectedCustomModel }]"
           :key="index" :onclick="() => handleSelectedModel(index)" :virtualIndex="index">
-          <img :src="item.image" class="carousel-item-image" />
-          <div class="carousel-item-name">{{ item.name }}</div>
+          <div>
+            <div class="carousel-item">
+              <img class="carousel-item-image" :src="item.image" />
+            </div>
+            <div class="carousel-item-name">{{ item.name }}</div>
+          </div>
         </swiper-slide>
       </swiper>
       <div v-if="deviceStore.currentModel?.isCustom"
@@ -197,7 +212,7 @@ const downloadModel = async (model: Model) => {
 
 const burnFirmware = async (isCustom = false) => {
   loading.value = true;
-  loadingTip.value = 'connecting';
+  loadingTip.value = 'Connecting';
   if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
   }
@@ -221,7 +236,7 @@ const burnFirmware = async (isCustom = false) => {
       return
     }
     // 下载固件
-    loadingTip.value = 'downloading firmware';
+    loadingTip.value = 'Downloading firmware';
     const firmwareArray = await downloadFirmware(bins);
     fileArray = fileArray.concat(firmwareArray)
   }
@@ -253,7 +268,7 @@ const burnFirmware = async (isCustom = false) => {
       return
     }
     if (deviceStore.models.length > 0) {
-      loadingTip.value = 'downloading model';
+      loadingTip.value = 'Downloading model';
       model = deviceStore.models[selectedModel.value];
       const modelfile = await downloadModel(model);
       fileArray.push(modelfile)
@@ -263,7 +278,7 @@ const burnFirmware = async (isCustom = false) => {
   let result;
   deviceStore.setDeviceStatus(DeviceStatus.Burning);
   try {
-    loadingTip.value = 'burning';
+    loadingTip.value = 'Burning';
     const flashOptions: FlashOptions = {
       fileArray,
       flashSize: 'keep',
@@ -281,7 +296,7 @@ const burnFirmware = async (isCustom = false) => {
   } finally {
     // 烧录完重置设备
     if (result) {
-      loadingTip.value = 'resetting';
+      loadingTip.value = 'Resetting';
       await transport?.setDTR(false);
       await new Promise((resolve) => {
         setTimeout(resolve, 100);
@@ -290,7 +305,7 @@ const burnFirmware = async (isCustom = false) => {
     }
     // 连接设备
     if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-      loadingTip.value = 'connecting';
+      loadingTip.value = 'Connecting';
       await (device as Serial).connect();
     }
     if (model) {
@@ -499,43 +514,49 @@ watch(
   flex: 1;
 }
 
-.ai-label {
-  color: rgb(var(--primary-6));
-}
-
 .slidePrevClass {
   width: 10px;
 }
 
 .carousel {
-  width: 640px;
+  width: 40vw;
   margin: 30px auto;
   padding: 0 45px;
-  /* 单独设置按钮颜色 */
   --swiper-navigation-size: 26px;
+  // --swiper-navigation-color: #fff;
 
-  /* 设置按钮大小 */
-  .carousel-item {
-    width: 150px;
-    height: 150px;
+  .carousel-item-wrapper {
+    // width: 150px;
+    // height: 150px;
     border: 1px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
     flex-shrink: 0;
     cursor: pointer;
+  }
+
+  .carousel-item {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 75%;
 
     .carousel-item-image {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 75%;
+      height: 100%;
+      object-fit: cover;
     }
+  }
 
-    .carousel-item-name {
-      height: 25%;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0 5px;
-    }
+  .carousel-item-name {
+    height: 35px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
   }
 
   .carousel-item-selected {

@@ -16,6 +16,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, onBeforeUnmount, watch, ref } from 'vue';
+import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
 import { DeviceStatus } from '@/senseCraft';
 import deviceManager from '@/senseCraft/deviceManager';
@@ -37,6 +38,8 @@ const COLORS = [
   'gray',
 ];
 
+const eventName = 'INVOKE'
+
 const deviceStore = useDeviceStore();
 const { device } = deviceManager;
 
@@ -49,7 +52,35 @@ const invokeDisable = ref<boolean>(true);
 const classes = computed(() => deviceStore.currentModel?.classes || []);
 const length = computed(() => classes.value.length);
 
-const onInvoke = (data: any) => {
+const handleInvoke = async () => {
+  const result = await device.invoke(-1);
+  if (result) {
+    invokeDisable.value = false;
+    invoke.value = true;
+  } else {
+    Message.error('Invoke failed, please check device connection');
+  }
+};
+
+const handleStop = () => {
+  device.break();
+  invokeDisable.value = false;
+  invoke.value = false;
+  deviceStore.setIsInvoke(false);
+};
+
+const onInvoke = (resp: any) => {
+  const code = resp.code;
+  const data = resp.data;
+  const name = resp.name;
+  if (name !== eventName) {
+    return
+  }
+  if (code !== 0) {
+    handleStop()
+    return
+  }
+
   if (data?.image) {
     const image = data.image;
     img.onload = () => {
@@ -155,29 +186,14 @@ watch(
 );
 
 onMounted(async () => {
-  device.addEventListener('INVOKE', onInvoke);
+  device.addEventListener(eventName, onInvoke);
   handelRefresh(deviceStore.deviceStatus);
 });
 
 onBeforeUnmount(() => {
-  device.removeEventListener('INVOKE');
+  device.removeEventListener(eventName);
   device.break();
 });
-
-const handleInvoke = async () => {
-  const result = await device.invoke(-1);
-  if (result) {
-    invokeDisable.value = false;
-    invoke.value = true;
-  }
-};
-
-const handleStop = () => {
-  device.break();
-  invokeDisable.value = false;
-  invoke.value = false;
-  deviceStore.setIsInvoke(false);
-};
 
 </script>
 

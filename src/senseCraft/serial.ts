@@ -191,10 +191,9 @@ export default class Serial extends Device {
                 if (resolve) resolve(obj)
               } else if (type === 1) { // 事件
                 const code = obj?.code;
-                if (code === 0) {
-                  const listener = this.eventMap.get(name);
-                  listener?.(obj.data)
-                } else {
+                const listener = this.eventMap.get(name);
+                listener?.(obj)
+                if (code !== 0) {
                   Message.error(`Please check device connection status, errorCode[${code}]`);
                 }
               }

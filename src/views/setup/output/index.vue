@@ -74,9 +74,10 @@
     </div>
     <div class="bottom">
       <a-button type="primary" @click="handleSubmit" :loading="loading"
-        :disabled="data.length === 0 || deviceStore.deviceStatus !== DeviceStatus.SerialConnected">Send</a-button>
+        :disabled="data.length === 0 || deviceStore.deviceStatus !== DeviceStatus.SerialConnected || deleting">Send</a-button>
       <a-popconfirm content="Can you confirm the deletion?" type="warning" ok-text="Confirm" @ok="handleDelete">
-        <a-button v-if="data.length > 0" class="deleteBtn" type="primary" status="danger">
+        <a-button v-if="data.length > 0" class="deleteBtn" type="primary" status="danger"
+          :disabled="deviceStore.deviceStatus !== DeviceStatus.SerialConnected || loading" :loading="deleting">
           Delete
         </a-button>
       </a-popconfirm>
@@ -124,6 +125,7 @@ const modalVisible = ref(false);
 
 const loaded = ref(false);
 const loading = ref(false);
+const deleting = ref(false);
 const conditionData = ['>=', '<=', '=='];
 
 const classes = computed(() => deviceStore.currentModel?.classes || []);
@@ -161,6 +163,7 @@ const handleDelete = async () => {
     Message.error('Please connect the device');
     return
   }
+  deleting.value = true;
   const ret = await device.deleteAction();
   if (ret) {
     data.value = [];
@@ -168,6 +171,7 @@ const handleDelete = async () => {
   } else {
     Message.error('Delete action failed');
   }
+  deleting.value = false;
 }
 
 const handleSubmit = async () => {

@@ -454,7 +454,7 @@ export default class Device {
 
   public async deleteInfo(): Promise<any> {
     try {
-      const tag = 'INFO!';
+      const tag = 'INFO';
       const command = this.client.deleteInfo();
       const response = await this.sendCommand(command, tag);
       const code = response.code as (keyof typeof ERROR_LIST);

@@ -1,58 +1,60 @@
 <template>
-  <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.card.burnfirmware')">
-    <template #extra>
-      <a-button type="primary" status="danger" @click="handleEraseflash">
-        {{ $t('workplace.device.btn.eraseflash') }}
-      </a-button>
-      <a-button v-if="haveBurnFile" class="burn-btn" type="primary" :loading="binFileUploading" @click="burnFirmware">
-        {{ $t('workplace.device.btn.burn') }}
-      </a-button>
-    </template>
-    <a-space direction="vertical" size="large" fill>
-      <a-space direction="vertical" size="mini" class="aimodel">
-        <label>{{ $t('workplace.device.card.chooseAImodel') }}</label>
-        <a-space class="aimodel-button">
-          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite"
-            @before-upload="(file) => beforeUpload(file, FILE_TYPE.MODEL_FILE)"
-            @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.MODEL_FILE)">
-            <template #upload-button>
-              <div>
-                <a-button type="primary">
-                  <template #icon>
-                    <icon-upload />
-                  </template>
-                  <template #default>{{
-                    $t('workplace.device.card.aimodel')
-                  }}</template>
-                </a-button>
-              </div>
-            </template>
-          </a-upload>
+  <a-spin :loading="loading" :tip="loadingTip" class="item-card">
+    <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.card.burnfirmware')">
+      <template #extra>
+        <a-button type="primary" status="danger" @click="handleEraseflash">
+          {{ $t('workplace.device.btn.eraseflash') }}
+        </a-button>
+        <a-button v-if="haveBurnFile" class="burn-btn" type="primary" :loading="binFileUploading" @click="burnFirmware">
+          {{ $t('workplace.device.btn.burn') }}
+        </a-button>
+      </template>
+      <a-space direction="vertical" size="large" fill>
+        <a-space direction="vertical" size="mini" class="aimodel">
+          <label>{{ $t('workplace.device.card.chooseAImodel') }}</label>
+          <a-space class="aimodel-button">
+            <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite"
+              @before-upload="(file) => beforeUpload(file, FILE_TYPE.MODEL_FILE)"
+              @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.MODEL_FILE)">
+              <template #upload-button>
+                <div>
+                  <a-button type="primary">
+                    <template #icon>
+                      <icon-upload />
+                    </template>
+                    <template #default>{{
+                      $t('workplace.device.card.aimodel')
+                    }}</template>
+                  </a-button>
+                </div>
+              </template>
+            </a-upload>
+          </a-space>
         </a-space>
-      </a-space>
 
-      <a-space direction="vertical" size="mini" class="aimodel">
-        <label>{{ $t('workplace.device.card.chooseBootloader') }}</label>
-        <a-space>
-          <a-upload :custom-request="fileChangeHandler" multiple :limit="3" accept=".bin"
-            @before-upload="(file) => beforeUpload(file, FILE_TYPE.FIRMWARE_FILE)"
-            @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.FIRMWARE_FILE)">
-            <template #upload-button>
-              <div>
-                <a-button type="primary">
-                  <template #icon>
-                    <icon-upload />
-                  </template>
-                  <template #default>{{
-                    $t('workplace.device.card.binFile')
-                  }}</template></a-button>
-              </div>
-            </template>
-          </a-upload>
+        <a-space direction="vertical" size="mini" class="aimodel">
+          <label>{{ $t('workplace.device.card.chooseBootloader') }}</label>
+          <a-space>
+            <a-upload :custom-request="fileChangeHandler" multiple :limit="3" accept=".bin"
+              @before-upload="(file) => beforeUpload(file, FILE_TYPE.FIRMWARE_FILE)"
+              @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.FIRMWARE_FILE)">
+              <template #upload-button>
+                <div>
+                  <a-button type="primary">
+                    <template #icon>
+                      <icon-upload />
+                    </template>
+                    <template #default>{{
+                      $t('workplace.device.card.binFile')
+                    }}</template></a-button>
+                </div>
+              </template>
+            </a-upload>
+          </a-space>
         </a-space>
       </a-space>
-    </a-space>
-  </a-card>
+    </a-card>
+  </a-spin>
 </template>
 
 <script lang="ts" setup>
@@ -71,6 +73,8 @@ enum FILE_TYPE {
   MODEL_FILE = 2,
 }
 
+const loading = ref(false);
+const loadingTip = ref('');
 const bootloaderFile: Ref<File | null> = ref(null);
 const partiontableFile: Ref<File | null> = ref(null);
 const appFile: Ref<File | null> = ref(null);
@@ -100,15 +104,35 @@ const haveBurnFile = computed(() => {
 });
 
 const handleEraseflash = async () => {
+  loading.value = true;
+  loadingTip.value = 'Connecting';
+  let result;
   try {
     if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
       await (device as Serial).esploaderConnect(espLoaderTerminal);
     }
     const esploader = (device as Serial).esploader;
+    loadingTip.value = 'Erasing';
     await esploader?.erase_flash();
+    result = true;
   } catch (e) {
     console.error(e);
+    result = false;
   }
+  if (result) {
+    if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
+      await (device as Serial).connect();
+    }
+    device.deleteInfo();
+    device.deleteAction();
+    deviceStore.setCurrentModel(undefined);
+    Message.success('Erase Flash successful');
+
+  } else {
+    Message.error('Erase failed, please check device connection');
+  }
+  loadingTip.value = '';
+  loading.value = false;
 };
 
 const readFile = (file: File): Promise<string> => {
@@ -123,12 +147,18 @@ const readFile = (file: File): Promise<string> => {
 };
 
 const burnFirmware = async () => {
+  loading.value = true;
+  loadingTip.value = 'Connecting';
   if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
   }
   const esploader = (device as Serial).esploader;
   const transport = (device as Serial).transport;
-
+  if (!esploader || !transport) {
+    Message.error('No port selected by the user');
+    loading.value = false;
+    return
+  }
   const fileArray = [];
   if (aiModelFile.value) {
     const data = await readFile(aiModelFile.value);
@@ -149,12 +179,14 @@ const burnFirmware = async () => {
 
   if (fileArray.length === 0) {
     Message.error('Please select bin file');
+    loading.value = false;
     return;
   }
   binFileUploading.value = true;
   let result;
   deviceStore.setDeviceStatus(DeviceStatus.Burning);
   try {
+    loadingTip.value = 'Burning';
     const flashOptions: FlashOptions = {
       fileArray,
       flashSize: 'keep',
@@ -172,19 +204,26 @@ const burnFirmware = async () => {
   } finally {
     // reset device
     if (result) {
+      loadingTip.value = 'Resetting';
       await transport?.setDTR(false);
       await new Promise((resolve) => {
         setTimeout(resolve, 100);
       });
       await transport?.setDTR(true);
-      Message.success('Erase Flash successful');
+      Message.success('Burn successful');
     } else {
-      Message.error('Erase Flash failed');
+      Message.error('Burn failed');
     }
     // 连接设备
     if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
+      loadingTip.value = 'Connecting';
       await (device as Serial).connect();
     }
+    device.deleteInfo();
+    device.deleteAction();
+    deviceStore.setCurrentModel(undefined);
+    loadingTip.value = '';
+    loading.value = false;
   }
   binFileUploading.value = false;
 };
