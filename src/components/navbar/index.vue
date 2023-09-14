@@ -146,7 +146,7 @@
           v-else
           type="primary"
           :loading="loading"
-          :disabled="deviceStore.deviceStatus === DeviceStatus.Burning"
+          :disabled="deviceStore.deviceStatus === DeviceStatus.Flashing"
           @click="handleConnect"
           >{{ $t('workplace.device.btn.connect') }}</a-button
         >
@@ -287,8 +287,8 @@
     }
 
     .focus {
-      background-color: #165dff;
       color: #fff;
+      background-color: #165dff;
     }
 
     .trigger-btn,

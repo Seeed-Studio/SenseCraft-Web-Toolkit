@@ -90,7 +90,7 @@
             },
           ]"
           :onclick="() => handleSelectedModel(index)"
-          :virtualIndex="index"
+          :virtual-index="index"
         >
           <div>
             <div class="carousel-item">
@@ -363,9 +363,9 @@
     }
 
     let result;
-    deviceStore.setDeviceStatus(DeviceStatus.Burning);
+    deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     try {
-      loadingTip.value = 'Burning';
+      loadingTip.value = 'Flashing';
       const flashOptions: FlashOptions = {
         fileArray,
         flashSize: 'keep',
@@ -591,16 +591,16 @@
   }
 
   .models-item-title {
-    margin-top: 30px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    margin-top: 30px;
   }
 
   .item-card-bottom {
+    flex: 1;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-    flex: 1;
   }
 
   .slidePrevClass {
@@ -611,15 +611,15 @@
     width: 40vw;
     margin: 30px auto;
     padding: 0 45px;
+
     --swiper-navigation-size: 26px;
     // --swiper-navigation-color: #fff;
-
     .carousel-item-wrapper {
+      flex-shrink: 0;
       // width: 150px;
       // height: 150px;
       border: 1px solid var(--color-neutral-3);
       border-radius: var(--border-radius-small);
-      flex-shrink: 0;
       cursor: pointer;
     }
 
@@ -640,12 +640,12 @@
     }
 
     .carousel-item-name {
-      height: 35px;
-      text-align: center;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: 35px;
       margin: 0 5px;
+      text-align: center;
     }
 
     .carousel-item-selected {
@@ -657,9 +657,9 @@
   .custom-model-wrapper {
     width: 150px;
     height: 150px;
+    margin-left: 45px;
     border: 1px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
-    margin-left: 45px;
 
     .custom-model-image {
       width: 100%;
@@ -667,12 +667,12 @@
     }
 
     .custom-model-name {
-      height: 25%;
-      text-align: center;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: 25%;
       margin: 0 5px;
+      text-align: center;
     }
   }
 
@@ -682,10 +682,10 @@
   }
 
   .bottom {
-    height: 60px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    height: 60px;
   }
 
   .grid-left {

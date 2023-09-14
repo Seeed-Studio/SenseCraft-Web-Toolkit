@@ -23,8 +23,8 @@
             <div class="list-item-content">
               <div class="list-item-address">
                 <a-input
-                  :style="{ width: '150px' }"
                   v-model="item.address"
+                  :style="{ width: '150px' }"
                   :placeholder="$t('workplace.firmware.address')"
                   allow-clear
                 />
@@ -193,9 +193,9 @@
     }
 
     let result;
-    deviceStore.setDeviceStatus(DeviceStatus.Burning);
+    deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     try {
-      loadingTip.value = 'Burning';
+      loadingTip.value = 'Flashing';
       const flashOptions: FlashOptions = {
         fileArray,
         flashSize: 'keep',
@@ -279,8 +279,8 @@
 
 <style lang="less">
   .arco-list-medium .arco-list-content-wrapper .arco-list-header {
-    background-color: var(--color-neutral-2);
     padding: 6px 20px;
+    background-color: var(--color-neutral-2);
   }
 </style>
 
@@ -311,8 +311,8 @@
 
         .list-item-content {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
         }
 
         .list-item-address {
@@ -327,10 +327,10 @@
     }
 
     .bottom {
-      height: 60px;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: 60px;
       margin-top: 30px;
 
       .burn-btn {
