@@ -1,86 +1,74 @@
 <template>
   <a-spin :loading="loading" :tip="loadingTip" class="item-card">
-    <a-card :class="['general-card', 'item-card']" :title="$t('workplace.device.card.burnfirmware')">
+    <a-card class="general-card" :title="$t('workplace.device.card.firmware')">
       <template #extra>
         <a-button type="primary" status="danger" @click="handleEraseflash">
-          {{ $t('workplace.device.btn.eraseflash') }}
-        </a-button>
-        <a-button v-if="haveBurnFile" class="burn-btn" type="primary" :loading="binFileUploading" @click="burnFirmware">
-          {{ $t('workplace.device.btn.burn') }}
+          {{ $t('workplace.firmware.eraseflash') }}
         </a-button>
       </template>
-      <a-space direction="vertical" size="large" fill>
-        <a-space direction="vertical" size="mini" class="aimodel">
-          <label>{{ $t('workplace.device.card.chooseAImodel') }}</label>
-          <a-space class="aimodel-button">
-            <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite"
-              @before-upload="(file) => beforeUpload(file, FILE_TYPE.MODEL_FILE)"
-              @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.MODEL_FILE)">
-              <template #upload-button>
-                <div>
-                  <a-button type="primary">
-                    <template #icon>
-                      <icon-upload />
-                    </template>
-                    <template #default>{{
-                      $t('workplace.device.card.aimodel')
-                    }}</template>
-                  </a-button>
-                </div>
-              </template>
-            </a-upload>
-          </a-space>
-        </a-space>
 
-        <a-space direction="vertical" size="mini" class="aimodel">
-          <label>{{ $t('workplace.device.card.chooseBootloader') }}</label>
-          <a-space>
-            <a-upload :custom-request="fileChangeHandler" multiple :limit="3" accept=".bin"
-              @before-upload="(file) => beforeUpload(file, FILE_TYPE.FIRMWARE_FILE)"
-              @before-remove="(fileItem) => beforeRemove(fileItem, FILE_TYPE.FIRMWARE_FILE)">
-              <template #upload-button>
-                <div>
-                  <a-button type="primary">
-                    <template #icon>
-                      <icon-upload />
-                    </template>
-                    <template #default>{{
-                      $t('workplace.device.card.binFile')
-                    }}</template></a-button>
-                </div>
-              </template>
-            </a-upload>
-          </a-space>
-        </a-space>
-      </a-space>
+      <a-list class="list" :data="data">
+        <template #header>
+          <div class="list-header">
+            <div class="list-header-address">{{ $t('workplace.firmware.address') }}</div>
+            <div class="list-header-file">{{ $t('workplace.firmware.file') }}</div>
+          </div>
+        </template>
+        <template #item="{ item, index }">
+          <a-list-item class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-address">
+                <a-input :style="{ width: '150px' }" v-model="item.address" :placeholder="$t('workplace.firmware.address')" allow-clear />
+              </div>
+              <div class="list-item-file">
+                <a-upload :custom-request="fileChangeHandler" :limit="1"
+                  @before-upload="(file) => beforeUpload(file, index)" @before-remove="() => beforeRemove(index)">
+                  <template #upload-button>
+                    <a-button type="primary">
+                      <template #icon>
+                        <icon-upload />
+                      </template>
+                      <template #default>{{ $t('workplace.firmware.choosefile') }}</template>
+                    </a-button>
+                  </template>
+                </a-upload>
+              </div>
+              <div>
+                <a-button type="primary" @click="() => removeFile(index)">{{ $t('workplace.firmware.remove') }}</a-button>
+              </div>
+            </div>
+          </a-list-item>
+        </template>
+      </a-list>
+
+      <div class="bottom">
+        <a-button type="primary" @click="addFile">{{ $t('workplace.firmware.addfile') }}</a-button>
+        <a-button class="burn-btn" type="primary" @click="burnFirmware">
+          {{ $t('workplace.device.btn.burn') }}
+        </a-button>
+      </div>
     </a-card>
   </a-spin>
 </template>
 
 <script lang="ts" setup>
-import { computed, Ref, ref } from 'vue';
+import { Ref, ref } from 'vue';
 import { FlashOptions } from 'esptool-js';
-import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
+import { RequestOption } from '@arco-design/web-vue/es/upload';
 import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
 import { DeviceStatus, Serial, deviceManager } from '@/senseCraft';
 
-
 const deviceStore = useDeviceStore();
 const { device, term } = deviceManager;
-enum FILE_TYPE {
-  FIRMWARE_FILE = 1,
-  MODEL_FILE = 2,
-}
+
+const data: Ref<{
+  address: string;
+  file: File | null;
+}[]> = ref([]);
 
 const loading = ref(false);
 const loadingTip = ref('');
-const bootloaderFile: Ref<File | null> = ref(null);
-const partiontableFile: Ref<File | null> = ref(null);
-const appFile: Ref<File | null> = ref(null);
-const aiModelFile: Ref<File | null> = ref(null);
-
-const binFileUploading = ref(false);
 
 const espLoaderTerminal = {
   clean() {
@@ -93,15 +81,6 @@ const espLoaderTerminal = {
     term.write(data);
   },
 };
-
-const haveBurnFile = computed(() => {
-  return (
-    bootloaderFile.value ||
-    partiontableFile.value ||
-    appFile.value ||
-    aiModelFile.value
-  );
-});
 
 const handleEraseflash = async () => {
   loading.value = true;
@@ -148,6 +127,39 @@ const readFile = (file: File): Promise<string> => {
 
 const burnFirmware = async () => {
   loading.value = true;
+  const fileArray = [] as {
+    data: string;
+    address: number;
+  }[];
+  let noNumber = false;
+  /* eslint-disable no-await-in-loop */
+  for (let index = 0; index < data.value.length; index += 1) {
+    const item = data.value[index];
+    if (item.file) {
+      const data = await readFile(item.file);
+      let address;
+      if (/0[xX][0-9a-fA-F]+/.test(item.address)) {
+        address = parseInt(item.address, 16)
+        fileArray.push({ data, address });
+      } else if (/^[0-9]*$/.test(item.address)) {
+        address = parseInt(item.address, 10)
+        fileArray.push({ data, address });
+      } else {
+        noNumber = true
+      }
+    }
+  }
+  if (noNumber) {
+    Message.error('The address is decimal or hexadecimal');
+    loading.value = false;
+    return;
+  }
+  if (fileArray.length === 0) {
+    Message.error('Please select bin file');
+    loading.value = false;
+    return;
+  }
+
   loadingTip.value = 'Connecting';
   if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
     await (device as Serial).esploaderConnect(espLoaderTerminal);
@@ -159,30 +171,7 @@ const burnFirmware = async () => {
     loading.value = false;
     return
   }
-  const fileArray = [];
-  if (aiModelFile.value) {
-    const data = await readFile(aiModelFile.value);
-    fileArray.push({ data, address: 0x400000 });
-  }
-  if (bootloaderFile.value) {
-    const data = await readFile(bootloaderFile.value);
-    fileArray.push({ data, address: 0x0 });
-  }
-  if (partiontableFile.value) {
-    const data = await readFile(partiontableFile.value);
-    fileArray.push({ data, address: 0x8000 });
-  }
-  if (appFile.value) {
-    const data = await readFile(appFile.value);
-    fileArray.push({ data, address: 0x10000 });
-  }
 
-  if (fileArray.length === 0) {
-    Message.error('Please select bin file');
-    loading.value = false;
-    return;
-  }
-  binFileUploading.value = true;
   let result;
   deviceStore.setDeviceStatus(DeviceStatus.Burning);
   try {
@@ -225,7 +214,6 @@ const burnFirmware = async () => {
     loadingTip.value = '';
     loading.value = false;
   }
-  binFileUploading.value = false;
 };
 
 const fileChangeHandler = (option: RequestOption) => {
@@ -234,113 +222,103 @@ const fileChangeHandler = (option: RequestOption) => {
   return {};
 };
 
-const beforeUpload = (file: File, type: number): Promise<boolean> => {
+const beforeUpload = (file: File, index: number): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     if (file) {
-      const size = file.size;
-      const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const data = ev?.target?.result as string;
-        let wrongFile = false;
-        if (type === FILE_TYPE.MODEL_FILE) {
-          aiModelFile.value = file;
-        } else if (type === FILE_TYPE.FIRMWARE_FILE) {
-          if (
-            data.indexOf('abort() was called at PC 0x%08') > -1 &&
-            size < 100 * 1024
-          ) {
-            if (bootloaderFile.value) {
-              Message.error('The same file exists');
-              wrongFile = true;
-            } else {
-              bootloaderFile.value = file;
-            }
-          } else if (
-            data.indexOf('factory') > -1 &&
-            data.indexOf('nvs') > -1 &&
-            size < 10 * 1024
-          ) {
-            if (partiontableFile.value) {
-              Message.error('The same file exists');
-              wrongFile = true;
-            } else {
-              partiontableFile.value = file;
-            }
-          } else if (
-            data.indexOf('esp_hw_support') > -1 &&
-            size < 4 * 1024 * 1024
-          ) {
-            if (appFile.value) {
-              Message.error('The same file exists');
-              wrongFile = true;
-            } else {
-              appFile.value = file;
-            }
-          } else {
-            Message.error('Wrong file format!');
-            wrongFile = true;
-          }
-        }
-        if (wrongFile) {
-          reject();
-        } else {
-          resolve(true);
-        }
-      };
-      reader.readAsBinaryString(file);
-    } else {
-      reject();
+      if (index > data.value.length - 1) {
+        reject()
+      } else {
+        const item = data.value[index];
+        item.file = file
+        resolve(true);
+      }
     }
   });
 };
 
-const beforeRemove = (fileItem: FileItem, type: number): Promise<boolean> => {
+const beforeRemove = (index: number): Promise<boolean> => {
   return new Promise((resolve, reject) => {
-    const file = fileItem.file;
-    if (file) {
-      if (type === FILE_TYPE.MODEL_FILE) {
-        aiModelFile.value = null;
-      } else if (type === FILE_TYPE.FIRMWARE_FILE) {
-        if (
-          file.name === bootloaderFile.value?.name &&
-          file.size === bootloaderFile.value?.size
-        ) {
-          bootloaderFile.value = null;
-        } else if (
-          file.name === partiontableFile.value?.name &&
-          file.size === partiontableFile.value?.size
-        ) {
-          partiontableFile.value = null;
-        } else if (
-          file.name === appFile.value?.name &&
-          file.size === appFile.value?.size
-        ) {
-          appFile.value = null;
-        }
-      }
+    if (index > data.value.length - 1) {
+      reject()
+    } else {
+      const item = data.value[index];
+      item.file = null
       resolve(true);
     }
   });
 };
+
+const addFile = () => {
+  data.value.push({ address: '0x1000', file: null })
+}
+
+const removeFile = (index: number) => {
+  data.value.splice(index, 1)
+}
+
 </script>
+
+<style lang="less">
+.arco-list-medium .arco-list-content-wrapper .arco-list-header {
+  background-color: var(--color-neutral-2);
+  padding: 6px 20px;
+}
+</style>
 
 <style scoped lang="less">
 .item-card {
-  width: 680px;
+  width: 50%;
+  min-width: 680px;
   height: 100%;
   margin: 16px;
 
-  .burn-btn {
+  .list {
     margin-left: 10px;
+
+    .list-header {
+      display: flex;
+
+      .list-header-address {
+        width: 200px;
+      }
+
+      .list-header-file {
+        flex: 1;
+      }
+
+    }
+
+
+    .list-item {
+      align-items: center;
+
+      .list-item-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .list-item-address {
+        width: 200px;
+      }
+
+      .list-item-file {
+        margin: 0 auto;
+        margin-left: 0;
+      }
+    }
+
   }
 
-  .aimodel {
-    width: 100%;
-    margin-bottom: 5px;
+  .bottom {
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
 
-    .aimodel-button {
-      display: flex;
-      justify-content: space-between;
+    .burn-btn {
+      margin-left: 80px;
     }
   }
 }

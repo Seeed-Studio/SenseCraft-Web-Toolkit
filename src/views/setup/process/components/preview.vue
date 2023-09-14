@@ -1,10 +1,10 @@
 <template>
   <a-card class="general-card" :title="$t('workplace.preview.title')" :header-style="{ paddingBottom: '0' }">
     <template #extra>
-      <a-button v-if="invoke" type="secondary" status="danger" :disabled="invokeDisable" @click="handleStop">
+      <a-button v-if="invoke" type="secondary" status="danger" :disabled="disable" @click="handleStop">
         Stop
       </a-button>
-      <a-button v-else type="primary" :disabled="invokeDisable" @click="handleInvoke">
+      <a-button v-else type="primary" :disabled="disable" @click="handleInvoke">
         Invoke
       </a-button>
     </template>
@@ -47,7 +47,7 @@ const img = new Image();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const invoke = ref<boolean>(false);
-const invokeDisable = ref<boolean>(true);
+const disable = ref<boolean>(true);
 
 const classes = computed(() => deviceStore.currentModel?.classes || []);
 const length = computed(() => classes.value.length);
@@ -55,16 +55,15 @@ const length = computed(() => classes.value.length);
 const handleInvoke = async () => {
   const result = await device.invoke(-1);
   if (result) {
-    invokeDisable.value = false;
     invoke.value = true;
   } else {
     Message.error('Invoke failed, please check device connection');
+    invoke.value = false;
   }
 };
 
 const handleStop = () => {
   device.break();
-  invokeDisable.value = false;
   invoke.value = false;
   deviceStore.setIsInvoke(false);
 };
@@ -157,23 +156,23 @@ const onInvoke = (resp: any) => {
 
 const handelRefresh = async (deviceStatus: DeviceStatus) => {
   if (deviceStatus === DeviceStatus.SerialConnected) {
+    disable.value = false;
     const isInvoke = await device.isInvoke();
     if (isInvoke) {
-      invokeDisable.value = false;
       invoke.value = true;
       deviceStore.setIsInvoke(true);
     } else {
-      invokeDisable.value = true;
-      invoke.value = false;
       const result = await device.invoke(-1);
       if (result) {
-        invokeDisable.value = false;
         invoke.value = true;
+      } else {
+        Message.error('Invoke failed, please check device connection');
+        invoke.value = false;
       }
     }
   } else {
     deviceStore.setIsInvoke(false);
-    invokeDisable.value = true;
+    disable.value = true;
     invoke.value = false;
   }
 }
@@ -192,7 +191,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   device.removeEventListener(eventName);
-  device.break();
 });
 
 </script>

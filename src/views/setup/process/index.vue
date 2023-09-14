@@ -42,7 +42,7 @@ import Preview from './components/preview.vue';
 
     .right {
       flex: 1;
-      max-width: 680px;
+      min-width: 400px;
       background-color: var(--color-bg-2);
     }
   }

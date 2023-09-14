@@ -85,7 +85,7 @@
           <div>Model File</div>
         </a-col>
         <a-col :span="18">
-          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite" @before-upload="beforeUpload"
+          <a-upload :custom-request="fileChangeHandler" :limit="1" accept=".tflite,.lite" @before-upload="beforeUpload"
             @before-remove="beforeRemove">
             <template #upload-button>
               <div>

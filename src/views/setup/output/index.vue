@@ -5,11 +5,11 @@
       <template #header>
         <div class="list-header">
           <div class="list-header-content">
-            <div class="list-header-item">Object</div>
-            <div class="list-header-item">Condition</div>
-            <div class="list-header-item">Confidence</div>
+            <div class="list-header-item">{{ $t('workplace.output.object') }} </div>
+            <div class="list-header-item">{{ $t('workplace.output.condition') }}</div>
+            <div class="list-header-item">{{ $t('workplace.output.confidence') }}</div>
           </div>
-          <div class="list-header-operation">Operation</div>
+          <div class="list-header-operation">{{ $t('workplace.output.operation') }}</div>
         </div>
       </template>
       <template #empty>
@@ -20,7 +20,7 @@
             </template>
           </a-button>
           <div>
-            Trigger action when event conditions are met
+            {{ $t('workplace.output.trigger.action') }}
           </div>
         </div>
       </template>
@@ -31,7 +31,7 @@
               {{ classes.length > 0 ? classes[item.object] : '' }}
             </div>
             <div class="conditions-item">
-              {{ $t(`workplace.output.model.condition.${item.condition}`) }}
+              {{ $t(`workplace.output.condition.${item.condition}`) }}
             </div>
             <div :class="['conditions-item', 'conditions-item-confidence']">
               {{ item.confidence }}
@@ -57,7 +57,7 @@
         <div class="actions-item-content">
           <icon-bulb />
           <div class="actions-item-des">
-            Light up the LED
+            {{ $t('workplace.output.lightup.led') }}
           </div>
         </div>
 
@@ -74,29 +74,32 @@
     </div>
     <div class="bottom">
       <a-button type="primary" @click="handleSubmit" :loading="loading"
-        :disabled="data.length === 0 || deviceStore.deviceStatus !== DeviceStatus.SerialConnected || deleting">Send</a-button>
-      <a-popconfirm content="Can you confirm the deletion?" type="warning" ok-text="Confirm" @ok="handleDelete">
+        :disabled="data.length === 0 || deviceStore.deviceStatus !== DeviceStatus.SerialConnected || deleting">{{
+          $t('workplace.output.send')
+        }}</a-button>
+      <a-popconfirm :content="$t('workplace.output.delete.confirm')" type="warning" ok-text="Confirm" @ok="handleDelete">
         <a-button v-if="data.length > 0" class="deleteBtn" type="primary" status="danger"
           :disabled="deviceStore.deviceStatus !== DeviceStatus.SerialConnected || loading" :loading="deleting">
-          Delete
+          {{ $t('workplace.output.delete')
+          }}
         </a-button>
       </a-popconfirm>
     </div>
 
-    <a-modal v-model:visible="modalVisible" title="Trigger Condition" @cancel="handleModalCancel" @ok="handleModalOk">
+    <a-modal v-model:visible="modalVisible" :title="$t('workplace.output..model.title')" @cancel="handleModalCancel" @ok="handleModalOk">
       <a-form :model="form">
-        <a-form-item field="object" label="Object" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
+        <a-form-item field="object" :label="$t('workplace.output.object')" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.object">
             <a-option v-for="(item, index) of classes" :key="item" :value="index" :label="item" />
           </a-select>
         </a-form-item>
-        <a-form-item field="condition" label="Condition" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
+        <a-form-item field="condition" :label="$t('workplace.output.condition')" :label-col-props="{ span: 16 }" :wrapper-col-props="{ span: 8 }">
           <a-select v-model="form.condition">
             <a-option v-for="item of conditionData" :key="item" :value="item"
-              :label="$t(`workplace.output.model.condition.${item}`)" />
+              :label="$t(`workplace.output.condition.${item}`)" />
           </a-select>
         </a-form-item>
-        <a-form-item field="confidence" label="Trigger Confidence" :label-col-props="{ span: 12 }"
+        <a-form-item field="confidence" :label="$t('workplace.output.confidence')" :label-col-props="{ span: 12 }"
           :wrapper-col-props="{ span: 12 }">
           <a-slider class="confidence-slider" v-model="form.confidence" :min="1" :max="100" show-input />
         </a-form-item>
@@ -262,7 +265,8 @@ onMounted(async () => {
 
 <style scoped lang="less">
 .item-card {
-  width: 680px;
+  width: 50%;
+  min-width: 680px;
   height: 100%;
   margin: 16px;
   padding-top: 1px;
