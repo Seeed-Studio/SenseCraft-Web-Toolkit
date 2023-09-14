@@ -159,11 +159,10 @@
   import { computed, ref, inject } from 'vue';
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
   import { Message } from '@arco-design/web-vue';
-  import { useAppStore } from '@/store';
+  import { useAppStore, useDeviceStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
   import Menu from '@/components/menu/index.vue';
-  import { useDeviceStore } from '@/store';
   import { deviceManager, DeviceStatus } from '@/senseCraft';
 
   const appStore = useAppStore();

@@ -5,5 +5,5 @@ import useDeviceStore from './modules/device';
 
 const pinia = createPinia();
 
-export { useAppStore, useTabBarStore , useDeviceStore };
+export { useAppStore, useTabBarStore, useDeviceStore };
 export default pinia;

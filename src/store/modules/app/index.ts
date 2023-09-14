@@ -3,7 +3,6 @@ import type { RouteRecordNormalized } from 'vue-router';
 import defaultSettings from '@/config/settings.json';
 import { AppState } from './types';
 
-
 const useAppStore = defineStore('app', {
   state: (): AppState => ({ ...defaultSettings }),
 
@@ -45,9 +44,7 @@ const useAppStore = defineStore('app', {
     toggleLog(value: boolean) {
       this.log = value;
     },
-    async fetchServerMenuConfig() {
-      
-    },
+    async fetchServerMenuConfig() {},
     clearServerMenu() {
       this.serverMenu = [];
     },

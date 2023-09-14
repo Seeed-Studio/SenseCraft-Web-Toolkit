@@ -1,6 +1,5 @@
 import {
   createRouter,
-  createWebHistory,
   createWebHashHistory,
 } from 'vue-router';
 import NProgress from 'nprogress'; // progress bar

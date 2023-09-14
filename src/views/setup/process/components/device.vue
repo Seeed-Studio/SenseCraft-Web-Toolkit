@@ -81,6 +81,7 @@
       >
         <swiper-slide
           v-for="(item, index) in deviceStore.models"
+          :key="index"
           :class="[
             'carousel-item-wrapper',
             {
@@ -88,7 +89,6 @@
                 selectedModel === index && !isSelectedCustomModel,
             },
           ]"
-          :key="index"
           :onclick="() => handleSelectedModel(index)"
           :virtualIndex="index"
         >
@@ -121,9 +121,9 @@
     <a-modal
       v-model:visible="modalVisible"
       title="Custom AI Model"
-      @cancel="handleCustomModelCancel"
-      :on-before-ok="handleCustomModelOk"
       ok-text="Send Model"
+      :on-before-ok="handleCustomModelOk"
+      @cancel="handleCustomModelCancel"
     >
       <a-row>
         <a-col :span="6" class="grid-left">
@@ -177,9 +177,9 @@
             <a-input
               v-if="showInput"
               ref="inputRef"
+              v-model.trim="inputVal"
               :style="{ width: '90px' }"
               size="mini"
-              v-model.trim="inputVal"
               @keyup.enter="handleAdd"
               @blur="handleAdd"
             />
