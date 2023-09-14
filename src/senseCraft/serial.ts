@@ -9,7 +9,6 @@ import Device from './device';
 import { DeviceStatus } from './types';
 
 export default class Serial extends Device {
-
   public port: SerialPort | null;
 
   public transport: Transport | null;
@@ -46,14 +45,15 @@ export default class Serial extends Device {
           const serialPort = await navigator.serial.requestPort();
           this.port = serialPort;
         } catch (error) {
-          console.log(error)
+          console.log(error);
           Message.error('Request serial port failed');
-          return
+          return;
         }
       }
       // 如果当前在esp连接，需要断开
       if (
-        (this.deviceStore.deviceStatus === DeviceStatus.EspConnected || this.deviceStore.deviceStatus === DeviceStatus.Burning) &&
+        (this.deviceStore.deviceStatus === DeviceStatus.EspConnected ||
+          this.deviceStore.deviceStatus === DeviceStatus.Burning) &&
         this.transport
       ) {
         await this.transport.disconnect();
@@ -80,7 +80,7 @@ export default class Serial extends Device {
       this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
       this.readLoop();
     } catch (error) {
-      console.log(error)
+      console.log(error);
       Message.error('Device connect failed');
     }
   }
@@ -92,9 +92,9 @@ export default class Serial extends Device {
           const serialPort = await navigator.serial.requestPort();
           this.port = serialPort;
         } catch (error) {
-          console.log(error)
+          console.log(error);
           Message.error('Request serial port failed');
-          return
+          return;
         }
       }
       navigator.serial.ondisconnect = this.ondisconnect.bind(this);
@@ -116,7 +116,7 @@ export default class Serial extends Device {
       await this.esploader.main_fn();
       this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       Message.error('Device connect failed');
     }
   }
@@ -166,18 +166,22 @@ export default class Serial extends Device {
     // const str = this.textDecoder.decode(data);
     // console.log('handleReceive', str);
     try {
-      let index = 0
+      let index = 0;
       while (index < data.length) {
         const num = data[index];
-        if (num === 0x7b) {// \{
-          if (this.lastCode === 0x0d) {// \r
+        if (num === 0x7b) {
+          // \{
+          if (this.lastCode === 0x0d) {
+            // \r
             this.hasStart = true;
             this.cacheData.push(num);
           } else if (this.hasStart) {
             this.cacheData.push(num);
           }
-        } else if (num === 0x0a) { // \n
-          if (this.lastCode === 0x7d) {// }
+        } else if (num === 0x0a) {
+          // \n
+          if (this.lastCode === 0x7d) {
+            // }
             this.hasStart = false;
             try {
               const buffer = new Uint8Array(this.cacheData);
@@ -185,20 +189,24 @@ export default class Serial extends Device {
               const obj = JSON.parse(str);
               const type = obj?.type;
               const name = obj?.name;
-              if (type === 0) {// 指令响应
-                console.log('handleReceive:', obj)
-                const resolve = this.resolveMap.get(name)
-                if (resolve) resolve(obj)
-              } else if (type === 1) { // 事件
+              if (type === 0) {
+                // 指令响应
+                console.log('handleReceive:', obj);
+                const resolve = this.resolveMap.get(name);
+                if (resolve) resolve(obj);
+              } else if (type === 1) {
+                // 事件
                 const code = obj?.code;
                 const listener = this.eventMap.get(name);
-                listener?.(obj)
+                listener?.(obj);
                 if (code !== 0) {
-                  Message.error(`Please check device connection status, errorCode[${code}]`);
+                  Message.error(
+                    `Please check device connection status, errorCode[${code}]`
+                  );
                 }
               }
             } catch (error) {
-              console.log(error)
+              console.log(error);
             }
             this.cacheData = [];
           } else if (this.hasStart) {
@@ -212,7 +220,7 @@ export default class Serial extends Device {
       }
     } catch (error) {
       // 解析报错也不知道是哪个指令，只能等请求超时
-      console.log(error)
+      console.log(error);
       // this.cacheReject?.('')
     }
   }

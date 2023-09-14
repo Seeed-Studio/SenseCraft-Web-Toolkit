@@ -25,7 +25,7 @@ export default class WebUSB extends Device {
           readLoop();
         })
         .catch((error: any) => {
-          console.log(error)
+          console.log(error);
         });
     };
 

@@ -3,7 +3,6 @@ import { ATClient, ERROR_LIST } from './atclient';
 import { Algo } from './types';
 
 export default class Device {
-
   public deviceStore;
 
   public port: SerialPort | USBDevice | null;
@@ -34,22 +33,20 @@ export default class Device {
   }
 
   public addEventListener(type: string, listener: (event: any) => any) {
-    this.eventMap.set(type, listener)
+    this.eventMap.set(type, listener);
   }
 
   public removeEventListener(type: string) {
-    this.eventMap.delete(type)
+    this.eventMap.delete(type);
   }
 
-  public handleReceive(data: any) {
+  public handleReceive(data: any) {}
 
-  }
+  public async connect() {}
 
-  public async connect() { }
+  public disconnect() {}
 
-  public disconnect() { }
-
-  public async write(data: BufferSource) { }
+  public async write(data: BufferSource) {}
 
   public async flush() {
     await this.write(this.textEncoder.encode('\r\n'));
@@ -57,34 +54,38 @@ export default class Device {
     await this.write(this.textEncoder.encode('\r\n'));
   }
 
-  public async sendCommand(command: string | undefined, tag: string, timeout = 5000): Promise<any> {
+  public async sendCommand(
+    command: string | undefined,
+    tag: string,
+    timeout = 5000
+  ): Promise<any> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       if (!command) {
         reject(new Error('invalid parameter'));
-        return
+        return;
       }
       const timer = setTimeout(() => {
         reject(new Error('timeout'));
-        this.resolveMap.delete(tag)
-        this.rejectMap.delete(tag)
+        this.resolveMap.delete(tag);
+        this.rejectMap.delete(tag);
         this.timeoutMap.delete(tag);
       }, timeout);
 
-      this.timeoutMap.set(tag, timer)
-      this.resolveMap.set(tag, resolve)
-      this.rejectMap.set(tag, reject)
+      this.timeoutMap.set(tag, timer);
+      this.resolveMap.set(tag, resolve);
+      this.rejectMap.set(tag, reject);
 
       await this.write(this.textEncoder.encode(command));
-    })
+    });
   }
 
   public deleteMap(tag: string) {
     this.resolveMap.delete(tag);
     this.rejectMap.delete(tag);
-    const timeout = this.timeoutMap.get(tag)
+    const timeout = this.timeoutMap.get(tag);
     if (timeout) {
-      clearTimeout(timeout)
+      clearTimeout(timeout);
       this.timeoutMap.delete(tag);
     }
   }
@@ -94,16 +95,16 @@ export default class Device {
       const tag = 'ID?';
       const command = this.client.getID();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return ''
+      return '';
     }
   }
 
@@ -112,15 +113,15 @@ export default class Device {
       const tag = 'NAME?';
       const command = this.client.getName();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -129,16 +130,16 @@ export default class Device {
       const tag = 'STAT?';
       const command = this.client.getStat();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -147,18 +148,18 @@ export default class Device {
       const tag = 'VER?';
       const command = this.client.getVersion();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         if (data?.software) {
-          return data.software
+          return data.software;
         }
         return null;
       }
       return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -170,12 +171,12 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data as Algo[]
+        const data = response.data as Algo[];
         return data;
       }
-      return []
+      return [];
     } catch (error) {
-      return []
+      return [];
     }
   }
 
@@ -187,12 +188,12 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
-      return []
+      return [];
     } catch (error) {
-      return []
+      return [];
     }
   }
 
@@ -204,12 +205,12 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
-      return null
+      return null;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -218,16 +219,16 @@ export default class Device {
       const tag = 'SENSORS?';
       const command = this.client.getSensors();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -239,12 +240,12 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
-      return null
+      return null;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -256,11 +257,11 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        return response.data === 1
+        return response.data === 1;
       }
-      return false
+      return false;
     } catch (error) {
-      return false
+      return false;
     }
   }
 
@@ -272,11 +273,11 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        return response.data === 1
+        return response.data === 1;
       }
-      return false
+      return false;
     } catch (error) {
-      return false
+      return false;
     }
   }
 
@@ -290,9 +291,9 @@ export default class Device {
       if (code === 0 && response.data) {
         return response.data.info;
       }
-      return null
+      return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -301,16 +302,16 @@ export default class Device {
       const tag = 'TSCORE?';
       const command = this.client.getScore();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -319,16 +320,16 @@ export default class Device {
       const tag = 'TIOU?';
       const command = this.client.getIOU();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -340,12 +341,12 @@ export default class Device {
       const code = response.code;
       this.deleteMap(tag);
       if (code === 0) {
-        const cond = response.data?.cond
+        const cond = response.data?.cond;
         return cond;
       }
       return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -354,17 +355,17 @@ export default class Device {
       const tag = 'MODEL';
       const command = this.client.setModel(modelId);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -373,17 +374,17 @@ export default class Device {
       const tag = 'SENSOR';
       const command = this.client.setSensor(sensorId, state);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -396,12 +397,12 @@ export default class Device {
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -429,7 +430,7 @@ export default class Device {
       }
       return null;
     } catch (error) {
-      return null
+      return null;
     }
   }
 
@@ -438,17 +439,17 @@ export default class Device {
       const tag = 'INFO';
       const command = this.client.setInfo(info);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -457,17 +458,17 @@ export default class Device {
       const tag = 'INFO';
       const command = this.client.deleteInfo();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -477,20 +478,24 @@ export default class Device {
       const tag = `${timestamp}@TSCORE`;
       const command = this.client.setScore(score, tag);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
-  public async setAction(target: number, condition: string, score: number): Promise<boolean> {
+  public async setAction(
+    target: number,
+    condition: string,
+    score: number
+  ): Promise<boolean> {
     try {
       const tag = 'ACTION';
       const command = this.client.setAction(target, condition, score);
@@ -499,7 +504,7 @@ export default class Device {
       this.deleteMap(tag);
       return code === 0;
     } catch (error) {
-      return false
+      return false;
     }
   }
 
@@ -512,7 +517,7 @@ export default class Device {
       this.deleteMap(tag);
       return code === 0;
     } catch (error) {
-      return false
+      return false;
     }
   }
 
@@ -522,16 +527,16 @@ export default class Device {
       const tag = `${timestamp}@TIOU`;
       const command = this.client.setIOU(iou, tag);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.deleteMap(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return 'error'
+      return 'error';
     }
   }
 
@@ -540,17 +545,17 @@ export default class Device {
       const tag = 'LED';
       const command = this.client.setLed(state);
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -559,17 +564,17 @@ export default class Device {
       const tag = 'RST';
       const command = this.client.reset();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 
@@ -578,17 +583,17 @@ export default class Device {
       const tag = 'BREAK';
       const command = this.client.break();
       const response = await this.sendCommand(command, tag);
-      const code = response.code as (keyof typeof ERROR_LIST);
+      const code = response.code as keyof typeof ERROR_LIST;
       const errorMsg = ERROR_LIST[code] || 'unknown code';
       this.resolveMap.delete(tag);
       this.rejectMap.delete(tag);
       if (code === 0) {
-        const data = response.data
+        const data = response.data;
         return data;
       }
       return `code[${code}]:${errorMsg}`;
     } catch (error) {
-      return error
+      return error;
     }
   }
 }

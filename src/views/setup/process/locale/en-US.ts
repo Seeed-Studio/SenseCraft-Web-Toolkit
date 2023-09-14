@@ -15,7 +15,8 @@ export default {
   'workplace.output.send': 'Send',
   'workplace.output.delete': 'Delete',
   'workplace.output.delete.confirm': 'Can you confirm the deletion?',
-  'workplace.output.trigger.action': 'Trigger action when event conditions are met',
+  'workplace.output.trigger.action':
+    'Trigger action when event conditions are met',
   'workplace.output.lightup.led': 'Light up the LED',
   'workplace.output..model.title': 'Trigger Condition',
   'workplace.device.name': 'Device Name',
@@ -65,7 +66,8 @@ export default {
   'workplace.config.confidence.tip':
     'Confidence refers to the level of certainty or probability assigned by a model to its predictions',
   'workplace.config.iou.label': 'IoU',
-  'workplace.config.iou.tip': 'IoU is used to assess the accuracy of predicted bounding boxes compared to truth bounding boxes',
+  'workplace.config.iou.tip':
+    'IoU is used to assess the accuracy of predicted bounding boxes compared to truth bounding boxes',
   'workplace.config.pointer.start': 'Start Point',
   'workplace.config.pointer.end': 'End Point',
   'workplace.config.pointer.center': 'Center Point',

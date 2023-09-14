@@ -1,8 +1,8 @@
 export enum DeviceStatus {
   UnConnected = 0, // 设备串口未连接
   SerialConnected = 1, // 串口连接状态，可以下发指令
-  EspConnected = 2,// esp连接状态，可以烧录固件和模型
-  Burning = 3,// 烧录状态，不能做别的操作
+  EspConnected = 2, // esp连接状态，可以烧录固件和模型
+  Burning = 3, // 烧录状态，不能做别的操作
 }
 
 export interface Bin {
@@ -20,8 +20,8 @@ export interface Firmware {
   version: string;
   bins: Bin[];
   model_slots: {
-    address: number,
-  }[]
+    address: number;
+  }[];
 }
 
 export interface Model {
@@ -37,7 +37,7 @@ export interface Model {
   url?: string;
   checksum?: string;
   size: string;
-  isCustom?: boolean,
+  isCustom?: boolean;
 }
 
 export enum AlgoType {
@@ -56,9 +56,9 @@ export enum AlgoCategory {
 }
 
 export interface Algo {
-  type: AlgoType
-  categroy: AlgoCategory
-  input_from: string
+  type: AlgoType;
+  categroy: AlgoCategory;
+  input_from: string;
 }
 
 export enum SensorType {
@@ -74,7 +74,7 @@ export enum SensorState {
 }
 
 export interface Sensor {
-  id: string
-  type: SensorType
-  state: SensorState
+  id: string;
+  type: SensorType;
+  state: SensorState;
 }

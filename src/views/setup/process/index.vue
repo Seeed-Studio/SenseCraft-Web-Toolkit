@@ -5,48 +5,35 @@
         <Device />
       </div>
       <div :class="['item', 'right']">
-        <Config class="config" />
-        <Preview class="preview" />
+        <Config />
+        <Preview />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import Device from './components/device.vue';
-import Config from './components/config.vue';
-import Preview from './components/preview.vue';
-
+  import Device from './components/device.vue';
+  import Config from './components/config.vue';
+  import Preview from './components/preview.vue';
 </script>
 
 <style scoped lang="less">
-.container {
+  .container {
+    .content {
+      display: flex;
+      overflow-x: auto;
 
-  .content {
-    display: flex;
-    overflow-x: auto;
-
-    .item {
-      margin: 16px;
-
-      .config {
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
+      .item {
+        margin: 16px;
       }
 
-      .preview {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+      .right {
+        flex: 1;
+        min-width: 400px;
+        background-color: var(--color-bg-2);
+        border-radius: var(--border-radius-small);
       }
-    }
-
-    .right {
-      flex: 1;
-      min-width: 400px;
-      background-color: var(--color-bg-2);
     }
   }
-}
 </style>
-
-

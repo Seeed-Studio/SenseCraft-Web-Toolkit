@@ -12,7 +12,6 @@ export const ERROR_LIST = {
 };
 
 export class ATClient {
-
   public getID(): string {
     return 'AT+ID?\r';
   }
@@ -127,4 +126,3 @@ export class ATClient {
     return 'AT+BREAK\r';
   }
 }
-

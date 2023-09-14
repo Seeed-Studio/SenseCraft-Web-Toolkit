@@ -60,7 +60,8 @@ export default {
   'workplace.config.confidence.placeholder': '请输入置信度',
   'workplace.config.confidence.required': '请输入置信度',
   'workplace.config.confidence.unit': '%',
-  'workplace.config.confidence.tip': '置信度是指模型为其预测分配的确定性或概率水平',
+  'workplace.config.confidence.tip':
+    '置信度是指模型为其预测分配的确定性或概率水平',
   'workplace.config.iou.label': 'IoU',
   'workplace.config.iou.tip': 'IoU用于评估预测边界框与真实边界框相比的准确性',
   'workplace.config.pointer.start': '起始点',
