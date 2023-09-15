@@ -122,7 +122,7 @@
 
     <a-modal
       v-model:visible="modalVisible"
-      :title="$t('workplace.output..model.title')"
+      :title="$t('workplace.output.model.title')"
       @cancel="handleModalCancel"
       @ok="handleModalOk"
     >
@@ -179,10 +179,13 @@
 <script lang="ts" setup>
   import { computed, onMounted, watch, reactive, ref, Ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
+  import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, deviceManager } from '@/senseCraft';
 
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
+
   const { device } = deviceManager;
 
   const data: Ref<
@@ -232,23 +235,23 @@
 
   const handleDelete = async () => {
     if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-      Message.error('Please connect the device');
+      Message.error(t('workplace.output.message.connect'));
       return;
     }
     deleting.value = true;
     const ret = await device.deleteAction();
     if (ret) {
       data.value = [];
-      Message.success('Delete action successful');
+      Message.success(t('workplace.output.message.action.delete.successful'));
     } else {
-      Message.error('Delete action failed');
+      Message.error(t('workplace.output.message.action.delete.failed'));
     }
     deleting.value = false;
   };
 
   const handleSubmit = async () => {
     if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-      Message.error('Please connect the device');
+      Message.error(t('workplace.output.message.connect'));
       return;
     }
     loading.value = true;
@@ -260,9 +263,9 @@
     if (ret) {
       await device.break();
       await device.invoke(-1);
-      Message.success('Set action successful');
+      Message.success(t('workplace.output.message.action.successful'));
     } else {
-      Message.error('Set action failed');
+      Message.error(t('workplace.output.message.action.failed'));
     }
     loading.value = false;
   };
