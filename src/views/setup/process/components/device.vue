@@ -9,7 +9,7 @@
         direction="vertical"
         size="large"
       >
-        <div class="device-item"> Please connect the device to your PC </div>
+        <div class="device-item"> {{ $t('workplace.device.noconnect') }} </div>
       </a-space>
       <div v-else>
         <a-space v-if="hasDeviceContent" direction="vertical" size="large">
@@ -43,21 +43,18 @@
           </a-space>
         </a-space>
         <div v-else class="device-item">
-          Your device does not have a deployment model, please select a model
-          and click the send button
+          {{ $t('workplace.device.model.nomodel') }}
         </div>
       </div>
       <div class="models-item-title">
-        <a-typography-title :heading="6"
-          >Ready to use AI models</a-typography-title
-        >
-        <a-button type="primary" @click="handleShowCustomModel"
-          >Upload Custom AI Model</a-button
-        >
+        <a-typography-title :heading="6">{{
+          $t('workplace.device.use.aimodel')
+        }}</a-typography-title>
+        <a-button type="primary" @click="handleShowCustomModel">{{
+          $t('workplace.device.upload.aimodel')
+        }}</a-button>
       </div>
-      <div class="device-item"
-        >Please select an preset AI model or upload custom AI Model</div
-      >
+      <div class="device-item">{{ $t('workplace.device.select.aimodel') }}</div>
       <swiper
         class="carousel"
         :slides-per-view="3"
@@ -114,28 +111,33 @@
         }}</div>
       </div>
       <div class="bottom">
-        <a-button type="primary" @click="handleUpload">Send</a-button>
+        <a-button type="primary" @click="handleUpload">{{
+          $t('workplace.device.send')
+        }}</a-button>
       </div>
     </a-card>
 
     <a-modal
       v-model:visible="modalVisible"
-      title="Custom AI Model"
-      ok-text="Send Model"
+      :title="$t('workplace.device.model.aimodel')"
+      :ok-text="$t('workplace.device.model.sendmodel')"
       :on-before-ok="handleCustomModelOk"
       @cancel="handleCustomModelCancel"
     >
       <a-row>
         <a-col :span="6" class="grid-left">
-          <div>Model Name</div>
+          <div>{{ $t('workplace.device.model.name') }}</div>
         </a-col>
         <a-col :span="18">
-          <a-input v-model="modalName" placeholder="please enter model name" />
+          <a-input
+            v-model="modalName"
+            :placeholder="$t('workplace.device.model.name')"
+          />
         </a-col>
       </a-row>
       <a-row>
         <a-col :span="6" class="grid-left">
-          <div>Model File</div>
+          <div>{{ $t('workplace.device.model.file') }}</div>
         </a-col>
         <a-col :span="18">
           <a-upload
@@ -162,7 +164,7 @@
       </a-row>
       <a-row>
         <a-col :span="6" class="grid-left">
-          <div>ID:Object</div>
+          <div>ID:{{ $t('workplace.device.model.object') }}</div>
         </a-col>
         <a-col :span="18">
           <a-space wrap>
@@ -195,7 +197,7 @@
               <template #icon>
                 <icon-plus />
               </template>
-              Add Object
+              {{ $t('workplace.device.model.add.object') }}
             </a-tag>
           </a-space>
         </a-col>
@@ -207,6 +209,7 @@
 <script lang="ts" setup>
   import { Ref, ref, nextTick, computed, onMounted, watch } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
+  import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
   import 'swiper/css';
   import 'swiper/css/navigation';
@@ -220,6 +223,7 @@
 
   const { device, term } = deviceManager;
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
 
   const espLoaderTerminal = {
     clean() {
@@ -299,14 +303,14 @@
 
   const burnFirmware = async (isCustom = false) => {
     loading.value = true;
-    loadingTip.value = 'Connecting';
+    loadingTip.value = t('workplace.device.message.tip.connecting');
     if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
       await (device as Serial).esploaderConnect(espLoaderTerminal);
     }
     const esploader = (device as Serial).esploader;
     const transport = (device as Serial).transport;
     if (!esploader || !transport) {
-      Message.error('No port selected by the user');
+      Message.error(t('workplace.serial.no.port'));
       loading.value = false;
       return;
     }
@@ -318,12 +322,12 @@
     if (version !== deviceVersion.value) {
       const bins = deviceStore.firmware?.bins;
       if (!bins || bins.length === 0) {
-        Message.error('No firmware');
+        Message.error(t('workplace.device.message.firmware.no'));
         loading.value = false;
         return;
       }
       // 下载固件
-      loadingTip.value = 'Downloading firmware';
+      loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
       const firmwareArray = await downloadFirmware(bins);
       fileArray = fileArray.concat(firmwareArray);
     }
@@ -351,11 +355,11 @@
     } else {
       if (selectedModel.value < 0) {
         loading.value = false;
-        Message.error('Please select a model');
+        Message.error(t('workplace.device.message.model.no'));
         return;
       }
       if (deviceStore.models.length > 0) {
-        loadingTip.value = 'Downloading model';
+        loadingTip.value = t('workplace.device.message.tip.downloading.model');
         model = deviceStore.models[selectedModel.value];
         const modelfile = await downloadModel(model);
         fileArray.push(modelfile);
@@ -365,7 +369,7 @@
     let result;
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     try {
-      loadingTip.value = 'Flashing';
+      loadingTip.value = t('workplace.device.message.tip.flashing');
       const flashOptions: FlashOptions = {
         fileArray,
         flashSize: 'keep',
@@ -383,7 +387,7 @@
     } finally {
       // 烧录完重置设备
       if (result) {
-        loadingTip.value = 'Resetting';
+        loadingTip.value = t('workplace.device.message.tip.resetting');
         await transport?.setDTR(false);
         await new Promise((resolve) => {
           setTimeout(resolve, 100);
@@ -392,7 +396,7 @@
       }
       // 连接设备
       if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-        loadingTip.value = 'Connecting';
+        loadingTip.value = t('workplace.device.message.tip.connecting');
         await (device as Serial).connect();
       }
       if (model) {
@@ -422,13 +426,13 @@
 
   const handleUpload = async () => {
     if (isSelectedCustomModel.value) {
-      Message.warning('The device is running the current model');
+      Message.warning(t('workplace.device.message.model.current'));
       return;
     }
     if (selectedModel.value > -1) {
       const model = deviceStore.models[selectedModel.value];
       if (model.checksum === deviceStore.currentModel?.checksum) {
-        Message.warning('The device is running the current model');
+        Message.warning(t('workplace.device.message.model.current'));
         return;
       }
     }
@@ -468,15 +472,15 @@
 
   const handleCustomModelOk = async () => {
     if (modalName.value == null || modalName.value === '') {
-      Message.error('Please enter modal name');
+      Message.error(t('workplace.device.message.model.name'));
       return false;
     }
     if (!modelFile.value) {
-      Message.error('Please choose modal file');
+      Message.error(t('workplace.device.message.model.file'));
       return false;
     }
     if (modelObjects.value.length === 0) {
-      Message.error('Please enter at least one object');
+      Message.error(t('workplace.device.message.model.object'));
       return false;
     }
     burnFirmware(true);

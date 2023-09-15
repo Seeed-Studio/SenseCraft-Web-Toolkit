@@ -12,10 +12,10 @@
         :disabled="disable"
         @click="handleStop"
       >
-        Stop
+        {{ $t('workplace.preview.stop') }}
       </a-button>
       <a-button v-else type="primary" :disabled="disable" @click="handleInvoke">
-        Invoke
+        {{ $t('workplace.preview.invoke') }}
       </a-button>
     </template>
     <div class="monitor-wrapper">
@@ -27,6 +27,7 @@
 <script lang="ts" setup>
   import { computed, onMounted, onBeforeUnmount, watch, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
+  import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus } from '@/senseCraft';
   import deviceManager from '@/senseCraft/deviceManager';
@@ -51,6 +52,8 @@
   const eventName = 'INVOKE';
 
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
+
   const { device } = deviceManager;
 
   const img = new Image();
@@ -67,7 +70,7 @@
     if (result) {
       invoke.value = true;
     } else {
-      Message.error('Invoke failed, please check device connection');
+      Message.error(t('workplace.preview.message.invoke.failed'));
       invoke.value = false;
     }
   };
@@ -176,7 +179,7 @@
         if (result) {
           invoke.value = true;
         } else {
-          Message.error('Invoke failed, please check device connection');
+          Message.error(t('workplace.preview.message.invoke.failed'));
           invoke.value = false;
         }
       }

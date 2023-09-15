@@ -159,6 +159,7 @@
   import { computed, ref, inject } from 'vue';
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
   import { Message } from '@arco-design/web-vue';
+  import { useI18n } from 'vue-i18n';
   import { useAppStore, useDeviceStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
@@ -167,6 +168,7 @@
 
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
   const { device } = deviceManager;
 
   const { changeLocale, currentLocale } = useLocale();
@@ -223,7 +225,7 @@
       loading.value = true;
       await device.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
-        Message.success('Device connected successfully');
+        Message.success(t('workplace.serial.device.connected.successfully'));
       }
       loading.value = false;
     } catch (error) {
