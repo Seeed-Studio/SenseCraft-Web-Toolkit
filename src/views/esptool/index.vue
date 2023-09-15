@@ -73,12 +73,15 @@
 <script lang="ts" setup>
   import { Ref, ref } from 'vue';
   import { FlashOptions } from 'esptool-js';
+  import { useI18n } from 'vue-i18n';
   import { RequestOption } from '@arco-design/web-vue/es/upload';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, Serial, deviceManager } from '@/senseCraft';
 
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
+
   const { device, term } = deviceManager;
 
   const data: Ref<
@@ -105,14 +108,14 @@
 
   const handleEraseflash = async () => {
     loading.value = true;
-    loadingTip.value = 'Connecting';
+    loadingTip.value = t('workplace.device.message.tip.connecting');
     let result;
     try {
       if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
         await (device as Serial).esploaderConnect(espLoaderTerminal);
       }
       const esploader = (device as Serial).esploader;
-      loadingTip.value = 'Erasing';
+      loadingTip.value = t('workplace.device.message.tip.erasing');
       await esploader?.erase_flash();
       result = true;
     } catch (e) {
@@ -126,9 +129,9 @@
       device.deleteInfo();
       device.deleteAction();
       deviceStore.setCurrentModel(undefined);
-      Message.success('Erase Device successful');
+      Message.success(t('workplace.firmware.message.erase.successful'));
     } else {
-      Message.error('Erase failed, please check device connection');
+      Message.error(t('workplace.firmware.message.erase.failed'));
     }
     loadingTip.value = '';
     loading.value = false;
@@ -170,24 +173,24 @@
       }
     }
     if (noNumber) {
-      Message.error('The address is decimal or hexadecimal');
+      Message.error(t('workplace.firmware.message.address'));
       loading.value = false;
       return;
     }
     if (fileArray.length === 0) {
-      Message.error('Please select bin file');
+      Message.error(t('workplace.firmware.message.file'));
       loading.value = false;
       return;
     }
 
-    loadingTip.value = 'Connecting';
+    loadingTip.value = t('workplace.device.message.tip.connecting');
     if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
       await (device as Serial).esploaderConnect(espLoaderTerminal);
     }
     const esploader = (device as Serial).esploader;
     const transport = (device as Serial).transport;
     if (!esploader || !transport) {
-      Message.error('No port selected by the user');
+      Message.error(t('workplace.serial.no.port'));
       loading.value = false;
       return;
     }
@@ -195,7 +198,7 @@
     let result;
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     try {
-      loadingTip.value = 'Flashing';
+      loadingTip.value = t('workplace.device.message.tip.flashing');
       const flashOptions: FlashOptions = {
         fileArray,
         flashSize: 'keep',
@@ -213,19 +216,19 @@
     } finally {
       // reset device
       if (result) {
-        loadingTip.value = 'Resetting';
+        loadingTip.value = t('workplace.device.message.tip.resetting');
         await transport?.setDTR(false);
         await new Promise((resolve) => {
           setTimeout(resolve, 100);
         });
         await transport?.setDTR(true);
-        Message.success('Flash successful');
+        Message.success(t('workplace.firmware.message.flash.successful'));
       } else {
-        Message.error('Flash failed');
+        Message.error(t('workplace.firmware.message.flash.failed'));
       }
       // 连接设备
       if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-        loadingTip.value = 'Connecting';
+        loadingTip.value = t('workplace.device.message.tip.connecting');
         await (device as Serial).connect();
       }
       device.deleteInfo();
