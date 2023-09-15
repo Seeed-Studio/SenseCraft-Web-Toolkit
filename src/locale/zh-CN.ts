@@ -5,7 +5,7 @@ export default {
   'menu.setup': '设置',
   'menu.setup.process': '工作台',
   'menu.setup.output': '输出',
-  'menu.firmware': '烧录固件',
+  'menu.tool': '工具',
   'menu.data': '数据采集',
   'menu.data.vision': '视觉',
   'menu.data.sensor': '传感器',

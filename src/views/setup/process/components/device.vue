@@ -297,7 +297,7 @@
     };
   };
 
-  const burnFirmware = async (isCustom = false) => {
+  const flashFirmware = async (isCustom = false) => {
     loading.value = true;
     loadingTip.value = 'Connecting';
     if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
@@ -433,7 +433,7 @@
       }
     }
     try {
-      burnFirmware();
+      flashFirmware();
     } catch (error) {
       console.log(error);
       loadingTip.value = '';
@@ -479,7 +479,7 @@
       Message.error('Please enter at least one object');
       return false;
     }
-    burnFirmware(true);
+    flashFirmware(true);
     return true;
   };
 
