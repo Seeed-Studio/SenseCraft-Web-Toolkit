@@ -1,6 +1,6 @@
 <template>
   <a-spin :loading="loading" :tip="loadingTip" class="item-card">
-    <a-card class="general-card" :title="$t('workplace.device.card.firmware')">
+    <a-card class="general-card" :title="$t('workplace.device.card.esptool')">
       <template #extra>
         <a-button type="primary" status="danger" @click="handleEraseflash">
           {{ $t('workplace.firmware.eraseflash') }}
@@ -62,8 +62,8 @@
         <a-button type="primary" @click="addFile">{{
           $t('workplace.firmware.addfile')
         }}</a-button>
-        <a-button class="burn-btn" type="primary" @click="burnFirmware">
-          {{ $t('workplace.device.btn.burn') }}
+        <a-button class="flash-btn" type="primary" @click="flashFirmware">
+          {{ $t('workplace.device.btn.flash') }}
         </a-button>
       </div>
     </a-card>
@@ -126,7 +126,7 @@
       device.deleteInfo();
       device.deleteAction();
       deviceStore.setCurrentModel(undefined);
-      Message.success('Erase Flash successful');
+      Message.success('Erase Device successful');
     } else {
       Message.error('Erase failed, please check device connection');
     }
@@ -145,7 +145,7 @@
     });
   };
 
-  const burnFirmware = async () => {
+  const flashFirmware = async () => {
     loading.value = true;
     const fileArray = [] as {
       data: string;
@@ -219,9 +219,9 @@
           setTimeout(resolve, 100);
         });
         await transport?.setDTR(true);
-        Message.success('Burn successful');
+        Message.success('Flash successful');
       } else {
-        Message.error('Burn failed');
+        Message.error('Flash failed');
       }
       // 连接设备
       if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
@@ -333,7 +333,7 @@
       height: 60px;
       margin-top: 30px;
 
-      .burn-btn {
+      .flash-btn {
         margin-left: 80px;
       }
     }

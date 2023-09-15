@@ -5,7 +5,7 @@ export default {
   'menu.setup': 'Setup',
   'menu.setup.process': 'Process',
   'menu.setup.output': 'Output',
-  'menu.firmware': 'Flash Firmware',
+  'menu.tool': 'Tool',
   'menu.data': 'Data Acquisition',
   'menu.data.vision': 'Vision',
   'menu.data.sensor': 'Sensor',
@@ -20,4 +20,3 @@ export default {
   ...localeSettings,
   ...localeWorkplace,
 };
-
