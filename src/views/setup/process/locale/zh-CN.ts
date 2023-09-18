@@ -14,6 +14,7 @@ export default {
   'workplace.output.condition.<=': '小于',
   'workplace.output.condition.==': '等于',
   'workplace.output.confidence': '置信度',
+  'workplace.output.condition.tips': '如果设备检测到{object}并且置信度{condition}{confidence}，然后点亮设备的黄色LED',
   'workplace.output.operation': '操作',
   'workplace.output.send': '发送',
   'workplace.output.delete': '删除',

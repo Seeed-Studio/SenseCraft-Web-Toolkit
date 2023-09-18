@@ -81,10 +81,11 @@
     </a-list>
     <div v-if="data.length > 0" class="list-footer-des">
       {{
-        `If the device detects ${
-          classes[data[0].object]
-        } and the confidence is ${data[0].condition}
-            ${data[0].confidence}, then light up the device's yellow led`
+        $t('workplace.output.condition.tips', {
+          object: classes[data[0].object],
+          condition: $t(`workplace.output.condition.${data[0].condition}`),
+          confidence: data[0].confidence,
+        })
       }}
     </div>
     <div class="bottom">

@@ -14,6 +14,7 @@ export default {
   'workplace.output.condition.<=': 'Less than',
   'workplace.output.condition.==': 'Equal to',
   'workplace.output.confidence': 'Confidence',
+  'workplace.output.condition.tips': 'If the device detects {object} and the confidence is {condition} {confidence}, then light up the device\'s yellow led',
   'workplace.output.operation': 'Operation',
   'workplace.output.send': 'Send',
   'workplace.output.delete': 'Delete',
