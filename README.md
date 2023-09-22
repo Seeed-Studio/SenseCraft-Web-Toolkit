@@ -6,7 +6,7 @@ It is a Web Toolkit for senseCraft AIoT Platform, which is a visual programming 
 ## How to Use
 
 1. Preview Page
-   - Simply open the [preview page](https://seeed-studio.github.io/sensecraft-web-toolkit/) to preview the Web Application.
+   - Simply open the [preview page](https://seeed-studio.github.io/SenseCraft-Web-Toolkit/) to preview the Web Application.
 
 2. Clone the Repository
    - If you need to further customize or configure the senseCraft application, you can clone this repository to your local machine:
