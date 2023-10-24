@@ -13,6 +13,7 @@ import {
 import Serial from './serial';
 import Device from './device';
 import deviceManager from './deviceManager';
+import DEVICE_LIST from './constants';
 
 export {
   type Bin,
@@ -28,4 +29,5 @@ export {
   Serial,
   Device,
   deviceManager,
+  DEVICE_LIST,
 };

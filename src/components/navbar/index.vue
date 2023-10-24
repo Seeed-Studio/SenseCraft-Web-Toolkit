@@ -129,11 +129,11 @@
           </a-button>
         </a-tooltip>
       </li>
-      <li>
-        <a-select :style="{}" default-value="XIAO ESP32S3">
-          <a-option>XIAO ESP32S3</a-option>
+      <!-- <li>
+        <a-select :style="{}">
+          <a-option v-for="item in deviceList" :value="item.id" :key="item.id">{{ item.name }}</a-option>
         </a-select>
-      </li>
+      </li> -->
       <li>
         <a-button
           v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected"

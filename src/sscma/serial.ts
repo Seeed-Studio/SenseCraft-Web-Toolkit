@@ -7,13 +7,14 @@ import {
 import { Message } from '@arco-design/web-vue';
 import Device from './device';
 import { DeviceStatus } from './types';
+import DEVICE_LIST from './constants';
 
 export default class Serial extends Device {
   public port: SerialPort | null;
 
   public transport: Transport | null;
 
-  public esploader: ESPLoader | null;
+  public flasher: ESPLoader | null;
 
   private reader: ReadableStreamDefaultReader | null | undefined;
 
@@ -28,7 +29,7 @@ export default class Serial extends Device {
     this.port = null;
 
     this.transport = null;
-    this.esploader = null;
+    this.flasher = null;
 
     this.reader = null;
     this.writer = null;
@@ -38,13 +39,50 @@ export default class Serial extends Device {
     this.cacheData = [];
   }
 
+  private checkDevice() {
+    if (this.port === null) {
+      Message.error('Device is not connected');
+      throw new Error('Device is not connected');
+    }
+    const vendorId = this.port.getInfo().usbVendorId;
+    const productId = this.port.getInfo().usbProductId;
+    this.deviceStore.deviceType = '';
+    for (let i = 0; i < DEVICE_LIST.length; i += 1) {
+      const device = DEVICE_LIST[i];
+      for (let j = 0; j < device.filter.length; j += 1) {
+        const filter = device.filter[j];
+        if (vendorId === filter.vendorId && productId === filter.productId) {
+          this.deviceStore.setDeviceType(device.name);
+          break;
+        }
+        if (this.deviceStore.deviceType !== '') {
+          break;
+        }
+      }
+    }
+    if (this.deviceStore.deviceType === '') {
+      Message.error('Device is not supported');
+      throw new Error('Device is not supported');
+    }
+  }
+
+  public async reset() {
+    await this.transport?.setDTR(false);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+    await this.transport?.setDTR(true);
+  }
+
   public async connect(baudrate = 921600) {
     try {
       if (this.port === null) {
         try {
           const serialPort = await navigator.serial.requestPort();
           this.port = serialPort;
+          this.checkDevice();
         } catch (error) {
+          this.port = null;
           console.log(error);
           Message.error('Request serial port failed');
           return;
@@ -52,13 +90,13 @@ export default class Serial extends Device {
       }
       // 如果当前在esp连接，需要断开
       if (
-        (this.deviceStore.deviceStatus === DeviceStatus.EspConnected ||
+        (this.deviceStore.deviceStatus === DeviceStatus.FlasherConnected ||
           this.deviceStore.deviceStatus === DeviceStatus.Flashing) &&
         this.transport
       ) {
         await this.transport.disconnect();
         this.transport = null;
-        this.esploader = null;
+        this.flasher = null;
       }
       navigator.serial.ondisconnect = this.ondisconnect.bind(this);
       this.cacheData = [];
@@ -85,13 +123,15 @@ export default class Serial extends Device {
     }
   }
 
-  public async esploaderConnect(terminal?: IEspLoaderTerminal) {
+  public async flasherConnect(terminal?: IEspLoaderTerminal) {
     try {
       if (this.port === null) {
         try {
           const serialPort = await navigator.serial.requestPort();
           this.port = serialPort;
+          this.checkDevice();
         } catch (error) {
+          this.port = null;
           console.log(error);
           Message.error('Request serial port failed');
           return;
@@ -104,17 +144,22 @@ export default class Serial extends Device {
         this.writer?.releaseLock();
         await this.port?.close();
       }
-      if (!this.transport || !this.esploader) {
-        this.transport = new Transport(this.port);
-        const flashOptions = {
-          transport: this.transport,
-          baudrate: 115200,
-          terminal,
-        } as LoaderOptions;
-        this.esploader = new ESPLoader(flashOptions);
+      if (!this.transport || !this.flasher) {
+        if (this.deviceStore.deviceType.toUpperCase().includes('ESP32')) {
+          this.transport = new Transport(this.port);
+          const flashOptions = {
+            transport: this.transport,
+            baudrate: 115200,
+            terminal,
+          } as LoaderOptions;
+          this.flasher = new ESPLoader(flashOptions);
+          await this.flasher.main_fn();
+          this.deviceStore.setDeviceStatus(DeviceStatus.FlasherConnected);
+        } else {
+          Message.error('Device is not supported for flasher');
+          throw new Error('Device is not supported for flasher');
+        }
       }
-      await this.esploader.main_fn();
-      this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
     } catch (error) {
       console.log(error);
       Message.error('Device connect failed');
@@ -126,7 +171,7 @@ export default class Serial extends Device {
     this.disconnect().then(() => {
       this.port = null;
       this.transport = null;
-      this.esploader = null;
+      this.flasher = null;
       Message.error('Device is disconnected');
     });
   }

@@ -300,12 +300,12 @@
   const flashFirmware = async (isCustom = false) => {
     loading.value = true;
     loadingTip.value = 'Connecting';
-    if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
-      await (device as Serial).esploaderConnect(espLoaderTerminal);
+    if (deviceStore.deviceStatus !== DeviceStatus.FlasherConnected) {
+      await (device as Serial).flasherConnect(espLoaderTerminal);
     }
-    const esploader = (device as Serial).esploader;
+    const flasher = (device as Serial).flasher;
     const transport = (device as Serial).transport;
-    if (!esploader || !transport) {
+    if (!flasher || !transport) {
       Message.error('No port selected by the user');
       loading.value = false;
       return;
@@ -375,7 +375,7 @@
           console.log('written ', fileIndex, ' file:', (written / total) * 100);
         },
       } as FlashOptions;
-      await esploader?.write_flash(flashOptions);
+      await flasher?.write_flash(flashOptions);
       result = true;
     } catch (e: any) {
       result = false;
@@ -384,11 +384,7 @@
       // 烧录完重置设备
       if (result) {
         loadingTip.value = 'Resetting';
-        await transport?.setDTR(false);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 100);
-        });
-        await transport?.setDTR(true);
+        (device as Serial).reset();
       }
       // 连接设备
       if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {

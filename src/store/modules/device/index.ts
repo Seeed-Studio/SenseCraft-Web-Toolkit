@@ -4,6 +4,7 @@ import { DeviceStatus, Model, Firmware } from '@/sscma/types';
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
+    deviceType: '',
     tiou: 0,
     tscore: 0,
     isInvoke: false,
@@ -18,6 +19,9 @@ const useDeviceStore = defineStore('device', {
   actions: {
     setDeviceStatus(deviceStatus: DeviceStatus) {
       this.deviceStatus = deviceStatus;
+    },
+    setDeviceType(deviceType: string) {
+      this.deviceType = deviceType;
     },
     setIOU(tiou: number) {
       this.tiou = tiou;

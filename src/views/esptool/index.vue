@@ -108,12 +108,12 @@
     loadingTip.value = 'Connecting';
     let result;
     try {
-      if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
-        await (device as Serial).esploaderConnect(espLoaderTerminal);
+      if (deviceStore.deviceStatus !== DeviceStatus.FlasherConnected) {
+        await (device as Serial).flasherConnect(espLoaderTerminal);
       }
-      const esploader = (device as Serial).esploader;
+      const flasher = (device as Serial).flasher;
       loadingTip.value = 'Erasing';
-      await esploader?.erase_flash();
+      await flasher?.erase_flash();
       result = true;
     } catch (e) {
       console.error(e);
@@ -181,12 +181,12 @@
     }
 
     loadingTip.value = 'Connecting';
-    if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
-      await (device as Serial).esploaderConnect(espLoaderTerminal);
+    if (deviceStore.deviceStatus !== DeviceStatus.FlasherConnected) {
+      await (device as Serial).flasherConnect(espLoaderTerminal);
     }
-    const esploader = (device as Serial).esploader;
+    const flasher = (device as Serial).flasher;
     const transport = (device as Serial).transport;
-    if (!esploader || !transport) {
+    if (!flasher || !transport) {
       Message.error('No port selected by the user');
       loading.value = false;
       return;
@@ -205,7 +205,7 @@
           console.log('written ', fileIndex, ' file:', (written / total) * 100);
         },
       } as FlashOptions;
-      await esploader?.write_flash(flashOptions);
+      await flasher?.write_flash(flashOptions);
       result = true;
     } catch (e: any) {
       result = false;
@@ -214,11 +214,7 @@
       // reset device
       if (result) {
         loadingTip.value = 'Resetting';
-        await transport?.setDTR(false);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 100);
-        });
-        await transport?.setDTR(true);
+        await (device as Serial).reset();
         Message.success('Flash successful');
       } else {
         Message.error('Flash failed');
