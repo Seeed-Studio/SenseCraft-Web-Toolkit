@@ -38,7 +38,7 @@ export default class Serial extends Device {
     this.cacheData = [];
   }
 
-  public async connect() {
+  public async connect(baudrate = 921600) {
     try {
       if (this.port === null) {
         try {
@@ -63,7 +63,7 @@ export default class Serial extends Device {
       navigator.serial.ondisconnect = this.ondisconnect.bind(this);
       this.cacheData = [];
       if (this.port?.readable === null || this.port?.writable === null) {
-        await this.port.open({ baudRate: 115200 });
+        await this.port.open({ baudRate: baudrate });
       }
 
       await this.port?.setSignals({ dataTerminalReady: false });

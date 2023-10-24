@@ -214,8 +214,8 @@
   import { FlashOptions } from 'esptool-js';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Serial, Bin, Model } from '@/senseCraft';
-  import deviceManager from '@/senseCraft/deviceManager';
+  import { DeviceStatus, Serial, Bin, Model } from '@/sscma';
+  import deviceManager from '@/sscma/deviceManager';
   import customModelIcon from '@/assets/images/custom-model.png';
 
   const { device, term } = deviceManager;

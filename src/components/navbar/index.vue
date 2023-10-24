@@ -163,7 +163,7 @@
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
   import Menu from '@/components/menu/index.vue';
-  import { deviceManager, DeviceStatus } from '@/senseCraft';
+  import { deviceManager, DeviceStatus } from '@/sscma';
 
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();

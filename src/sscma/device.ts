@@ -5,6 +5,8 @@ import { Algo } from './types';
 export default class Device {
   public deviceStore;
 
+  public deviceName: string;
+
   public port: SerialPort | USBDevice | null;
 
   public client: ATClient;
@@ -19,6 +21,7 @@ export default class Device {
   public eventMap: Map<string, (event: any) => void>;
 
   constructor() {
+    this.deviceName = '';
     this.port = null;
     this.deviceStore = useDeviceStore();
     this.client = new ATClient();

@@ -76,7 +76,7 @@
   import { RequestOption } from '@arco-design/web-vue/es/upload';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Serial, deviceManager } from '@/senseCraft';
+  import { DeviceStatus, Serial, deviceManager } from '@/sscma';
 
   const deviceStore = useDeviceStore();
   const { device, term } = deviceManager;

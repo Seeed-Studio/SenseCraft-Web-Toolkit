@@ -1,10 +1,10 @@
 <template>
   <Vue3DraggableResizable
     class="parent"
-    :initW="728"
-    :initH="588"
-    :minW="300"
-    :minH="300"
+    :init-w="728"
+    :init-h="588"
+    :min-w="300"
+    :min-h="300"
     :x="500"
     :y="200"
     :active="true"
@@ -33,7 +33,7 @@
   import Vue3DraggableResizable from 'vue3-draggable-resizable';
   import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
   import { useAppStore } from '@/store';
-  import { deviceManager } from '@/senseCraft';
+  import { deviceManager } from '@/sscma';
 
   const appStore = useAppStore();
 
@@ -78,8 +78,8 @@
       width: 100%;
       height: 48px;
       padding: 0 20px;
-      border-bottom: 1px solid var(--color-neutral-3);
       background-color: white;
+      border-bottom: 1px solid var(--color-neutral-3);
 
       .title {
         display: flex;
@@ -98,12 +98,13 @@
         cursor: pointer;
       }
     }
+
     .terminal {
-      background-color: black;
-      width: 100%;
-      flex: 1;
-      padding-left: 8px;
       z-index: 10;
+      flex: 1;
+      width: 100%;
+      padding-left: 8px;
+      background-color: black;
     }
   }
 </style>

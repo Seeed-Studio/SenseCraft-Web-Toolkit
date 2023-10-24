@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { DeviceStatus, Model, Firmware } from '@/senseCraft/types';
+import { DeviceStatus, Model, Firmware } from '@/sscma/types';
 
 const useDeviceStore = defineStore('device', {
   state: () => ({

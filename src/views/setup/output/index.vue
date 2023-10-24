@@ -180,7 +180,7 @@
   import { computed, onMounted, watch, reactive, ref, Ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, deviceManager } from '@/senseCraft';
+  import { DeviceStatus, deviceManager } from '@/sscma';
 
   const deviceStore = useDeviceStore();
   const { device } = deviceManager;
