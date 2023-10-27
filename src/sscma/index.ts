@@ -10,10 +10,13 @@ import {
   SensorState,
   Sensor,
 } from './types';
-import Serial from './serial';
 import Device from './device';
+import DeviceESP from './deviceEsp';
+import Himax from './deviceHimax';
 import deviceManager from './deviceManager';
 import DEVICE_LIST from './constants';
+import Xmodem from './xmodem';
+import Serial from './serial';
 
 export {
   type Bin,
@@ -26,8 +29,11 @@ export {
   SensorType,
   SensorState,
   type Sensor,
-  Serial,
+  DeviceESP,
   Device,
   deviceManager,
   DEVICE_LIST,
+  Xmodem,
+  Serial,
+  Himax,
 };

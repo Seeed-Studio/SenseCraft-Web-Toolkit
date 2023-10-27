@@ -1,11 +1,11 @@
 import { DEFAULT_LAYOUT } from '../base';
 import { AppRouteRecordRaw } from '../types';
 
-const ESPTOOL: AppRouteRecordRaw = {
-  path: '/esptool',
-  name: 'esptool',
+const FLASHER: AppRouteRecordRaw = {
+  path: '/flasher',
+  name: 'flasher',
   component: DEFAULT_LAYOUT,
-  redirect: '/esptool/esptool',
+  redirect: '/flasher/flasher',
   meta: {
     locale: 'menu.tool',
     requiresAuth: true,
@@ -15,17 +15,17 @@ const ESPTOOL: AppRouteRecordRaw = {
   },
   children: [
     {
-      path: 'esptool',
-      name: 'esptool',
-      component: () => import('@/views/esptool/index.vue'),
+      path: 'flasher',
+      name: 'flasher',
+      component: () => import('@/views/flasher/index.vue'),
       meta: {
         locale: 'menu.tool',
         requiresAuth: true,
         roles: ['*'],
-        activeMenu: 'esptool',
+        activeMenu: 'flasher',
       },
     },
   ],
 };
 
-export default ESPTOOL;
+export default FLASHER;

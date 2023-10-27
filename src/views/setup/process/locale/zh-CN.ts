@@ -35,7 +35,7 @@ export default {
   'workplace.device.card.aimodel': '上传AI模型',
   'workplace.device.card.binFile': '上传Bin文件',
   'workplace.device.btn.upload': '上传',
-  'workplace.device.card.esptool': 'ESP Tool',
+  'workplace.device.card.flasher': '烧录器',
   'workplace.firmware.eraseflash': '擦除设备',
   'workplace.firmware.address': '地址',
   'workplace.firmware.file': '文件',

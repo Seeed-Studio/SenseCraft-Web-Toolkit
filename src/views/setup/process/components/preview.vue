@@ -51,7 +51,6 @@
   const eventName = 'INVOKE';
 
   const deviceStore = useDeviceStore();
-  const { device } = deviceManager;
 
   const img = new Image();
 
@@ -63,6 +62,7 @@
   const length = computed(() => classes.value.length);
 
   const handleInvoke = async () => {
+    const device = deviceManager.getDevice();
     const result = await device.invoke(-1);
     if (result) {
       invoke.value = true;
@@ -72,7 +72,8 @@
     }
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
+    const device = deviceManager.getDevice();
     device.break();
     invoke.value = false;
     deviceStore.setIsInvoke(false);
@@ -164,9 +165,11 @@
     }
   };
 
-  const handelRefresh = async (deviceStatus: DeviceStatus) => {
-    if (deviceStatus === DeviceStatus.SerialConnected) {
+  const handelRefresh = async (ready: boolean) => {
+    if (ready === true) {
+      const device = deviceManager.getDevice();
       disable.value = false;
+      device.addEventListener(eventName, onInvoke);
       const isInvoke = await device.isInvoke();
       if (isInvoke) {
         invoke.value = true;
@@ -188,19 +191,22 @@
   };
 
   watch(
-    () => deviceStore.deviceStatus,
+    () => deviceStore.ready,
     (val) => {
       handelRefresh(val);
     }
   );
 
   onMounted(async () => {
-    device.addEventListener(eventName, onInvoke);
-    handelRefresh(deviceStore.deviceStatus);
+    handelRefresh(deviceStore.ready);
   });
 
-  onBeforeUnmount(() => {
-    device.removeEventListener(eventName);
+  onBeforeUnmount(async () => {
+    const device = await deviceManager.getDevice();
+    device.break();
+    deviceStore.setIsInvoke(false);
+    deviceStore.setReady(false);
+    device?.removeEventListener(eventName);
   });
 </script>
 

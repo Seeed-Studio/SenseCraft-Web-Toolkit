@@ -183,7 +183,7 @@
   import { DeviceStatus, deviceManager } from '@/sscma';
 
   const deviceStore = useDeviceStore();
-  const { device } = deviceManager;
+  const device = deviceManager.getDevice();
 
   const data: Ref<
     {
@@ -259,7 +259,7 @@
     );
     if (ret) {
       await device.break();
-      await device.invoke(-1);
+      // await device.invoke(-1);
       Message.success('Set action successful');
     } else {
       Message.error('Set action failed');

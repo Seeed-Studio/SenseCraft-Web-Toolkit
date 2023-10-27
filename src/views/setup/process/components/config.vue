@@ -43,17 +43,18 @@
   import { useDeviceStore } from '@/store';
   import { deviceManager } from '@/sscma';
 
-  const { device } = deviceManager;
   const deviceStore = useDeviceStore();
 
   const confidence = ref(deviceStore.tscore);
   const iou = ref(deviceStore.tiou);
 
-  const setConfidence = (value: number | [number, number]) => {
+  const setConfidence = async (value: number | [number, number]) => {
+    const device = await deviceManager.getDevice();
     device.setScore(value as number);
   };
 
-  const setIou = (value: number | [number, number]) => {
+  const setIou = async (value: number | [number, number]) => {
+    const device = await deviceManager.getDevice();
     device.setIOU(value as number);
   };
 

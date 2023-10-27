@@ -38,7 +38,7 @@
   const appStore = useAppStore();
 
   const terminal = ref();
-  const term = deviceManager.term;
+  const term = deviceManager.getTerminal();
 
   onMounted(async () => {
     if (terminal.value) {

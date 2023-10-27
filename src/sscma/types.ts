@@ -1,8 +1,9 @@
 export enum DeviceStatus {
-  UnConnected = 0, // 设备串口未连接
-  SerialConnected = 1, // 串口连接状态，可以下发指令
-  FlasherConnected = 2, // esp连接状态，可以烧录固件和模型
-  Flashing = 3, // 烧录状态，不能做别的操作
+  UnConnected = 0,
+  SerialConnected = 1,
+  FlasherConnected = 3,
+  Flashing = 4,
+  Connected,
 }
 
 export interface Bin {

@@ -167,7 +167,7 @@
 
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
-  const { device } = deviceManager;
+  let device = deviceManager.getDevice();
 
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
@@ -221,7 +221,10 @@
   const handleConnect = async () => {
     try {
       loading.value = true;
-      await device.connect();
+      if (device === null) {
+        device = await deviceManager.requestDevice();
+      }
+      device.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success('Device connected successfully');
       }
@@ -236,6 +239,7 @@
     try {
       device.disconnect();
     } catch (error) {
+      Message.error(error.message);
       console.log(error);
     }
   };

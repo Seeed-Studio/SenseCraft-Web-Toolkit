@@ -211,27 +211,13 @@
   import 'swiper/css';
   import 'swiper/css/navigation';
   import { Navigation } from 'swiper/modules';
-  import { FlashOptions } from 'esptool-js';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Serial, Bin, Model } from '@/sscma';
+  import { DeviceStatus, Bin, Model } from '@/sscma';
   import deviceManager from '@/sscma/deviceManager';
   import customModelIcon from '@/assets/images/custom-model.png';
 
-  const { device, term } = deviceManager;
   const deviceStore = useDeviceStore();
-
-  const espLoaderTerminal = {
-    clean() {
-      term.clear();
-    },
-    writeLine(data: string) {
-      term.writeln(data);
-    },
-    write(data: string) {
-      term.write(data);
-    },
-  };
 
   const loading = ref(false);
   const loadingTip = ref('');
@@ -250,13 +236,16 @@
   const inputVal = ref('');
 
   const hasDeviceContent = computed(() => {
-    if (
-      deviceName.value === null ||
-      deviceVersion.value === null ||
-      deviceStore.currentModel === undefined
-    ) {
-      return false;
-    }
+    // if (
+    //   deviceName.value === null ||
+    //   deviceVersion.value === null ||
+    //   deviceStore.currentModel === undefined
+    // ) {
+    //   console.log('deviceName.value', deviceName.value);
+    //   console.log('deviceVersion.value', deviceVersion.value);
+    //   console.log('deviceStore.currentModel', deviceStore.currentModel);
+    //   return false;
+    // }
     return true;
   });
 
@@ -297,114 +286,7 @@
     };
   };
 
-  const flashFirmware = async (isCustom = false) => {
-    loading.value = true;
-    loadingTip.value = 'Connecting';
-    if (deviceStore.deviceStatus !== DeviceStatus.FlasherConnected) {
-      await (device as Serial).flasherConnect(espLoaderTerminal);
-    }
-    const flasher = (device as Serial).flasher;
-    const transport = (device as Serial).transport;
-    if (!flasher || !transport) {
-      Message.error('No port selected by the user');
-      loading.value = false;
-      return;
-    }
-    let fileArray = [] as {
-      data: string;
-      address: number;
-    }[];
-    const version = deviceStore.firmware?.version;
-    if (version !== deviceVersion.value) {
-      const bins = deviceStore.firmware?.bins;
-      if (!bins || bins.length === 0) {
-        Message.error('No firmware');
-        loading.value = false;
-        return;
-      }
-      // 下载固件
-      loadingTip.value = 'Downloading firmware';
-      const firmwareArray = await downloadFirmware(bins);
-      fileArray = fileArray.concat(firmwareArray);
-    }
-
-    // 模型对象
-    let model;
-    if (isCustom) {
-      if (!modelFile.value) {
-        loading.value = false;
-        return;
-      }
-      const data = await readFile(modelFile.value);
-      fileArray.push({ data, address: 0x400000 });
-      model = {
-        name: modalName.value,
-        version: '1.0.0',
-        category: 'Object Detection',
-        model_type: 'TFLite',
-        algorithm: 'YOLO',
-        description: 'Custom Model',
-        classes: modelObjects.value,
-        size: modelFile.value.size.toString(),
-        isCustom: true,
-      };
-    } else {
-      if (selectedModel.value < 0) {
-        loading.value = false;
-        Message.error('Please select a model');
-        return;
-      }
-      if (deviceStore.models.length > 0) {
-        loadingTip.value = 'Downloading model';
-        model = deviceStore.models[selectedModel.value];
-        const modelfile = await downloadModel(model);
-        fileArray.push(modelfile);
-      }
-    }
-
-    let result;
-    deviceStore.setDeviceStatus(DeviceStatus.Flashing);
-    try {
-      loadingTip.value = 'Flashing';
-      const flashOptions: FlashOptions = {
-        fileArray,
-        flashSize: 'keep',
-        eraseAll: false,
-        compress: true,
-        reportProgress: (fileIndex, written, total) => {
-          console.log('written ', fileIndex, ' file:', (written / total) * 100);
-        },
-      } as FlashOptions;
-      await flasher?.write_flash(flashOptions);
-      result = true;
-    } catch (e: any) {
-      result = false;
-      term.writeln(`Error: ${e.message}`);
-    } finally {
-      // 烧录完重置设备
-      if (result) {
-        loadingTip.value = 'Resetting';
-        (device as Serial).reset();
-      }
-      // 连接设备
-      if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-        loadingTip.value = 'Connecting';
-        await (device as Serial).connect();
-      }
-      if (model) {
-        try {
-          const info = btoa(JSON.stringify(model));
-          device.setInfo(info);
-          device.deleteAction();
-          deviceStore.setCurrentModel(model);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      loadingTip.value = '';
-      loading.value = false;
-    }
-  };
+  const flashFirmware = async (isCustom = false) => {};
 
   const handleSelectedModel = (index: number) => {
     selectedModel.value = index;
@@ -416,29 +298,11 @@
     isSelectedCustomModel.value = true;
   };
 
-  const handleUpload = async () => {
-    if (isSelectedCustomModel.value) {
-      Message.warning('The device is running the current model');
-      return;
-    }
-    if (selectedModel.value > -1) {
-      const model = deviceStore.models[selectedModel.value];
-      if (model.checksum === deviceStore.currentModel?.checksum) {
-        Message.warning('The device is running the current model');
-        return;
-      }
-    }
-    try {
-      flashFirmware();
-    } catch (error) {
-      console.log(error);
-      loadingTip.value = '';
-      loading.value = false;
-    }
-  };
+  const handleUpload = async () => {};
 
   const handelRefresh = async (deviceStatus: DeviceStatus) => {
     if (deviceStatus === DeviceStatus.SerialConnected) {
+      const device = deviceManager.getDevice();
       try {
         const name = await device.getName();
         const version = await device.getVersion();
@@ -454,6 +318,8 @@
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        deviceStore.setReady(true);
       }
     }
   };
@@ -609,6 +475,7 @@
     padding: 0 45px;
 
     --swiper-navigation-size: 26px;
+
     // --swiper-navigation-color: #fff;
     .carousel-item-wrapper {
       flex-shrink: 0;

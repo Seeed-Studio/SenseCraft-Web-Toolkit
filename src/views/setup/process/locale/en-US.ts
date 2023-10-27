@@ -38,7 +38,7 @@ export default {
   'workplace.device.card.aimodel': 'Upload AI model',
   'workplace.device.card.binFile': 'Upload Bin files',
   'workplace.device.btn.upload': 'Upload',
-  'workplace.device.card.esptool': 'ESP Tool',
+  'workplace.device.card.flasher': 'Flasher',
   'workplace.firmware.eraseflash': 'Erase Device',
   'workplace.firmware.address': 'Address',
   'workplace.firmware.file': 'File',

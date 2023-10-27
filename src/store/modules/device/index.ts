@@ -4,6 +4,7 @@ import { DeviceStatus, Model, Firmware } from '@/sscma/types';
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
+    ready: false,
     deviceType: '',
     tiou: 0,
     tscore: 0,
@@ -17,6 +18,9 @@ const useDeviceStore = defineStore('device', {
   getters: {},
 
   actions: {
+    setReady(ready: boolean) {
+      this.ready = ready;
+    },
     setDeviceStatus(deviceStatus: DeviceStatus) {
       this.deviceStatus = deviceStatus;
     },

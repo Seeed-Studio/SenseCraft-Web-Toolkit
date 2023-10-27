@@ -4,6 +4,7 @@ const path = require('path');
 module.exports = {
   root: true,
   parser: 'vue-eslint-parser',
+
   parserOptions: {
     // Parser that checks the content of the <script> tag
     parser: '@typescript-eslint/parser',
@@ -72,12 +73,19 @@ module.exports = {
       'always',
       { exceptAfterSingleLine: true },
     ],
+    'no-await-in-loop': 'off',
     'no-shadow': 'off',
+    'no-continue': 'off',
+    'no-promise-executor-return': 'off',
+    'no-unsafe-optional-chaining': 'off',
     '@typescript-eslint/no-shadow': ['off'],
     'no-bitwise': 'off',
-    "prefer-destructuring": ["error", {
-      "array": false,
-      "object": false
-    }]
-    }
-  };
+    'prefer-destructuring': [
+      'error',
+      {
+        array: false,
+        object: false,
+      },
+    ],
+  },
+};

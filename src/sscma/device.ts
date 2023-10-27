@@ -11,6 +11,8 @@ export default class Device {
 
   public port: SerialPort | USBDevice | null;
 
+  public ready: boolean;
+
   public client: ATClient;
 
   public textEncoder: TextEncoder;
@@ -26,6 +28,7 @@ export default class Device {
     this.deviceType = '';
     this.deviceName = '';
     this.port = null;
+    this.ready = false;
     this.deviceStore = useDeviceStore();
     this.client = new ATClient();
 
@@ -50,7 +53,11 @@ export default class Device {
 
   public async connect() {}
 
-  public disconnect() {}
+  public async disconnect() {}
+
+  public async eraseFlash() {}
+
+  public async flash(data: Uint8Array, offset: number) {}
 
   public async write(data: BufferSource) {}
 
