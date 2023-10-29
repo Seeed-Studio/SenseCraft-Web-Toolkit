@@ -22,6 +22,7 @@ const useDeviceStore = defineStore('device', {
       this.ready = ready;
     },
     setDeviceStatus(deviceStatus: DeviceStatus) {
+      console.log('setDeviceStatus:', deviceStatus);
       this.deviceStatus = deviceStatus;
     },
     setDeviceType(deviceType: string) {
@@ -40,7 +41,9 @@ const useDeviceStore = defineStore('device', {
       this.hasLoadModel = hasLoadModel;
     },
     setModels(models: Model[]) {
-      this.models = models;
+      this.models = models.filter((model) =>
+        model.devices?.includes(this.deviceType)
+      );
     },
     setFirmware(firmware: Firmware) {
       this.firmware = firmware;

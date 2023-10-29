@@ -61,6 +61,8 @@ export default class Device {
 
   public async write(data: BufferSource) {}
 
+  public async hardReset() {}
+
   public async flush() {
     await this.write(this.textEncoder.encode('\r\n'));
     await this.write(this.textEncoder.encode('\r\n'));
@@ -487,8 +489,8 @@ export default class Device {
 
   public async setScore(score: number): Promise<string> {
     try {
-      const timestamp = new Date().getTime();
-      const tag = `${timestamp}@TSCORE`;
+      const timestamp = new Date().getTime().toString().slice(-4);
+      const tag = 'TSCORE';
       const command = this.client.setScore(score, tag);
       const response = await this.sendCommand(command, tag);
       const code = response.code as keyof typeof ERROR_LIST;
@@ -537,7 +539,7 @@ export default class Device {
   public async setIOU(iou: number): Promise<string> {
     try {
       const timestamp = new Date().getTime();
-      const tag = `${timestamp}@TIOU`;
+      const tag = 'TIOU';
       const command = this.client.setIOU(iou, tag);
       const response = await this.sendCommand(command, tag);
       const code = response.code as keyof typeof ERROR_LIST;

@@ -207,6 +207,7 @@
 <script lang="ts" setup>
   import { Ref, ref, nextTick, computed, onMounted, watch } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
+  import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
   import 'swiper/css';
   import 'swiper/css/navigation';
@@ -218,6 +219,7 @@
   import customModelIcon from '@/assets/images/custom-model.png';
 
   const deviceStore = useDeviceStore();
+  const { t } = useI18n();
 
   const loading = ref(false);
   const loadingTip = ref('');
@@ -236,27 +238,29 @@
   const inputVal = ref('');
 
   const hasDeviceContent = computed(() => {
-    // if (
-    //   deviceName.value === null ||
-    //   deviceVersion.value === null ||
-    //   deviceStore.currentModel === undefined
-    // ) {
-    //   console.log('deviceName.value', deviceName.value);
-    //   console.log('deviceVersion.value', deviceVersion.value);
-    //   console.log('deviceStore.currentModel', deviceStore.currentModel);
-    //   return false;
-    // }
+    if (
+      deviceName.value === null ||
+      deviceVersion.value === null ||
+      deviceStore.currentModel === undefined
+    ) {
+      console.log('deviceName.value', deviceName.value);
+      console.log('deviceVersion.value', deviceVersion.value);
+      console.log('deviceStore.currentModel', deviceStore.currentModel);
+      return false;
+    }
     return true;
   });
 
-  const readFile = (blob: Blob | File): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
+  const readFile = (blob: Blob | File): Promise<Uint8Array> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const data = ev?.target?.result as string;
-        resolve(data);
+      reader.onload = () => {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const uint8Array = new Uint8Array(arrayBuffer);
+        resolve(uint8Array);
       };
-      reader.readAsBinaryString(blob);
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(blob);
     });
   };
 
@@ -275,6 +279,7 @@
   };
 
   const downloadModel = async (model: Model) => {
+    console.log('model', model);
     const response = await fetch(
       `${model.url}?timestamp=${new Date().getTime()}`
     );
@@ -286,7 +291,102 @@
     };
   };
 
-  const flashFirmware = async (isCustom = false) => {};
+  const flashFirmware = async (isCustom = false) => {
+    loading.value = true;
+    loadingTip.value = t('workplace.device.message.tip.connecting');
+    let device = deviceManager.getDevice();
+    const fileArray = [] as {
+      data: Uint8Array;
+      address: number;
+    }[];
+    if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
+      device = await deviceManager.requestDevice();
+    }
+    const version = deviceStore.firmware?.version;
+    if (version !== deviceVersion.value) {
+      const bins = deviceStore.firmware?.bins;
+      if (!bins || bins.length === 0) {
+        Message.error(t('workplace.device.message.firmware.no'));
+        loading.value = false;
+        return;
+      }
+      // 下载固件
+      loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
+      const firmwareArray = await downloadFirmware(bins);
+      fileArray.push(...firmwareArray);
+    }
+
+    // 模型对象
+    let model;
+    if (isCustom) {
+      if (!modelFile.value) {
+        loading.value = false;
+        return;
+      }
+      const data = await readFile(modelFile.value);
+      model = {
+        name: modalName.value,
+        version: '1.0.0',
+        category: 'Object Detection',
+        model_type: 'TFLite',
+        algorithm: 'YOLO',
+        description: 'Custom Model',
+        classes: modelObjects.value,
+        size: modelFile.value.size.toString(),
+        isCustom: true,
+      };
+    } else {
+      if (selectedModel.value < 0) {
+        loading.value = false;
+        Message.error(t('workplace.device.message.model.no'));
+        return;
+      }
+      if (deviceStore.models.length > 0) {
+        loadingTip.value = t('workplace.device.message.tip.downloading.model');
+        model = deviceStore.models[selectedModel.value];
+        const modelfile = await downloadModel(model);
+        fileArray.push(modelfile);
+      }
+    }
+
+    let result;
+    deviceStore.setDeviceStatus(DeviceStatus.Flashing);
+    try {
+      loadingTip.value = t('workplace.device.message.tip.flashing');
+      console.log('fileArray', fileArray);
+      for (let index = 0; index < fileArray.length; index += 1) {
+        const item = fileArray[index];
+        await device.flash(item.data, item.address);
+      }
+      result = true;
+    } catch (e: any) {
+      result = false;
+    } finally {
+      // 烧录完重置设备
+      if (result) {
+        loadingTip.value = t('workplace.device.message.tip.resetting');
+        await device.hardReset();
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(true);
+          }, 500);
+        });
+      }
+      if (model) {
+        try {
+          const info = btoa(JSON.stringify(model));
+          await device.setInfo(info);
+          await device.deleteAction();
+          deviceStore.setCurrentModel(model);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
+      loadingTip.value = '';
+      loading.value = false;
+    }
+  };
 
   const handleSelectedModel = (index: number) => {
     selectedModel.value = index;
@@ -298,10 +398,33 @@
     isSelectedCustomModel.value = true;
   };
 
-  const handleUpload = async () => {};
+  const handleUpload = async () => {
+    if (isSelectedCustomModel.value) {
+      Message.warning(t('workplace.device.message.model.current'));
+      return;
+    }
+    if (selectedModel.value > -1) {
+      const model = deviceStore.models[selectedModel.value];
+      if (
+        model.checksum &&
+        model.checksum === deviceStore.currentModel?.checksum
+      ) {
+        Message.warning(t('workplace.device.message.model.current'));
+        return;
+      }
+    }
+    try {
+      flashFirmware();
+    } catch (error) {
+      console.log(error);
+      loadingTip.value = '';
+      loading.value = false;
+    }
+  };
 
   const handelRefresh = async (deviceStatus: DeviceStatus) => {
     if (deviceStatus === DeviceStatus.SerialConnected) {
+      deviceStore.setReady(false);
       const device = deviceManager.getDevice();
       try {
         const name = await device.getName();
@@ -396,26 +519,40 @@
   };
 
   onMounted(() => {
-    if (!deviceStore.hasLoadModel) {
-      fetch(
-        `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
-      )
-        .then((response) => response.json())
-        .then((data: any) => {
-          deviceStore.setModels(data.models);
-          deviceStore.setHasLoadModel(true);
-          const firmwares = data.firmwares;
-          if (firmwares?.length > 0) {
-            deviceStore.setFirmware(firmwares[0]);
-          }
-        });
-    }
+    // if (!deviceStore.hasLoadModel) {
+    //   fetch(
+    //     `https://files.seeedstudio.com/sscma/sscma-model-test.json?timestamp=${new Date().getTime()}`
+    //   )
+    //     .then((response) => response.json())
+    //     .then((data: any) => {
+    //       deviceStore.setModels(data.models);
+    //       deviceStore.setHasLoadModel(true);
+    //       const firmwares = data.firmwares;
+    //       if (firmwares?.length > 0) {
+    //         deviceStore.setFirmware(firmwares[1]);
+    //       }
+    //     });
+    // }
     handelRefresh(deviceStore.deviceStatus);
   });
 
   watch(
     () => deviceStore.deviceStatus,
     async (val) => {
+      if (!deviceStore.hasLoadModel) {
+        fetch(
+          `https://files.seeedstudio.com/sscma/sscma-model-test.json?timestamp=${new Date().getTime()}`
+        )
+          .then((response) => response.json())
+          .then((data: any) => {
+            deviceStore.setModels(data.models);
+            deviceStore.setHasLoadModel(true);
+            const firmwares = data.firmwares;
+            if (firmwares?.length > 0) {
+              deviceStore.setFirmware(firmwares[1]);
+            }
+          });
+      }
       handelRefresh(val);
     }
   );

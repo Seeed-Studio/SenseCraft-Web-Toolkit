@@ -112,7 +112,7 @@
               const h = rect[3];
               const score = rect[4];
               const tar = parseInt(rect[5], 10);
-              const color = COLORS[x % COLORS.length];
+              const color = COLORS[tar % COLORS.length];
               let tarStr = '';
               if (classes.value && tar < length.value) {
                 tarStr = classes.value[tar];

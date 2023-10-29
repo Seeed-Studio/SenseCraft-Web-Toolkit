@@ -18,6 +18,7 @@ export default class Himax extends Device {
     this.hasStart = false;
     this.lastCode = -1;
     this.cacheData = [];
+    this.deviceStore.setDeviceType('we_ii');
   }
 
   private readLoop = async () => {
@@ -179,8 +180,6 @@ export default class Himax extends Device {
       throw new Error(e);
     }
     await flashComplete('y');
-    await this.disconnect();
-    await this.connect();
     this.watchLoop = true;
   }
 

@@ -224,7 +224,7 @@
       if (device === null) {
         device = await deviceManager.requestDevice();
       }
-      device.connect();
+      await device.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success('Device connected successfully');
       }
@@ -232,6 +232,7 @@
     } catch (error) {
       loading.value = false;
       console.log(error);
+      Message.error(error.message);
     }
   };
 

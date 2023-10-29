@@ -35,6 +35,7 @@ export interface Model {
   algorithm?: string;
   description?: string;
   image?: string;
+  devices?: string[];
   url?: string;
   checksum?: string;
   size: string;
