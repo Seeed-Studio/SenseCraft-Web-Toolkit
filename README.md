@@ -12,7 +12,6 @@ It is a Web Toolkit for senseCraft AIoT Platform, which is a visual programming 
    - If you need to further customize or configure the senseCraft application, you can clone this repository to your local machine:
      ```
      git clone https://github.com/Seeed-Studio/sensecraft-web-toolkit.git
-     ```
      cd sensecraft-web-toolkit
      yarn install
      yarn run dev
