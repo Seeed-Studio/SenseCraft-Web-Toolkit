@@ -14,7 +14,8 @@ export default {
   'workplace.output.condition.<=': '小于',
   'workplace.output.condition.==': '等于',
   'workplace.output.confidence': '置信度',
-  'workplace.output.condition.tips': '如果设备检测到{object}并且置信度{condition}{confidence}，然后点亮设备的黄色LED',
+  'workplace.output.condition.tips':
+    '如果设备检测到{object}并且置信度{condition}{confidence}，然后点亮设备的黄色LED',
   'workplace.output.operation': '操作',
   'workplace.output.send': '发送',
   'workplace.output.delete': '删除',
@@ -32,7 +33,8 @@ export default {
   'workplace.device.model.name': '模型名称',
   'workplace.device.model.version': '模型版本',
   'workplace.device.noconnect': '请将设备连接到您的电脑',
-  'workplace.device.nomodel': '您的设备没有部署模型，请选择模型然后点击发送按钮',
+  'workplace.device.nomodel':
+    '您的设备没有部署模型，请选择模型然后点击发送按钮',
   'workplace.device.use.aimodel': '可用的AI模型',
   'workplace.device.upload.aimodel': '上传自定义AI模型',
   'workplace.device.select.aimodel': '请选择预设AI模型或上传自定义AI模型',
