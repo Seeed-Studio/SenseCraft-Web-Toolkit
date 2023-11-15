@@ -44,7 +44,7 @@ export default class Device {
 
   public async connect() {}
 
-  public disconnect() {}
+  public async disconnect() {}
 
   public async write(data: BufferSource) {}
 
