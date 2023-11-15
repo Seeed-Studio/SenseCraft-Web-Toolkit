@@ -2,7 +2,8 @@ export default {
   'workplace.preview.title': 'Preview',
   'workplace.preview.stop': 'Stop',
   'workplace.preview.invoke': 'Invoke',
-  'workplace.preview.message.invoke.failed': 'Invoke failed, please check device connection',
+  'workplace.preview.message.invoke.failed':
+    'Invoke failed, please check device connection',
   'workplace.logger.title': 'Logger',
   'workplace.device.title': 'Device',
   'workplace.output.title': 'Output',
@@ -14,7 +15,8 @@ export default {
   'workplace.output.condition.<=': 'Less than',
   'workplace.output.condition.==': 'Equal to',
   'workplace.output.confidence': 'Confidence',
-  'workplace.output.condition.tips': 'If the device detects {object} and the confidence is {condition} {confidence}, then light up the device\'s yellow led',
+  'workplace.output.condition.tips':
+    "If the device detects {object} and the confidence is {condition} {confidence}, then light up the device's yellow led",
   'workplace.output.operation': 'Operation',
   'workplace.output.send': 'Send',
   'workplace.output.delete': 'Delete',
@@ -26,7 +28,8 @@ export default {
   'workplace.output.message.connect': 'Please connect the device',
   'workplace.output.message.action.successful': 'Set action successful',
   'workplace.output.message.action.failed': 'Set action failed',
-  'workplace.output.message.action.delete.successful': 'Delete action successful',
+  'workplace.output.message.action.delete.successful':
+    'Delete action successful',
   'workplace.output.message.action.delete.failed': 'Delete action failed',
   'workplace.device.name': 'Device Name',
   'workplace.device.version': 'Device Version',
@@ -59,7 +62,8 @@ export default {
   'workplace.device.card.esptool': 'ESP Tool',
   'workplace.device.message.firmware.no': 'No firmware',
   'workplace.device.message.model.no': 'Please select a model',
-  'workplace.device.message.model.current': 'The device is running the current model',
+  'workplace.device.message.model.current':
+    'The device is running the current model',
   'workplace.device.message.model.name': 'Please enter model name',
   'workplace.device.message.model.file': 'Please choose model file',
   'workplace.device.message.model.object': 'Please enter at least one object',
@@ -76,8 +80,10 @@ export default {
   'workplace.firmware.addfile': 'Add File',
   'workplace.firmware.remove': 'Remove',
   'workplace.firmware.message.erase.successful': 'Erase device successful',
-  'workplace.firmware.message.erase.failed': 'Erase device failed, please check device connection',
-  'workplace.firmware.message.address': 'Address must be decimal or hexadecimal',
+  'workplace.firmware.message.erase.failed':
+    'Erase device failed, please check device connection',
+  'workplace.firmware.message.address':
+    'Address must be decimal or hexadecimal',
   'workplace.firmware.message.file': 'Please select bin file',
   'workplace.firmware.message.flash.successful': 'Flash successful',
   'workplace.firmware.message.flash.failed': 'Flash failed',
@@ -91,8 +97,10 @@ export default {
     'IoU is used to assess the accuracy of predicted bounding boxes compared to truth bounding boxes',
   'workplace.serial.port.failed': 'Request serial port failed',
   'workplace.serial.connected.failed': 'Device connect failed',
-  'workplace.serial.device.connected.successfully': 'Device connected successfully',
+  'workplace.serial.device.connected.successfully':
+    'Device connected successfully',
   'workplace.serial.device.disconnected': 'Device is disconnected',
-  'workplace.serial.device.errorCode': 'Please check device connection status, errorCode:',
+  'workplace.serial.device.errorCode':
+    'Please check device connection status, errorCode:',
   'workplace.serial.no.port': 'No port selected by the user',
 };

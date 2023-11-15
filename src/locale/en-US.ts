@@ -1,5 +1,5 @@
-import localeWorkplace from '@/views/setup/process/locale/en-US';
-import localeSettings from './en-US/settings';
+import localeProcess from './en-US/process';
+import localeSettings from './en-US/setup';
 
 export default {
   'menu.setup': 'Setup',
@@ -18,5 +18,5 @@ export default {
   'navbar.docs': 'Docs',
   'navbar.action.locale': 'Switch to English',
   ...localeSettings,
-  ...localeWorkplace,
+  ...localeProcess,
 };

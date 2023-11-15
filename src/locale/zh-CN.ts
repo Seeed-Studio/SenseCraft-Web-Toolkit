@@ -1,5 +1,5 @@
-import localeWorkplace from '@/views/setup/process/locale/zh-CN';
-import localeSettings from './zh-CN/settings';
+import localeProcess from './zh-CN/process';
+import localeSettings from './zh-CN/setup';
 
 export default {
   'menu.setup': '设置',
@@ -18,5 +18,5 @@ export default {
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
   ...localeSettings,
-  ...localeWorkplace,
+  ...localeProcess,
 };
