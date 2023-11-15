@@ -3,8 +3,16 @@ import type { RouteRecordNormalized } from 'vue-router';
 import defaultSettings from '@/config/settings.json';
 import { AppState } from './types';
 
+export const DeviceType = {
+  'XIAO ESP32S3': 'XIAO ESP32S3',
+  'XIAO ESP32S4': 'XIAO ESP32S4',
+};
+
 const useAppStore = defineStore('app', {
-  state: (): AppState => ({ ...defaultSettings }),
+  state: (): AppState => ({
+    ...defaultSettings,
+    deviceType: DeviceType['XIAO ESP32S3'],
+  }),
 
   getters: {
     appCurrentSetting(state: AppState): AppState {
@@ -47,6 +55,9 @@ const useAppStore = defineStore('app', {
     async fetchServerMenuConfig() {},
     clearServerMenu() {
       this.serverMenu = [];
+    },
+    switchDevice(newDeviceType: string) {
+      this.deviceType = newDeviceType;
     },
   },
 });

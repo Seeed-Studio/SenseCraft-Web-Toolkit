@@ -12,9 +12,9 @@ const app = createApp(App);
 
 app.use(ArcoVue, {});
 app.use(ArcoVueIcon);
-
-app.use(router);
 app.use(store);
+app.use(router);
+
 app.use(i18n);
 app.use(directive);
 

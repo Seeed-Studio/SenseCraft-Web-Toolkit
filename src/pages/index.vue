@@ -1,7 +1,7 @@
 <template>
   <a-layout class="layout" :class="{ mobile: appStore.hideMenu }">
     <div v-if="navbar" class="layout-navbar">
-      <NavBar />
+      <Navbar />
     </div>
     <a-layout>
       <a-layout>
@@ -48,12 +48,12 @@
 <script lang="ts" setup>
   import { ref, computed, provide, onMounted } from 'vue';
   import { useAppStore } from '@/store';
-  import NavBar from '@/components/navbar/index.vue';
-  import Menu from '@/components/menu/index.vue';
-  import Footer from '@/components/footer/index.vue';
-  import TabBar from '@/components/tab-bar/index.vue';
-  import Logger from '@/components/logger/index.vue';
-  import PageLayout from './page-layout.vue';
+  import Logger from './components/Logger.vue';
+  import TabBar from './components/TabBar.vue';
+  import Menu from './components/Menu.vue';
+  import Navbar from './components/Navbar.vue';
+  import Footer from './components/Footer.vue';
+  import PageLayout from './components/PageLayout.vue';
 
   const isInit = ref(false);
   const appStore = useAppStore();
@@ -118,6 +118,7 @@
     z-index: 99;
     height: 100%;
     transition: all 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
+
     &::after {
       position: absolute;
       top: 0;
@@ -138,6 +139,7 @@
     height: 100%;
     overflow: auto;
     overflow-x: hidden;
+
     :deep(.arco-menu) {
       ::-webkit-scrollbar {
         width: 12px;
@@ -145,10 +147,10 @@
       }
 
       ::-webkit-scrollbar-thumb {
-        border: 4px solid transparent;
-        background-clip: padding-box;
-        border-radius: 7px;
         background-color: var(--color-text-4);
+        background-clip: padding-box;
+        border: 4px solid transparent;
+        border-radius: 7px;
       }
 
       ::-webkit-scrollbar-thumb:hover {

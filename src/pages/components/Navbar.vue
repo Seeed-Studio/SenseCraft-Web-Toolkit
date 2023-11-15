@@ -131,8 +131,9 @@
       </li>
       <li>
         <a-select v-model="deviceType" :style="{}">
-          <a-option value="xiao">XIAO ESP32S3</a-option>
-          <a-option value="da">DA ESP32S3</a-option>
+          <a-option v-for="name in deviceTypes" :key="name">{{
+            name
+          }}</a-option>
         </a-select>
       </li>
       <li>
@@ -165,9 +166,10 @@
   import { useAppStore, useDeviceStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
-  import Menu from '@/components/menu/index.vue';
   import { DeviceStatus } from '@/senseCraft';
   import useDeviceManager from '@/hooks/deviceManager';
+  import { DeviceType } from '@/store/modules/app';
+  import Menu from './Menu.vue';
 
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
@@ -175,6 +177,11 @@
   const { t } = useI18n();
   const deviceManager = useDeviceManager();
   const router = useRouter();
+
+  const deviceTypes = ref([
+    DeviceType['XIAO ESP32S3'],
+    DeviceType['XIAO ESP32S4'],
+  ]);
 
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
@@ -226,18 +233,21 @@
   const toggleDrawerMenu = inject('toggleDrawerMenu') as () => void;
 
   watch(deviceType, () => {
-    const { path, params } = router.currentRoute.value ?? {};
-    if (typeof params?.deviceType === 'string') {
-      const newPath = path.replace(params.deviceType, deviceType.value);
-      router.replace(newPath);
-    } else {
-      console.error('切换设备不存在', path, params);
+    const name = router.currentRoute.value?.name;
+    if (!name) {
+      return;
     }
+    appStore.switchDevice(deviceType.value);
+    router.replace({
+      name,
+      params: { deviceType: deviceType.value },
+    });
   });
 
   watch(router.currentRoute, () => {
     const { params } = router.currentRoute.value ?? {};
     if (typeof params?.deviceType === 'string') {
+      appStore.switchDevice(deviceType.value);
       deviceType.value = params?.deviceType;
     }
   });
@@ -334,3 +344,4 @@
     }
   }
 </style>
+@/hooks/deviceManager

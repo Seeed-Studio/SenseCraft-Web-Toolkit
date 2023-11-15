@@ -1,11 +1,15 @@
+import { RouteRecordRaw } from 'vue-router';
+import { useAppStore } from '@/store';
 import { DEFAULT_LAYOUT } from '../base';
-import { AppRouteRecordRaw } from '../types';
 
-const SETUP: AppRouteRecordRaw = {
-  path: '/setup',
+const SETUP: RouteRecordRaw = {
+  path: '/:deviceType/setup',
   name: 'setup',
   component: DEFAULT_LAYOUT,
-  redirect: '/setup/process',
+  redirect: () => {
+    const appState = useAppStore();
+    return `/${appState.deviceType}/setup/process`;
+  },
   meta: {
     locale: 'menu.setup',
     requiresAuth: true,
@@ -16,7 +20,7 @@ const SETUP: AppRouteRecordRaw = {
     {
       path: 'process',
       name: 'process',
-      component: () => import('@/views/setup/process/index.vue'),
+      component: () => import('@/pages/setup/process/index.vue'),
       meta: {
         locale: 'menu.setup.process',
         requiresAuth: true,
@@ -26,7 +30,7 @@ const SETUP: AppRouteRecordRaw = {
     {
       path: 'output',
       name: 'output',
-      component: () => import('@/views/setup/output/index.vue'),
+      component: () => import('@/pages/setup/output/index.vue'),
       meta: {
         locale: 'menu.setup.output',
         requiresAuth: true,

@@ -91,7 +91,7 @@
         >
           <div>
             <div class="carousel-item">
-              <img class="carousel-item-image" :src="item.image" />
+              <img class="carousel-item-image" :src="item.image" alt="" />
             </div>
             <div class="carousel-item-name">{{ item.name }}</div>
           </div>
@@ -105,7 +105,7 @@
         ]"
         :onclick="() => handleSelectedCustomModel()"
       >
-        <img :src="customModelIcon" class="custom-model-image" />
+        <img :src="customModelIcon" class="custom-model-image" alt="" />
         <div class="custom-model-name">{{
           deviceStore.currentModel?.name
         }}</div>
@@ -207,56 +207,57 @@
 </template>
 
 <script lang="ts" setup>
-  import { Ref, ref, nextTick, computed, onMounted, watch } from 'vue';
+  import { Ref, ref, nextTick, computed } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
   import 'swiper/css';
   import 'swiper/css/navigation';
   import { Navigation } from 'swiper/modules';
-  import { FlashOptions } from 'esptool-js';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Serial, Bin, Model } from '@/senseCraft';
-  import deviceManager from '@/senseCraft/deviceManager';
+  import { DeviceStatus, Bin, Model } from '@/senseCraft';
   import customModelIcon from '@/assets/images/custom-model.png';
 
-  const { device, term } = deviceManager;
-  const deviceStore = useDeviceStore();
-  const { t } = useI18n();
-
-  const espLoaderTerminal = {
-    clean() {
-      term.clear();
-    },
-    writeLine(data: string) {
-      term.writeln(data);
-    },
-    write(data: string) {
-      term.write(data);
-    },
+  export type FileType = {
+    data: Uint8Array;
+    address: number;
   };
 
+  export type FlashFirmwareParams = {
+    isCustom: boolean;
+    onDownloadFirmware: (bins: Bin[]) => Promise<FileType[]>;
+    onHandleModel: (isCustom: boolean, files: FileType[]) => Promise<void>;
+  };
+  type Props = {
+    deviceName: string | null;
+    deviceVersion: string | null;
+    onFlashFirmwareBefore: () => Promise<Record<string, any>>;
+    onWriteFlash: (params: Record<string, any>) => Promise<boolean>;
+    onResetDevice: (params: Record<string, any>) => Promise<void>;
+    onResetFinish?: (loadingTip: Ref<string>) => Promise<void>;
+    onAllFinish?: (model: Model) => void;
+  };
+  const props = defineProps<Props>();
+  const { t } = useI18n();
+  const deviceStore = useDeviceStore();
+
+  const modalName = ref('');
+  const modalVisible = ref(false);
+  const inputRef = ref(null);
+  const showInput = ref(false);
+  const inputVal = ref('');
+  const modelObjects = ref<string[]>([]);
+  const modelFile = ref<File | null>(null);
   const loading = ref(false);
   const loadingTip = ref('');
   const selectedModel = ref(-1);
   const isSelectedCustomModel = ref(false);
-  const deviceName: Ref<string | null> = ref('');
-  const deviceVersion: Ref<string | null> = ref('');
-
-  // custom model
-  const modalVisible = ref(false);
-  const modalName = ref('');
-  const modelFile: Ref<File | null> = ref(null);
-  const modelObjects: Ref<string[]> = ref([]);
-  const inputRef = ref(null);
-  const showInput = ref(false);
-  const inputVal = ref('');
 
   const hasDeviceContent = computed(() => {
     if (
-      deviceName.value === null ||
-      deviceVersion.value === null ||
+      props.deviceName === null ||
+      props.deviceVersion === null ||
       deviceStore.currentModel === undefined
     ) {
       return false;
@@ -264,14 +265,34 @@
     return true;
   });
 
-  const readFile = (blob: Blob | File): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
+  const handleSelectedModel = (index: number) => {
+    selectedModel.value = index;
+    isSelectedCustomModel.value = false;
+  };
+
+  const handleSelectedCustomModel = () => {
+    selectedModel.value = -1;
+    isSelectedCustomModel.value = true;
+  };
+
+  const handleShowCustomModel = () => {
+    modalVisible.value = true;
+  };
+
+  const handleCustomModelCancel = () => {
+    modalVisible.value = false;
+  };
+
+  const readFile = (blob: Blob | File): Promise<Uint8Array> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const data = ev?.target?.result as string;
-        resolve(data);
+      reader.onload = () => {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const uint8Array = new Uint8Array(arrayBuffer);
+        resolve(uint8Array);
       };
-      reader.readAsBinaryString(blob);
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(blob);
     });
   };
 
@@ -301,125 +322,74 @@
     };
   };
 
-  const flashFirmware = async (isCustom = false) => {
-    // loading.value = true;
-    // loadingTip.value = t('workplace.device.message.tip.connecting');
-    // if (deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
-    //   await (device as Serial).esploaderConnect(espLoaderTerminal);
-    // }
-    // const esploader = (device as Serial).esploader;
-    // const transport = (device as Serial).transport;
-    // if (!esploader || !transport) {
-    //   Message.error(t('workplace.serial.no.port'));
-    //   loading.value = false;
-    //   return;
-    // }
-    // let fileArray = [] as {
-    //   data: string;
-    //   address: number;
-    // }[];
-    // const version = deviceStore.firmware?.version;
-    // if (version !== deviceVersion.value) {
-    //   const bins = deviceStore.firmware?.bins;
-    //   if (!bins || bins.length === 0) {
-    //     Message.error(t('workplace.device.message.firmware.no'));
-    //     loading.value = false;
-    //     return;
-    //   }
-    //   // 下载固件
-    //   loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
-    //   const firmwareArray = await downloadFirmware(bins);
-    //   fileArray = fileArray.concat(firmwareArray);
-    // }
-    // // 模型对象
-    // let model;
-    // if (isCustom) {
-    //   if (!modelFile.value) {
-    //     loading.value = false;
-    //     return;
-    //   }
-    //   const data = await readFile(modelFile.value);
-    //   fileArray.push({ data, address: 0x400000 });
-    //   model = {
-    //     name: modalName.value,
-    //     version: '1.0.0',
-    //     category: 'Object Detection',
-    //     model_type: 'TFLite',
-    //     algorithm: 'YOLO',
-    //     description: 'Custom Model',
-    //     classes: modelObjects.value,
-    //     size: modelFile.value.size.toString(),
-    //     isCustom: true,
-    //   };
-    // } else {
-    //   if (selectedModel.value < 0) {
-    //     loading.value = false;
-    //     Message.error(t('workplace.device.message.model.no'));
-    //     return;
-    //   }
-    //   if (deviceStore.models.length > 0) {
-    //     loadingTip.value = t('workplace.device.message.tip.downloading.model');
-    //     model = deviceStore.models[selectedModel.value];
-    //     const modelfile = await downloadModel(model);
-    //     fileArray.push(modelfile);
-    //   }
-    // }
-    // let result;
-    // deviceStore.setDeviceStatus(DeviceStatus.Flashing);
-    // try {
-    //   loadingTip.value = t('workplace.device.message.tip.flashing');
-    //   const flashOptions: FlashOptions = {
-    //     fileArray,
-    //     flashSize: 'keep',
-    //     eraseAll: false,
-    //     compress: true,
-    //     reportProgress: (fileIndex, written, total) => {
-    //       console.log('written ', fileIndex, ' file:', (written / total) * 100);
-    //     },
-    //   } as FlashOptions;
-    //   await esploader?.write_flash(flashOptions);
-    //   result = true;
-    // } catch (e: any) {
-    //   result = false;
-    //   term.writeln(`Error: ${e.message}`);
-    // } finally {
-    //   // 烧录完重置设备
-    //   if (result) {
-    //     loadingTip.value = t('workplace.device.message.tip.resetting');
-    //     await transport?.setDTR(false);
-    //     await new Promise((resolve) => {
-    //       setTimeout(resolve, 100);
-    //     });
-    //     await transport?.setDTR(true);
-    //   }
-    //   // 连接设备
-    //   if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-    //     loadingTip.value = t('workplace.device.message.tip.connecting');
-    //     await (device as Serial).connect();
-    //   }
-    //   if (model) {
-    //     try {
-    //       const info = btoa(JSON.stringify(model));
-    //       device.setInfo(info);
-    //       device.deleteAction();
-    //       deviceStore.setCurrentModel(model);
-    //     } catch (error) {
-    //       console.log(error);
-    //     }
-    //   }
-    //   loadingTip.value = '';
-    //   loading.value = false;
-    // }
+  const handleCustomModelData = async () => {
+    if (!modelFile.value) throw new Error('文件不存在');
+    const data = await readFile(modelFile.value);
+    const model: Model = {
+      name: modalName.value,
+      version: '1.0.0',
+      category: 'Object Detection',
+      model_type: 'TFLite',
+      algorithm: 'YOLO',
+      description: 'Custom Model',
+      classes: modelObjects.value,
+      size: modelFile.value.size.toString(),
+      isCustom: true,
+    };
+    return { data, model };
   };
 
-  const handleSelectedModel = (index: number) => {
-    selectedModel.value = index;
-    isSelectedCustomModel.value = false;
-  };
-
-  const handleSelectedCustomModel = () => {
-    selectedModel.value = -1;
-    isSelectedCustomModel.value = true;
+  const flashFirmware = async (isCustom: boolean) => {
+    loading.value = true;
+    loadingTip.value = t('workplace.device.message.tip.connecting');
+    const instance = await props.onFlashFirmwareBefore();
+    const version = deviceStore.firmware?.version;
+    const bins = deviceStore.firmware?.bins ?? [];
+    const fileArray: FileType[] = [];
+    if (version !== props.deviceVersion && bins.length === 0) {
+      if (bins.length === 0) {
+        Message.error(t('workplace.device.message.firmware.no'));
+        loading.value = false;
+        return;
+      }
+      // 下载固件
+      loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
+      const firmwareArray = await downloadFirmware(bins);
+      fileArray.push(...firmwareArray);
+    }
+    let finallyModel: Model | null = null;
+    if (isCustom) {
+      if (!modelFile.value) {
+        loading.value = false;
+      }
+      const { model, data } = await handleCustomModelData();
+      finallyModel = model;
+      fileArray.push({ data, address: 0x400000 });
+    } else {
+      if (selectedModel.value < 0) {
+        loading.value = false;
+        Message.error(t('workplace.device.message.model.no'));
+        return;
+      }
+      if (deviceStore.models.length > 0) {
+        loadingTip.value = t('workplace.device.message.tip.downloading.model');
+        finallyModel = deviceStore.models[selectedModel.value];
+        const modelFile = await downloadModel(finallyModel);
+        fileArray.push(modelFile);
+      }
+    }
+    loadingTip.value = t('workplace.device.message.tip.flashing');
+    const result = await props.onWriteFlash({ ...instance, fileArray });
+    if (result) {
+      loadingTip.value = t('workplace.device.message.tip.resetting');
+      await props.onResetDevice({ ...instance });
+      props.onResetFinish?.(loadingTip);
+      if (finallyModel && props.onAllFinish) {
+        props.onAllFinish(finallyModel);
+      }
+      loadingTip.value = '';
+      loading.value = false;
+    }
   };
 
   const handleUpload = async () => {
@@ -435,58 +405,14 @@
       }
     }
     try {
-      flashFirmware();
-    } catch (error) {
-      console.log(error);
+      await flashFirmware(false);
+    } catch (error: any) {
+      console.error(error);
+      Message.error(error?.message ?? '');
+    } finally {
       loadingTip.value = '';
       loading.value = false;
     }
-  };
-
-  const handelRefresh = async (deviceStatus: DeviceStatus) => {
-    if (deviceStatus === DeviceStatus.SerialConnected) {
-      try {
-        const name = await device.getName();
-        const version = await device.getVersion();
-        deviceName.value = name;
-        deviceVersion.value = version;
-        const base64Str = await device.getInfo();
-        if (base64Str) {
-          const str = atob(base64Str);
-          const model = JSON.parse(str);
-          deviceStore.setCurrentModel(model);
-        } else {
-          deviceStore.setCurrentModel(undefined);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-
-  const handleShowCustomModel = () => {
-    modalVisible.value = true;
-  };
-
-  const handleCustomModelOk = async () => {
-    if (modalName.value == null || modalName.value === '') {
-      Message.error(t('workplace.device.message.model.name'));
-      return false;
-    }
-    if (!modelFile.value) {
-      Message.error(t('workplace.device.message.model.file'));
-      return false;
-    }
-    if (modelObjects.value.length === 0) {
-      Message.error(t('workplace.device.message.model.object'));
-      return false;
-    }
-    flashFirmware(true);
-    return true;
-  };
-
-  const handleCustomModelCancel = () => {
-    modalVisible.value = false;
   };
 
   const fileChangeHandler = (option: RequestOption) => {
@@ -535,44 +461,22 @@
     modelObjects.value = modelObjects.value.filter((tag) => tag !== key);
   };
 
-  onMounted(() => {
-    if (!deviceStore.hasLoadModel) {
-      fetch(
-        `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
-      )
-        .then((response) => response.json())
-        .then((data: any) => {
-          deviceStore.setModels(data.models);
-          deviceStore.setHasLoadModel(true);
-          const firmwares = data.firmwares;
-          if (firmwares?.length > 0) {
-            deviceStore.setFirmware(firmwares[0]);
-          }
-        });
+  const handleCustomModelOk = async () => {
+    if (modalName.value == null || modalName.value === '') {
+      Message.error(t('workplace.device.message.model.name'));
+      return false;
     }
-    handelRefresh(deviceStore.deviceStatus);
-  });
-
-  watch(
-    () => deviceStore.deviceStatus,
-    async (val) => {
-      handelRefresh(val);
+    if (!modelFile.value) {
+      Message.error(t('workplace.device.message.model.file'));
+      return false;
     }
-  );
-
-  watch(
-    () => deviceStore.currentModel,
-    (currentModel) => {
-      if (currentModel?.isCustom) {
-        isSelectedCustomModel.value = currentModel?.isCustom;
-      } else {
-        const index = deviceStore.models.findIndex((model) => {
-          return model.uuid === currentModel?.uuid;
-        });
-        selectedModel.value = index;
-      }
+    if (modelObjects.value.length === 0) {
+      Message.error(t('workplace.device.message.model.object'));
+      return false;
     }
-  );
+    flashFirmware(true);
+    return true;
+  };
 </script>
 
 <style scoped lang="less">
