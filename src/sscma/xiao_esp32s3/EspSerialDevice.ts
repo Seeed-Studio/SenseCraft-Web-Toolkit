@@ -5,8 +5,10 @@ import {
   IEspLoaderTerminal,
 } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
+import { useAppStore } from '@/store';
 import Device from '../device';
 import { DeviceStatus } from '../types';
+import { DEVICE_LIST } from '../constants';
 
 export default class EspSerialDevice extends Device {
   public port: SerialPort | null;
@@ -79,10 +81,25 @@ export default class EspSerialDevice extends Device {
       this.writer = this.port?.writable?.getWriter();
       this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
       this.readLoop();
+      this.setConnectDevice(this.port.getInfo());
     } catch (error) {
-      console.log(error);
+      console.log(error, '在连接串口的过程中出现了错误');
       Message.error('Device connect failed');
     }
+  }
+
+  private setConnectDevice(info: SerialPortInfo) {
+    DEVICE_LIST.forEach((device) => {
+      if (
+        device.filter.some(
+          (e) =>
+            e.productId === info.usbProductId && e.vendorId === info.usbVendorId
+        )
+      ) {
+        const appStore = useAppStore();
+        appStore.deviceType = device.name;
+      }
+    });
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {

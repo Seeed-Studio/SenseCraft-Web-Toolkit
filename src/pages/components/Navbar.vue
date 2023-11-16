@@ -141,7 +141,7 @@
           v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected"
           type="primary"
           status="danger"
-          @click="connect"
+          @click="disconnect"
           >{{ $t('workplace.device.btn.disconnect') }}</a-button
         >
         <a-button
@@ -149,7 +149,7 @@
           type="primary"
           :loading="loading"
           :disabled="deviceStore.deviceStatus === DeviceStatus.Flashing"
-          @click="disconnect"
+          @click="connect"
           >{{ $t('workplace.device.btn.connect') }}</a-button
         >
       </li>
