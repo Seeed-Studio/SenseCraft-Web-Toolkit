@@ -207,7 +207,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { Ref, ref, nextTick, computed } from 'vue';
+  import { ref, nextTick, computed } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
@@ -218,30 +218,24 @@
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, Bin, Model } from '@/sscma';
   import customModelIcon from '@/assets/images/custom-model.png';
+  import FlasherInterface from '@/sscma/FlasherInterface';
+  import useDeviceManager from '@/hooks/deviceManager';
 
   export type FileType = {
     data: Uint8Array;
     address: number;
   };
 
-  export type FlashFirmwareParams = {
-    isCustom: boolean;
-    onDownloadFirmware: (bins: Bin[]) => Promise<FileType[]>;
-    onHandleModel: (isCustom: boolean, files: FileType[]) => Promise<void>;
-  };
   type Props = {
     deviceName: string | null;
     deviceVersion: string | null;
-    onFlashFirmwareBefore: () => Promise<Record<string, any>>;
-    onWriteFlash: (params: Record<string, any>) => Promise<boolean>;
-    onResetDevice: (params: Record<string, any>) => Promise<void>;
-    onResetFinish?: (loadingTip: Ref<string>) => Promise<void>;
-    onAllFinish?: (model: Model) => void;
+    flasher: FlasherInterface;
   };
   const props = defineProps<Props>();
   const { t } = useI18n();
   const deviceStore = useDeviceStore();
-
+  const deviceManager = useDeviceManager();
+  const device = deviceManager.value?.getDevice();
   const modalName = ref('');
   const modalVisible = ref(false);
   const inputRef = ref(null);
@@ -342,15 +336,13 @@
   const flashFirmware = async (isCustom: boolean) => {
     loading.value = true;
     loadingTip.value = t('workplace.device.message.tip.connecting');
-    const instance = await props.onFlashFirmwareBefore();
+    await props.flasher.writeFlashBefore();
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray: FileType[] = [];
     if (version !== props.deviceVersion && bins.length === 0) {
       if (bins.length === 0) {
-        Message.error(t('workplace.device.message.firmware.no'));
-        loading.value = false;
-        return;
+        throw new Error(t('workplace.device.message.firmware.no'));
       }
       // 下载固件
       loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
@@ -367,9 +359,7 @@
       fileArray.push({ data, address: 0x400000 });
     } else {
       if (selectedModel.value < 0) {
-        loading.value = false;
-        Message.error(t('workplace.device.message.model.no'));
-        return;
+        throw new Error(t('workplace.device.message.model.no'));
       }
       if (deviceStore.models.length > 0) {
         loadingTip.value = t('workplace.device.message.tip.downloading.model');
@@ -379,17 +369,25 @@
       }
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
-    const result = await props.onWriteFlash({ ...instance, fileArray });
+    const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
       loadingTip.value = t('workplace.device.message.tip.resetting');
-      await props.onResetDevice({ ...instance });
-      props.onResetFinish?.(loadingTip);
-      if (finallyModel && props.onAllFinish) {
-        props.onAllFinish(finallyModel);
+      if (props.flasher.isNeedResetDevice) {
+        await props.flasher.onResetDevice();
       }
-      loadingTip.value = '';
-      loading.value = false;
+      if (props.flasher.isNeedConnectDevice) {
+        await props.flasher.onConnectDevice();
+      }
+
+      if (finallyModel) {
+        const info = btoa(JSON.stringify(finallyModel));
+        device?.setInfo(info);
+        device?.deleteAction();
+        deviceStore.setCurrentModel(finallyModel);
+      }
     }
+    loadingTip.value = '';
+    loading.value = false;
   };
 
   const handleUpload = async () => {
@@ -407,7 +405,7 @@
     try {
       await flashFirmware(false);
     } catch (error: any) {
-      console.error(error);
+      console.error(error, '在 process 烧录的位置出现了错误');
       Message.error(error?.message ?? '');
     } finally {
       loadingTip.value = '';
