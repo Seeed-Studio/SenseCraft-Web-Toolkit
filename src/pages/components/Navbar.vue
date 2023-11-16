@@ -166,7 +166,7 @@
   import { useAppStore, useDeviceStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
-  import { DeviceStatus } from '@/senseCraft';
+  import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
   import { DeviceType } from '@/store/modules/app';
   import Menu from './Menu.vue';
@@ -344,4 +344,3 @@
     }
   }
 </style>
-@/hooks/deviceManager

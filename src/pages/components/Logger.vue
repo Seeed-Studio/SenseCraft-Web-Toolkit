@@ -33,7 +33,7 @@
   import Vue3DraggableResizable from 'vue3-draggable-resizable';
   import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
   import { useAppStore } from '@/store';
-  import { deviceManager } from '@/senseCraft';
+  import { deviceManager } from '@/sscma';
 
   const appStore = useAppStore();
 
@@ -108,3 +108,4 @@
     }
   }
 </style>
+@/sscma

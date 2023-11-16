@@ -41,7 +41,7 @@
   import { watch, ref } from 'vue';
   import { throttle } from 'lodash';
   import { useDeviceStore } from '@/store';
-  import { deviceManager } from '@/senseCraft';
+  import { deviceManager } from '@/sscma';
 
   const { device } = deviceManager;
   const deviceStore = useDeviceStore();
@@ -100,3 +100,4 @@
     }
   }
 </style>
+@/sscma

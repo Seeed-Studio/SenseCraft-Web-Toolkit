@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 import { DeviceType } from '@/store/modules/app';
-import { deviceManager } from '@/senseCraft';
+import { deviceManager } from '@/sscma';
 import useDeviceType from './deviceType';
 
 function useDeviceManager() {
