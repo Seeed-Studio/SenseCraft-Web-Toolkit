@@ -30,7 +30,11 @@
   import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus } from '@/sscma';
-  import deviceManager from '@/sscma/deviceManager';
+  import useDeviceManager from '@/hooks/deviceManager';
+
+  const deviceManager = useDeviceManager();
+
+  const device = deviceManager.value?.getDevice();
 
   const COLORS = [
     'red',
@@ -54,8 +58,6 @@
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
 
-  const { device } = deviceManager;
-
   const img = new Image();
 
   const canvas = ref<HTMLCanvasElement | null>(null);
@@ -66,7 +68,7 @@
   const length = computed(() => classes.value.length);
 
   const handleInvoke = async () => {
-    const result = await device.invoke(-1);
+    const result = await device?.invoke(-1);
     if (result) {
       invoke.value = true;
     } else {
@@ -76,7 +78,7 @@
   };
 
   const handleStop = () => {
-    device.break();
+    device?.break();
     invoke.value = false;
     deviceStore.setIsInvoke(false);
   };
@@ -170,12 +172,12 @@
   const handelRefresh = async (deviceStatus: DeviceStatus) => {
     if (deviceStatus === DeviceStatus.SerialConnected) {
       disable.value = false;
-      const isInvoke = await device.isInvoke();
+      const isInvoke = await device?.isInvoke();
       if (isInvoke) {
         invoke.value = true;
         deviceStore.setIsInvoke(true);
       } else {
-        const result = await device.invoke(-1);
+        const result = await device?.invoke(-1);
         if (result) {
           invoke.value = true;
         } else {
@@ -198,12 +200,12 @@
   );
 
   onMounted(async () => {
-    device.addEventListener(eventName, onInvoke);
+    device?.addEventListener(eventName, onInvoke);
     handelRefresh(deviceStore.deviceStatus);
   });
 
   onBeforeUnmount(() => {
-    device.removeEventListener(eventName);
+    device?.removeEventListener(eventName);
   });
 </script>
 
@@ -229,4 +231,4 @@
     }
   }
 </style>
-@/sscma@/sscma/deviceManager
+@/sscma@/sscma/deviceManager @/sscma/xiao_esp32s3/deviceManager

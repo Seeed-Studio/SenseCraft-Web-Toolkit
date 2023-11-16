@@ -176,6 +176,7 @@
   const deviceType = ref(appStore.deviceType);
   const { t } = useI18n();
   const deviceManager = useDeviceManager();
+  const device = deviceManager.value?.getDevice();
   const router = useRouter();
 
   const deviceTypes = ref([
@@ -255,7 +256,7 @@
   async function connect() {
     loading.value = true;
     try {
-      await deviceManager.value?.device.connect();
+      await device?.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success(t('workplace.serial.device.connected.successfully'));
       }
@@ -268,7 +269,7 @@
 
   async function disconnect() {
     try {
-      await deviceManager.value?.device.disconnect();
+      await device?.disconnect();
     } catch (error) {
       console.log('断开连接失败', error);
     }

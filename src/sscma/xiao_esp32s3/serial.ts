@@ -5,8 +5,8 @@ import {
   IEspLoaderTerminal,
 } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
-import Device from './device';
-import { DeviceStatus } from './types';
+import Device from '../device';
+import { DeviceStatus } from '../types';
 
 export default class Serial extends Device {
   public port: SerialPort | null;

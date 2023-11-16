@@ -2,36 +2,44 @@
   import { ref, watch, Ref, onMounted } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { ESPLoader, FlashOptions } from 'esptool-js';
-  import { DeviceStatus, Model, Serial, deviceManager } from '@/sscma';
+  import { DeviceStatus, Model, Serial } from '@/sscma';
   import { useDeviceStore } from '@/store';
+  import useDeviceManager from '@/hooks/deviceManager';
   import Device from '../components/Device.vue';
 
+  const deviceManager = useDeviceManager();
+
   const { t } = useI18n();
-  const { device, term } = deviceManager;
+  const device = deviceManager.value?.getDevice();
+  const term = deviceManager.value?.getTerm();
   const deviceStore = useDeviceStore();
   const deviceName = ref<string | null>(null);
   const deviceVersion = ref<string | null>(null);
 
   const espLoaderTerminal = {
     clean() {
-      term.clear();
+      term?.clear();
     },
     writeLine(data: string) {
-      term.writeln(data);
+      term?.writeln(data);
     },
     write(data: string) {
-      term.write(data);
+      term?.write(data);
     },
   };
 
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       try {
-        const name = await device.getName();
-        const version = await device.getVersion();
-        deviceName.value = name;
-        deviceVersion.value = version;
-        const base64Str = await device.getInfo();
+        const name = await device?.getName();
+        const version = await device?.getVersion();
+        if (name) {
+          deviceName.value = name;
+        }
+        if (version) {
+          deviceVersion.value = version;
+        }
+        const base64Str = await device?.getInfo();
         if (base64Str) {
           const str = atob(base64Str);
           const model = JSON.parse(str);
@@ -76,7 +84,7 @@
       await tempParams.esploader?.write_flash(flashOptions);
       return true;
     } catch (e: any) {
-      term.writeln(`Error: ${e.message}`);
+      term?.writeln(`Error: ${e.message}`);
       return false;
     }
   };
@@ -100,8 +108,8 @@
     if (model) {
       try {
         const info = btoa(JSON.stringify(model));
-        device.setInfo(info);
-        device.deleteAction();
+        device?.setInfo(info);
+        device?.deleteAction();
         deviceStore.setCurrentModel(model);
       } catch (error) {
         console.error(error);

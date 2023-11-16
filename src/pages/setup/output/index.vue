@@ -1,10 +1,11 @@
 <script setup lang="ts">
+  import { DeviceType } from '@/store/modules/app';
   import useDeviceType from '@/hooks/deviceType';
-  import XIAOESP32S3Output from './XIAOESP32S3/index.vue';
+  import XiaoESP32S3Output from './xiao_esp32s3/index.vue';
 
   const deviceType = useDeviceType();
 </script>
 
 <template>
-  <XIAOESP32S3Output :is="deviceType === 'XIAO ESP32S3'" />
+  <XiaoESP32S3Output :is="deviceType === DeviceType['XIAO ESP32S3']" />
 </template>
