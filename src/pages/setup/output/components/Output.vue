@@ -182,7 +182,7 @@
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, deviceManager } from '@/senseCraft';
+  import { DeviceStatus, deviceManager } from '@/sscma';
 
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
@@ -465,3 +465,4 @@
     display: flex;
   }
 </style>
+@/sscma

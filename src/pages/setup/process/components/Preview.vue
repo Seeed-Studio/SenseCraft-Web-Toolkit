@@ -29,8 +29,8 @@
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus } from '@/senseCraft';
-  import deviceManager from '@/senseCraft/deviceManager';
+  import { DeviceStatus } from '@/sscma';
+  import deviceManager from '@/sscma/deviceManager';
 
   const COLORS = [
     'red',
@@ -229,3 +229,4 @@
     }
   }
 </style>
+@/sscma@/sscma/deviceManager

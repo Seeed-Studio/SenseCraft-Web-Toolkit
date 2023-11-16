@@ -2,7 +2,7 @@
   import { ref, watch, Ref, onMounted } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { ESPLoader, FlashOptions } from 'esptool-js';
-  import { DeviceStatus, Model, Serial, deviceManager } from '@/senseCraft';
+  import { DeviceStatus, Model, Serial, deviceManager } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import Device from '../components/Device.vue';
 
@@ -158,3 +158,4 @@
     :on-all-finish="onAllFinish"
   />
 </template>
+@/sscma

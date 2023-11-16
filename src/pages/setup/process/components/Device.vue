@@ -216,7 +216,7 @@
   import { Navigation } from 'swiper/modules';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Bin, Model } from '@/senseCraft';
+  import { DeviceStatus, Bin, Model } from '@/sscma';
   import customModelIcon from '@/assets/images/custom-model.png';
 
   export type FileType = {
@@ -599,3 +599,4 @@
     color: var(--color-text-2);
   }
 </style>
+@/sscma
