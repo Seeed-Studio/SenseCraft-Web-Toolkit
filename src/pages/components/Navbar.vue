@@ -131,8 +131,8 @@
       </li>
       <li>
         <a-select v-model="appStore.deviceType" :style="{}">
-          <a-option v-for="name in deviceTypes" :key="name">{{
-            name
+          <a-option v-for="deviceType in deviceTypes" :key="deviceType.name">{{
+            deviceType.name
           }}</a-option>
         </a-select>
       </li>
@@ -168,7 +168,7 @@
   import useLocale from '@/hooks/locale';
   import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
-  import { DeviceType } from '@/store/modules/app';
+  import { DEVICE_LIST } from '@/sscma/constants';
   import Menu from './Menu.vue';
 
   const appStore = useAppStore();
@@ -178,10 +178,7 @@
   const device = deviceManager.value?.getDevice();
   const router = useRouter();
 
-  const deviceTypes = ref([
-    DeviceType['XIAO ESP32S3'],
-    DeviceType['XIAO ESP32S4'],
-  ]);
+  const deviceTypes = ref(DEVICE_LIST);
 
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();

@@ -10,7 +10,6 @@ import {
   SensorState,
   Sensor,
 } from './types';
-import Serial from './xiao_esp32s3/serial';
 import Device from './device';
 
 export {
@@ -24,6 +23,5 @@ export {
   SensorType,
   SensorState,
   type Sensor,
-  Serial,
   Device,
 };

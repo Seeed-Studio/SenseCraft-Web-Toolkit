@@ -8,7 +8,7 @@ import { Message } from '@arco-design/web-vue';
 import Device from '../device';
 import { DeviceStatus } from '../types';
 
-export default class Serial extends Device {
+export default class EspSerialDevice extends Device {
   public port: SerialPort | null;
 
   public transport: Transport | null;
