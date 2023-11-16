@@ -1,17 +1,13 @@
 import { defineStore } from 'pinia';
 import type { RouteRecordNormalized } from 'vue-router';
 import defaultSettings from '@/config/settings.json';
+import { DEVICE_LIST } from '@/sscma/constants';
 import { AppState } from './types';
-
-export const DeviceType = {
-  'XIAO ESP32S3': 'XIAO ESP32S3',
-  'XIAO ESP32S4': 'XIAO ESP32S4',
-};
 
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     ...defaultSettings,
-    deviceType: DeviceType['XIAO ESP32S3'],
+    deviceType: DEVICE_LIST[0].name,
   }),
 
   getters: {

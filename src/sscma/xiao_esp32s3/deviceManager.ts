@@ -1,19 +1,18 @@
 import { Terminal } from 'xterm';
-import Serial from './serial';
-import Device from '../device';
+import EspSerialDevice from './EspSerialDevice';
 import DeviceManagerInterface from '../DeviceManagerInterface';
 
 class DeviceManager implements DeviceManagerInterface {
-  private device: Device;
+  private device: EspSerialDevice;
   private term: Terminal;
 
   constructor() {
-    this.device = new Serial();
+    this.device = new EspSerialDevice();
     this.term = new Terminal({ cols: 78, rows: 30 });
   }
 
-  getDevice(): Device {
-    return this.device;
+  getDevice<EspSerialDevice>(): EspSerialDevice {
+    return this.device as EspSerialDevice;
   }
 
   getTerm(): Terminal {
