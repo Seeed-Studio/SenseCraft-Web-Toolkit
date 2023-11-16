@@ -182,12 +182,14 @@
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, deviceManager } from '@/sscma';
+  import { DeviceStatus } from '@/sscma';
+  import useDeviceManager from '@/hooks/deviceManager';
 
+  const deviceManager = useDeviceManager();
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
 
-  const { device } = deviceManager;
+  const device = deviceManager.value?.getDevice();
 
   const data: Ref<
     {
@@ -240,7 +242,7 @@
       return;
     }
     deleting.value = true;
-    const ret = await device.deleteAction();
+    const ret = await device?.deleteAction();
     if (ret) {
       data.value = [];
       Message.success(t('workplace.output.message.action.delete.successful'));
@@ -256,14 +258,14 @@
       return;
     }
     loading.value = true;
-    const ret = await device.setAction(
+    const ret = await device?.setAction(
       form.object,
       form.condition,
       form.confidence
     );
     if (ret) {
-      await device.break();
-      await device.invoke(-1);
+      await device?.break();
+      await device?.invoke(-1);
       Message.success(t('workplace.output.message.action.successful'));
     } else {
       Message.error(t('workplace.output.message.action.failed'));
@@ -273,13 +275,13 @@
 
   const handelRefresh = async (deviceStatus: DeviceStatus) => {
     if (deviceStatus === DeviceStatus.SerialConnected && !loaded.value) {
-      const base64Str = await device.getInfo();
+      const base64Str = await device?.getInfo();
       if (base64Str) {
         const str = atob(base64Str);
         const model = JSON.parse(str);
         deviceStore.setCurrentModel(model);
       }
-      const cond = await device.getAction();
+      const cond = await device?.getAction();
       if (cond?.length > 0) {
         const condFlag = cond.indexOf('=');
         if (condFlag > 0) {

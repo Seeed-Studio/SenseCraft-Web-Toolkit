@@ -33,16 +33,17 @@
   import Vue3DraggableResizable from 'vue3-draggable-resizable';
   import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
   import { useAppStore } from '@/store';
-  import { deviceManager } from '@/sscma';
+  import useDeviceManager from '@/hooks/deviceManager';
 
+  const deviceManager = useDeviceManager();
   const appStore = useAppStore();
 
   const terminal = ref();
-  const term = deviceManager.term;
+  const term = deviceManager.value?.getTerm();
 
   onMounted(async () => {
     if (terminal.value) {
-      term.open(terminal.value);
+      term?.open(terminal.value);
     }
   });
 
@@ -56,7 +57,7 @@
     const terminalWidth = payload.w;
     const rows = Math.floor(terminalHeight / 18);
     const columns = Math.floor(terminalWidth / 9) - 3;
-    term.resize(columns, rows);
+    term?.resize(columns, rows);
   };
 
   const handleClose = () => {

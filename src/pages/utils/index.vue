@@ -77,12 +77,16 @@
   import { RequestOption } from '@arco-design/web-vue/es/upload';
   import { Message } from '@arco-design/web-vue';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus, Serial, deviceManager } from '@/sscma';
+  import { DeviceStatus, Serial } from '@/sscma';
+  import useDeviceManager from '@/hooks/deviceManager';
+
+  const deviceManager = useDeviceManager();
 
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
 
-  const { device, term } = deviceManager;
+  const device = deviceManager.value?.getDevice();
+  const term = deviceManager.value?.getTerm();
 
   const data: Ref<
     {
@@ -96,13 +100,13 @@
 
   const espLoaderTerminal = {
     clean() {
-      term.clear();
+      term?.clear();
     },
     writeLine(data: string) {
-      term.writeln(data);
+      term?.writeln(data);
     },
     write(data: string) {
-      term.write(data);
+      term?.write(data);
     },
   };
 
@@ -126,8 +130,8 @@
       if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
         await (device as Serial).connect();
       }
-      device.deleteInfo();
-      device.deleteAction();
+      device?.deleteInfo();
+      device?.deleteAction();
       deviceStore.setCurrentModel(undefined);
       Message.success(t('workplace.firmware.message.erase.successful'));
     } else {
@@ -212,7 +216,7 @@
       result = true;
     } catch (e: any) {
       result = false;
-      term.writeln(`Error: ${e.message}`);
+      term?.writeln(`Error: ${e.message}`);
     } finally {
       // reset device
       if (result) {
@@ -231,8 +235,8 @@
         loadingTip.value = t('workplace.device.message.tip.connecting');
         await (device as Serial).connect();
       }
-      device.deleteInfo();
-      device.deleteAction();
+      device?.deleteInfo();
+      device?.deleteAction();
       deviceStore.setCurrentModel(undefined);
       loadingTip.value = '';
       loading.value = false;

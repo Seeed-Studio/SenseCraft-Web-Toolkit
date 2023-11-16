@@ -41,20 +41,22 @@
   import { watch, ref } from 'vue';
   import { throttle } from 'lodash';
   import { useDeviceStore } from '@/store';
-  import { deviceManager } from '@/sscma';
+  import useDeviceManager from '@/hooks/deviceManager';
 
-  const { device } = deviceManager;
+  const deviceManager = useDeviceManager();
+
+  const device = deviceManager.value?.getDevice();
   const deviceStore = useDeviceStore();
 
   const confidence = ref(deviceStore.tscore);
   const iou = ref(deviceStore.tiou);
 
   const setConfidence = (value: number | [number, number]) => {
-    device.setScore(value as number);
+    device?.setScore(value as number);
   };
 
   const setIou = (value: number | [number, number]) => {
-    device.setIOU(value as number);
+    device?.setIOU(value as number);
   };
 
   const handelConfidenceChange = throttle(setConfidence, 1000);
