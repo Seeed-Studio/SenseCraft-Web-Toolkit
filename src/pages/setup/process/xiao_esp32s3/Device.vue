@@ -117,40 +117,31 @@
     }
   };
 
-  onMounted(() => {
-    fetch(
+  const fetchAvailableModels = async () => {
+    const data = await fetch(
       `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
-    )
-      .then((response) => response.json())
-      .then((data: any) => {
-        deviceStore.setModels(data.models);
-        deviceStore.setHasLoadModel(true);
-        const firmwares = data.firmwares;
-        if (firmwares?.length > 0) {
-          deviceStore.setFirmware(firmwares[1]);
-        }
-      });
+    ).then((response) => response.json());
+    deviceStore.setModels(data.models);
+    deviceStore.setHasLoadModel(true);
+    const firmwares = data.firmwares;
+    if (firmwares?.length > 0) {
+      deviceStore.setFirmware(firmwares[1]);
+    }
+  };
+
+  onMounted(() => {
+    fetchAvailableModels();
     handelRefresh();
   });
 
   watch(
     () => deviceStore.deviceStatus,
     () => {
-      if (!deviceStore.hasLoadModel) {
-        fetch(
-          `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
-        )
-          .then((response) => response.json())
-          .then((data: any) => {
-            deviceStore.setModels(data.models);
-            deviceStore.setHasLoadModel(true);
-            const firmwares = data.firmwares;
-            if (firmwares?.length > 0) {
-              deviceStore.setFirmware(firmwares[1]);
-            }
-          });
-        handelRefresh();
+      if (deviceStore.hasLoadModel) {
+        return;
       }
+      fetchAvailableModels();
+      handelRefresh();
     }
   );
 </script>

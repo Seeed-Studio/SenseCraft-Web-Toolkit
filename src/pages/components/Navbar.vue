@@ -130,7 +130,7 @@
         </a-tooltip>
       </li>
       <li>
-        <a-select v-model="deviceType" :style="{}">
+        <a-select v-model="appStore.deviceType" :style="{}">
           <a-option v-for="name in deviceTypes" :key="name">{{
             name
           }}</a-option>
@@ -173,7 +173,6 @@
 
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
-  const deviceType = ref(appStore.deviceType);
   const { t } = useI18n();
   const deviceManager = useDeviceManager();
   const device = deviceManager.value?.getDevice();
@@ -233,23 +232,24 @@
 
   const toggleDrawerMenu = inject('toggleDrawerMenu') as () => void;
 
-  watch(deviceType, () => {
-    const name = router.currentRoute.value?.name;
-    if (!name) {
-      return;
+  watch(
+    () => appStore.deviceType,
+    (val) => {
+      const name = router.currentRoute.value?.name;
+      if (!name) {
+        return;
+      }
+      router.replace({
+        name,
+        params: { deviceType: val },
+      });
     }
-    appStore.switchDevice(deviceType.value);
-    router.replace({
-      name,
-      params: { deviceType: deviceType.value },
-    });
-  });
+  );
 
   watch(router.currentRoute, () => {
     const { params } = router.currentRoute.value ?? {};
     if (typeof params?.deviceType === 'string') {
-      appStore.switchDevice(deviceType.value);
-      deviceType.value = params?.deviceType;
+      appStore.switchDevice(params?.deviceType);
     }
   });
 
