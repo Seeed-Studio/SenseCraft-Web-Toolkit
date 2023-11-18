@@ -35,15 +35,14 @@
   import { useAppStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
 
-  const deviceManager = useDeviceManager();
+  const { term } = useDeviceManager();
   const appStore = useAppStore();
 
   const terminal = ref();
-  const term = deviceManager.value?.getTerm();
 
   onMounted(async () => {
     if (terminal.value) {
-      term?.open(terminal.value);
+      term.value?.open(terminal.value);
     }
   });
 
@@ -57,7 +56,7 @@
     const terminalWidth = payload.w;
     const rows = Math.floor(terminalHeight / 18);
     const columns = Math.floor(terminalWidth / 9) - 3;
-    term?.resize(columns, rows);
+    term.value?.resize(columns, rows);
   };
 
   const handleClose = () => {

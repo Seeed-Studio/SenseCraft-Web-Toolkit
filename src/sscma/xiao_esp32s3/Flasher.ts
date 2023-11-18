@@ -16,19 +16,18 @@ class Flasher implements FlasherInterface {
   private espLoaderTerminal;
 
   constructor() {
-    const deviceManager = useDeviceManager();
-    this.device = deviceManager.value?.getDevice<EspSerialDevice>() ?? null;
-    const term = deviceManager.value?.getTerm();
+    const { device, term } = useDeviceManager();
+    this.device = device.value as EspSerialDevice;
     this.deviceStore = useDeviceStore();
     this.espLoaderTerminal = {
       clean() {
-        term?.clear();
+        term.value?.clear();
       },
       writeLine(data: string) {
-        term?.writeln(data);
+        term.value?.writeln(data);
       },
       write(data: string) {
-        term?.write(data);
+        term.value?.write(data);
       },
     };
   }

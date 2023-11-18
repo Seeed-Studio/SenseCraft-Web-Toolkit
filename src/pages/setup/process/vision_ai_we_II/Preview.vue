@@ -5,9 +5,8 @@
   import { useDeviceStore } from '@/store';
   import Preview from '../components/Preview.vue';
 
-  const deviceManager = useDeviceManager();
+  const { device } = useDeviceManager();
   const deviceStore = useDeviceStore();
-  const device = deviceManager.value?.getDevice();
   const invoke = ref<boolean>(false);
   const disable = ref<boolean>(true);
   const previewRef = ref<InstanceType<typeof Preview> | null>(null);
@@ -17,14 +16,14 @@
     if (deviceStore.ready) {
       disable.value = false;
       if (previewRef.value?.onInvoke) {
-        device?.addEventListener(eventName, previewRef.value?.onInvoke);
+        device.value?.addEventListener(eventName, previewRef.value?.onInvoke);
       }
-      const isInvoke = await device?.isInvoke();
+      const isInvoke = await device.value?.isInvoke();
       if (isInvoke) {
         invoke.value = true;
         deviceStore.setIsInvoke(true);
       } else {
-        const result = await device?.invoke(-1);
+        const result = await device.value?.invoke(-1);
         if (result) {
           invoke.value = true;
         } else {
@@ -43,7 +42,7 @@
   onMounted(handelRefresh);
 
   onBeforeUnmount(() => {
-    device?.removeEventListener(eventName);
+    device.value?.removeEventListener(eventName);
   });
 </script>
 

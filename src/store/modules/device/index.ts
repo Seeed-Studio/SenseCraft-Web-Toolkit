@@ -8,7 +8,6 @@ const useDeviceStore = defineStore('device', {
     tscore: 0,
     ready: false,
     isInvoke: false,
-    hasLoadModel: false,
     models: [] as Model[],
     firmware: null as Firmware | null | undefined,
     currentModel: null as Model | null | undefined,
@@ -31,9 +30,6 @@ const useDeviceStore = defineStore('device', {
     },
     setIsInvoke(isInvoke: boolean) {
       this.isInvoke = isInvoke;
-    },
-    setHasLoadModel(hasLoadModel: boolean) {
-      this.hasLoadModel = hasLoadModel;
     },
     setModels(models: Model[]) {
       this.models = models;

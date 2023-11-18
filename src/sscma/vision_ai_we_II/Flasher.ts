@@ -14,8 +14,8 @@ class Flasher implements FlasherInterface {
   private deviceStore;
 
   constructor() {
-    const deviceManager = useDeviceManager();
-    this.device = deviceManager.value?.getDevice<DeviceHimax>() ?? null;
+    const { device } = useDeviceManager();
+    this.device = device.value as DeviceHimax;
     this.deviceStore = useDeviceStore();
   }
 

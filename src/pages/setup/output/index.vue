@@ -1,11 +1,13 @@
 <script setup lang="ts">
-  import useDeviceType from '@/hooks/deviceType';
   import { deviceTypeObj } from '@/sscma/constants';
+  import { useAppStore } from '@/store';
   import XiaoESP32S3Output from './xiao_esp32s3/index.vue';
 
-  const deviceType = useDeviceType();
+  const appStore = useAppStore();
 </script>
 
 <template>
-  <XiaoESP32S3Output :is="deviceType === deviceTypeObj['XIAO ESP32S3'].name" />
+  <XiaoESP32S3Output
+    v-if="appStore.deviceType === deviceTypeObj['XIAO ESP32S3'].name"
+  />
 </template>

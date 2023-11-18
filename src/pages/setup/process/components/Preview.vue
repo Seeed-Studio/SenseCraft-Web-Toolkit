@@ -31,9 +31,7 @@
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
 
-  const deviceManager = useDeviceManager();
-
-  const device = deviceManager.value?.getDevice();
+  const { device } = useDeviceManager();
 
   const COLORS = [
     'red',
@@ -67,7 +65,7 @@
   const length = computed(() => classes.value.length);
 
   const handleInvoke = async () => {
-    const result = await device?.invoke(-1);
+    const result = await device.value?.invoke(-1);
     if (result) {
       invoke.value = true;
     } else {
@@ -77,7 +75,7 @@
   };
 
   const handleStop = () => {
-    device?.break();
+    device.value?.break();
     invoke.value = false;
     deviceStore.setIsInvoke(false);
   };
@@ -133,11 +131,15 @@
             }
           }
         }
-        if (data?.classes) {
+        if (data?.classes && canvas.value) {
           const tagets = data.classes;
           for (let i = 0; i < tagets.length; i += 1) {
             const tar = tagets[i][1];
             const score = tagets[i][0];
+            console.log(tar, '-------tar------');
+            console.log(score, '-------score------');
+            console.log(classes.value, '-------classes------');
+            console.log(length.value, '-------length.value------');
             let tarStr = '';
             if (classes.value && tar < length.value) {
               tarStr = classes.value[tar];
@@ -147,18 +149,18 @@
             ctx.globalAlpha = 0.3;
             ctx.fillStyle = COLORS[tar % COLORS.length];
             ctx.fillRect(
-              (canvas.value!.width / tagets.length) * i,
+              (canvas.value.width / tagets.length) * i,
               0,
-              (canvas.value!.width / tagets.length) * (i + 1),
-              canvas.value!.height / 10
+              (canvas.value.width / tagets.length) * (i + 1),
+              canvas.value.height / 10
             );
             ctx.globalAlpha = 1;
-            ctx.font = `bold ${canvas.value!.height / 16}px arial`;
+            ctx.font = `bold ${canvas.value.height / 16}px arial`;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(
               `${tarStr}: ${score}`,
-              (canvas.value!.width / tagets.length) * i,
-              canvas.value!.height / 16
+              (canvas.value.width / tagets.length) * i,
+              canvas.value.height / 16
             );
           }
         }

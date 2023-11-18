@@ -83,12 +83,10 @@
     flasher: FlasherInterface;
   };
   const props = defineProps<Props>();
-  const deviceManager = useDeviceManager();
+  const { device } = useDeviceManager();
 
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
-
-  const device = deviceManager.value?.getDevice();
 
   const data: Ref<
     {
@@ -109,8 +107,8 @@
       const result = await props.flasher.onEraseFlash();
       if (result && props.flasher.isNeedConnectDevice) {
         await props.flasher.onConnectDevice();
-        device?.deleteInfo();
-        device?.deleteAction();
+        device.value?.deleteInfo();
+        device.value?.deleteAction();
         deviceStore.setCurrentModel();
       }
       if (result) {
@@ -187,8 +185,8 @@
         await props.flasher.onConnectDevice();
       }
 
-      device?.deleteInfo();
-      device?.deleteAction();
+      device.value?.deleteInfo();
+      device.value?.deleteAction();
       deviceStore.setCurrentModel();
     } catch (error: any) {
       Message.error(error?.message);

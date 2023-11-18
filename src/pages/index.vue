@@ -46,7 +46,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, provide, onMounted } from 'vue';
+  import { ref, computed, provide, onMounted, watch } from 'vue';
+  import { useRoute } from 'vue-router';
   import { useAppStore } from '@/store';
   import Logger from './components/Logger.vue';
   import TabBar from './components/TabBar.vue';

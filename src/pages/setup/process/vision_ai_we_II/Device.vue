@@ -6,28 +6,25 @@
   import Flasher from '@/sscma/vision_ai_we_II/Flasher';
   import Device from '../components/Device.vue';
 
-  const deviceManager = useDeviceManager();
-
+  const { device } = useDeviceManager();
   const deviceStore = useDeviceStore();
   const deviceName = ref<string | null>(null);
   const deviceVersion = ref<string | null>(null);
-  const device = deviceManager.value?.getDevice();
   const flasher = new Flasher();
 
   const handelRefresh = async () => {
-    console.log('看看这里的状态', deviceStore.deviceStatus);
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       deviceStore.setReady(false);
       try {
-        const name = await device?.getName();
-        const version = await device?.getVersion();
+        const name = await device.value?.getName();
+        const version = await device.value?.getVersion();
         if (name) {
           deviceName.value = name;
         }
         if (version) {
           deviceVersion.value = version;
         }
-        const base64Str = await device?.getInfo();
+        const base64Str = await device.value?.getInfo();
         if (base64Str) {
           const str = atob(base64Str);
           const model = JSON.parse(str);
@@ -61,27 +58,15 @@
       `https://files.seeedstudio.com/sscma/sscma-model-test.json?timestamp=${new Date().getTime()}`
     ).then((response) => response.json());
     deviceStore.setModels(data.models);
-    deviceStore.setHasLoadModel(true);
     const firmwares = data.firmwares;
     if (firmwares?.length > 0) {
       deviceStore.setFirmware(firmwares[1]);
     }
   };
 
-  onMounted(() => {
-    fetchAvailableModels();
-    handelRefresh();
-  });
+  onMounted(fetchAvailableModels);
 
-  watch(
-    () => deviceStore.deviceStatus,
-    () => {
-      if (!deviceStore.hasLoadModel) {
-        fetchAvailableModels();
-      }
-      handelRefresh();
-    }
-  );
+  watch(() => deviceStore.deviceStatus, handelRefresh);
 </script>
 
 <template>

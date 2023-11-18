@@ -1,15 +1,11 @@
 import { RouteRecordRaw } from 'vue-router';
-import { useAppStore } from '@/store';
 import { DEFAULT_LAYOUT } from '../base';
 
 const SETUP: RouteRecordRaw = {
-  path: '/:deviceType/setup',
+  path: '/setup',
   name: 'setup',
   component: DEFAULT_LAYOUT,
-  redirect: () => {
-    const appState = useAppStore();
-    return `/${appState.deviceType}/setup/process`;
-  },
+  redirect: '/setup/process',
   meta: {
     locale: 'menu.setup',
     requiresAuth: true,

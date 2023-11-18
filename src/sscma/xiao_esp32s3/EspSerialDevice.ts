@@ -24,6 +24,7 @@ export default class EspSerialDevice extends Device {
   private hasStart: boolean;
   private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
   private cacheData: Array<number>;
+  name = 'EspSerialDevice';
 
   constructor() {
     super();
@@ -49,8 +50,6 @@ export default class EspSerialDevice extends Device {
         })),
       });
       this.port = serialPort;
-
-      this.setConnectDevice(serialPort.getInfo());
     } catch (err) {
       console.error('在请求端口的地方出现了错误', err);
       throw new Error('Request serial port failed');
@@ -101,20 +100,6 @@ export default class EspSerialDevice extends Device {
       console.log(error, '在连接串口的过程中出现了错误');
       Message.error('Device connect failed');
     }
-  }
-
-  private setConnectDevice(info: SerialPortInfo) {
-    DEVICE_LIST.forEach((device) => {
-      if (
-        device.filter.some(
-          (e) =>
-            e.productId === info.usbProductId && e.vendorId === info.usbVendorId
-        )
-      ) {
-        const appStore = useAppStore();
-        appStore.switchDevice(device.name);
-      }
-    });
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {

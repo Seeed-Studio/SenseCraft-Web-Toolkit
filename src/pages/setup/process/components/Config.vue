@@ -43,20 +43,19 @@
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
 
-  const deviceManager = useDeviceManager();
+  const { device } = useDeviceManager();
 
-  const device = deviceManager.value?.getDevice();
   const deviceStore = useDeviceStore();
 
   const confidence = ref(deviceStore.tscore);
   const iou = ref(deviceStore.tiou);
 
   const setConfidence = (value: number | [number, number]) => {
-    device?.setScore(value as number);
+    device.value?.setScore(value as number);
   };
 
   const setIou = (value: number | [number, number]) => {
-    device?.setIOU(value as number);
+    device.value?.setIOU(value as number);
   };
 
   const handelConfidenceChange = throttle(setConfidence, 1000);

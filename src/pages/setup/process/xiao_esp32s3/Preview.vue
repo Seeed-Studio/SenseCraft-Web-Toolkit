@@ -7,9 +7,8 @@
   import { DeviceStatus } from '@/sscma';
   import Preview from '../components/Preview.vue';
 
-  const deviceManager = useDeviceManager();
+  const { device } = useDeviceManager();
   const deviceStore = useDeviceStore();
-  const device = deviceManager.value?.getDevice();
   const invoke = ref<boolean>(false);
   const disable = ref<boolean>(true);
   const { t } = useI18n();
@@ -19,12 +18,12 @@
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       disable.value = false;
-      const isInvoke = await device?.isInvoke();
+      const isInvoke = await device.value?.isInvoke();
       if (isInvoke) {
         invoke.value = true;
         deviceStore.setIsInvoke(true);
       } else {
-        const result = await device?.invoke(-1);
+        const result = await device.value?.invoke(-1);
         if (result) {
           invoke.value = true;
         } else {
@@ -42,13 +41,13 @@
 
   onMounted(async () => {
     if (previewRef.value?.onInvoke) {
-      device?.addEventListener(eventName, previewRef.value?.onInvoke);
+      device.value?.addEventListener(eventName, previewRef.value?.onInvoke);
     }
     handelRefresh();
   });
 
   onBeforeUnmount(() => {
-    device?.removeEventListener(eventName);
+    device.value?.removeEventListener(eventName);
   });
 </script>
 
