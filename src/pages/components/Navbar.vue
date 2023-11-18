@@ -158,11 +158,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, inject, watch } from 'vue';
+  import { computed, ref, inject } from 'vue';
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
-  import { useRouter } from 'vue-router';
   import { useAppStore, useDeviceStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
@@ -174,9 +173,7 @@
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
-  const deviceManager = useDeviceManager();
-  const device = deviceManager.value?.getDevice();
-  const router = useRouter();
+  const { device } = useDeviceManager();
   const deviceTypes = ref(DEVICE_LIST);
 
   const { changeLocale, currentLocale } = useLocale();
@@ -228,24 +225,10 @@
 
   const toggleDrawerMenu = inject('toggleDrawerMenu') as () => void;
 
-  watch(
-    () => appStore.deviceType,
-    (val) => {
-      const name = router.currentRoute.value?.name;
-      if (!name) {
-        return;
-      }
-      router.replace({
-        name,
-        params: { deviceType: val },
-      });
-    }
-  );
-
   async function connect() {
     loading.value = true;
     try {
-      await device?.connect();
+      await device.value?.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success(t('workplace.serial.device.connected.successfully'));
       }
@@ -258,7 +241,7 @@
 
   async function disconnect() {
     try {
-      await device?.disconnect();
+      await device.value?.disconnect();
     } catch (error) {
       console.log('断开连接失败', error);
     }

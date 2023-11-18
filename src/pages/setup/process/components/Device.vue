@@ -235,8 +235,7 @@
   const props = defineProps<Props>();
   const { t } = useI18n();
   const deviceStore = useDeviceStore();
-  const deviceManager = useDeviceManager();
-  const device = deviceManager.value?.getDevice();
+  const { device } = useDeviceManager();
   const modalName = ref('');
   const modalVisible = ref(false);
   const inputRef = ref(null);
@@ -370,8 +369,8 @@
 
       if (finallyModel) {
         const info = btoa(JSON.stringify(finallyModel));
-        device?.setInfo(info);
-        device?.deleteAction();
+        device.value?.setInfo(info);
+        device.value?.deleteAction();
         deviceStore.setCurrentModel(finallyModel);
       }
     }

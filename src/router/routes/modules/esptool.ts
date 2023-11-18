@@ -1,15 +1,11 @@
 import { RouteRecordRaw } from 'vue-router';
-import { useAppStore } from '@/store';
 import { DEFAULT_LAYOUT } from '../base';
 
 const ESPTOOL: RouteRecordRaw = {
-  path: '/:deviceType/esptool',
+  path: '/esptool',
   name: 'esptool',
   component: DEFAULT_LAYOUT,
-  redirect: () => {
-    const appState = useAppStore();
-    return `/${appState.deviceType}/esptool/esptool`;
-  },
+  redirect: '/esptool/esptool',
   meta: {
     locale: 'menu.tool',
     requiresAuth: true,

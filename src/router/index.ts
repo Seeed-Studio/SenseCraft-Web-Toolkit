@@ -2,7 +2,6 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import NProgress from 'nprogress'; // progress bar
 import 'nprogress/nprogress.css';
 
-import { useAppStore } from '@/store';
 import { appRoutes } from './routes';
 import { REDIRECT_MAIN, NOT_FOUND_ROUTE } from './routes/base';
 import createRouteGuard from './guard';
@@ -13,10 +12,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: () => {
-        const appState = useAppStore();
-        return `/${appState.deviceType}/setup/process`;
-      },
+      redirect: '/setup/process',
     },
     ...appRoutes,
     REDIRECT_MAIN,

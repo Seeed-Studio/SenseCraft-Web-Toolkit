@@ -52,9 +52,6 @@ const useAppStore = defineStore('app', {
     clearServerMenu() {
       this.serverMenu = [];
     },
-    switchDevice(newDeviceType: string) {
-      this.deviceType = newDeviceType;
-    },
   },
 });
 

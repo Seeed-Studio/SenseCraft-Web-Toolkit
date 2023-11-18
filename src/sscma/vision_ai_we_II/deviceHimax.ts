@@ -15,6 +15,7 @@ export default class Himax extends Device {
   private cacheData: Array<number>;
   private watchLoop: boolean | undefined = undefined;
 
+  name = 'EspSerialDevice';
   constructor() {
     super();
     this.hasStart = false;
@@ -224,8 +225,6 @@ export default class Himax extends Device {
       })),
     });
     this.serial = new Serial(serialPort);
-
-    this.setConnectDevice(serialPort.getInfo());
   }
 
   public async connect(): Promise<void> {
@@ -246,20 +245,6 @@ export default class Himax extends Device {
     await delay(2000);
     this.serial?.clear();
     this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
-  }
-
-  private setConnectDevice(info: SerialPortInfo) {
-    DEVICE_LIST.forEach((device) => {
-      if (
-        device.filter.some(
-          (e) =>
-            e.productId === info.usbProductId && e.vendorId === info.usbVendorId
-        )
-      ) {
-        const appStore = useAppStore();
-        appStore.switchDevice(device.name);
-      }
-    });
   }
 
   public async disconnect(): Promise<void> {
