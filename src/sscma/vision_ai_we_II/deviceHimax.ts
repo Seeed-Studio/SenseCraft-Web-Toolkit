@@ -1,13 +1,12 @@
 import { Message } from '@arco-design/web-vue';
-import { useAppStore, useDeviceStore } from '@/store';
 import { delay } from '@/utils/timer';
 import Serial from './serial';
 import Xmodem from './xmodem';
 import { DeviceStatus } from '../types';
 import Device from '../device';
-import { DEVICE_LIST, DeviceType, deviceTypeObj } from '../constants';
+import { DeviceType, deviceTypeObj } from '../constants';
 
-export default class Himax extends Device {
+class Himax extends Device {
   private serial: Serial | null = null;
 
   private hasStart: boolean;
@@ -256,3 +255,5 @@ export default class Himax extends Device {
     this.watchLoop = false;
   }
 }
+
+export default new Himax();
