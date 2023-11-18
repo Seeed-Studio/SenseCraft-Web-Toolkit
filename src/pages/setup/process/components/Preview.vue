@@ -136,10 +136,6 @@
           for (let i = 0; i < tagets.length; i += 1) {
             const tar = tagets[i][1];
             const score = tagets[i][0];
-            console.log(tar, '-------tar------');
-            console.log(score, '-------score------');
-            console.log(classes.value, '-------classes------');
-            console.log(length.value, '-------length.value------');
             let tarStr = '';
             if (classes.value && tar < length.value) {
               tarStr = classes.value[tar];

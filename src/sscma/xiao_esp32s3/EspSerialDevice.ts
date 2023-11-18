@@ -5,12 +5,11 @@ import {
   IEspLoaderTerminal,
 } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
-import { useAppStore } from '@/store';
 import Device from '../device';
 import { DeviceStatus } from '../types';
-import { DEVICE_LIST, DeviceType, deviceTypeObj } from '../constants';
+import { DeviceType, deviceTypeObj } from '../constants';
 
-export default class EspSerialDevice extends Device {
+class EspSerialDevice extends Device {
   public port: SerialPort | null;
 
   public transport: Transport | null;
@@ -251,3 +250,5 @@ export default class EspSerialDevice extends Device {
     this.writer?.write(data);
   }
 }
+
+export default new EspSerialDevice();
