@@ -8,7 +8,7 @@ import { Message } from '@arco-design/web-vue';
 import { useAppStore } from '@/store';
 import Device from '../device';
 import { DeviceStatus } from '../types';
-import { DEVICE_LIST } from '../constants';
+import { DEVICE_LIST, deviceTypeObj } from '../constants';
 
 export default class EspSerialDevice extends Device {
   public port: SerialPort | null;
@@ -40,15 +40,31 @@ export default class EspSerialDevice extends Device {
     this.cacheData = [];
   }
 
+  public async requestPort() {
+    try {
+      const serialPort = await navigator.serial.requestPort({
+        filters: deviceTypeObj['XIAO ESP32S3'].filter.map((e) => ({
+          usbVendorId: e.vendorId,
+          usbProductId: e.productId,
+        })),
+      });
+      this.port = serialPort;
+
+      this.setConnectDevice(serialPort.getInfo());
+    } catch (err) {
+      console.error('在请求端口的地方出现了错误', err);
+      throw new Error('Request serial port failed');
+    }
+  }
+
   public async connect() {
     try {
       if (this.port === null) {
         try {
-          const serialPort = await navigator.serial.requestPort();
-          this.port = serialPort;
-        } catch (error) {
+          await this.requestPort();
+        } catch (error: any) {
           console.log(error);
-          Message.error('Request serial port failed');
+          Message.error(error?.message);
           return;
         }
       }
@@ -81,7 +97,6 @@ export default class EspSerialDevice extends Device {
       this.writer = this.port?.writable?.getWriter();
       this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
       this.readLoop();
-      this.setConnectDevice(this.port.getInfo());
     } catch (error) {
       console.log(error, '在连接串口的过程中出现了错误');
       Message.error('Device connect failed');
@@ -97,7 +112,7 @@ export default class EspSerialDevice extends Device {
         )
       ) {
         const appStore = useAppStore();
-        appStore.deviceType = device.name;
+        appStore.switchDevice(device.name);
       }
     });
   }

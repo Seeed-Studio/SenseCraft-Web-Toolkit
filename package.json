@@ -37,6 +37,7 @@
     "@vueuse/core": "^9.3.0",
     "arco-design-pro-vue": "^2.7.2",
     "axios": "^0.24.0",
+    "crc": "^4.3.2",
     "dayjs": "^1.11.5",
     "echarts": "^5.4.0",
     "esptool-js": "^0.3.0",
