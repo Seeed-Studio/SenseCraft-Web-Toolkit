@@ -43,7 +43,7 @@
           </a-space>
         </a-space>
         <div v-else class="device-item">
-          {{ $t('workplace.device.model.nomodel') }}
+          <!-- {{ $t('workplace.device.model.nomodel') }} -->
         </div>
       </div>
       <div class="models-item-title">
@@ -221,8 +221,8 @@
   import FlasherInterface from '@/sscma/FlasherInterface';
   import useDeviceManager from '@/hooks/deviceManager';
 
-  export type FileType = {
-    data: Uint8Array;
+  export type FileType<T> = {
+    data: T;
     address: number;
   };
 
@@ -230,6 +230,7 @@
     deviceName: string | null;
     deviceVersion: string | null;
     flasher: FlasherInterface;
+    readFile: (blob: Blob | File) => Promise<unknown>;
   };
   const props = defineProps<Props>();
   const { t } = useI18n();
@@ -277,19 +278,6 @@
     modalVisible.value = false;
   };
 
-  const readFile = (blob: Blob | File): Promise<Uint8Array> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const arrayBuffer = reader.result as ArrayBuffer;
-        const uint8Array = new Uint8Array(arrayBuffer);
-        resolve(uint8Array);
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
-  };
-
   const downloadFirmware = async (bins: Bin[]) => {
     const fileList = await Promise.all(
       bins.map(async (bin) => {
@@ -297,7 +285,7 @@
           `${bin.url}?timestamp=${new Date().getTime()}`
         );
         const blob = await response.blob();
-        const data = await readFile(blob);
+        const data = await props.readFile(blob);
         return { data, address: bin.address };
       })
     );
@@ -309,7 +297,7 @@
       `${model.url}?timestamp=${new Date().getTime()}`
     );
     const blob = await response.blob();
-    const data = await readFile(blob);
+    const data = await props.readFile(blob);
     return {
       data,
       address: deviceStore.firmware?.model_slots[0].address || 4194304,
@@ -318,7 +306,7 @@
 
   const handleCustomModelData = async () => {
     if (!modelFile.value) throw new Error('文件不存在');
-    const data = await readFile(modelFile.value);
+    const data = await props.readFile(modelFile.value);
     const model: Model = {
       name: modalName.value,
       version: '1.0.0',
@@ -339,8 +327,9 @@
     await props.flasher.writeFlashBefore();
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
-    const fileArray: FileType[] = [];
-    if (version !== props.deviceVersion && bins.length === 0) {
+    const fileArray = [];
+    const currentVersion = props.deviceVersion;
+    if (version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
       }

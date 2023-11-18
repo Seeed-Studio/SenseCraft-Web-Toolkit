@@ -3,21 +3,21 @@
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
-  import Flasher from '@/sscma/xiao_esp32s3/Flasher';
-  import type EspSerialDevice from '@/sscma/xiao_esp32s3/EspSerialDevice';
+  import Flasher from '@/sscma/vision_ai_we_II/Flasher';
   import Device from '../components/Device.vue';
 
   const deviceManager = useDeviceManager();
 
-  const device = deviceManager.value?.getDevice<EspSerialDevice>();
   const deviceStore = useDeviceStore();
   const deviceName = ref<string | null>(null);
   const deviceVersion = ref<string | null>(null);
-
+  const device = deviceManager.value?.getDevice();
   const flasher = new Flasher();
 
   const handelRefresh = async () => {
+    console.log('看看这里的状态', deviceStore.deviceStatus);
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+      deviceStore.setReady(false);
       try {
         const name = await device?.getName();
         const version = await device?.getVersion();
@@ -36,32 +36,36 @@
           deviceStore.setCurrentModel(undefined);
         }
       } catch (error) {
-        console.log(error);
+        console.error(error, '在刷新设备数据的地方出现了错误');
+      } finally {
+        deviceStore.setReady(true);
       }
     }
   };
 
+  const readFile = (blob: Blob | File): Promise<Uint8Array> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const uint8Array = new Uint8Array(arrayBuffer);
+        resolve(uint8Array);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(blob);
+    });
+  };
+
   const fetchAvailableModels = async () => {
     const data = await fetch(
-      `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
+      `https://files.seeedstudio.com/sscma/sscma-model-test.json?timestamp=${new Date().getTime()}`
     ).then((response) => response.json());
     deviceStore.setModels(data.models);
     deviceStore.setHasLoadModel(true);
     const firmwares = data.firmwares;
     if (firmwares?.length > 0) {
-      deviceStore.setFirmware(firmwares[0]);
+      deviceStore.setFirmware(firmwares[1]);
     }
-  };
-
-  const readFile = (blob: Blob | File) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const data = ev?.target?.result as string;
-        resolve(data);
-      };
-      reader.readAsBinaryString(blob);
-    });
   };
 
   onMounted(() => {

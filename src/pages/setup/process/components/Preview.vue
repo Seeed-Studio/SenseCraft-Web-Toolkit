@@ -25,11 +25,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, onBeforeUnmount, watch, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useDeviceStore } from '@/store';
-  import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
 
   const deviceManager = useDeviceManager();
@@ -169,44 +168,7 @@
     }
   };
 
-  const handelRefresh = async (deviceStatus: DeviceStatus) => {
-    if (deviceStatus === DeviceStatus.SerialConnected) {
-      disable.value = false;
-      const isInvoke = await device?.isInvoke();
-      if (isInvoke) {
-        invoke.value = true;
-        deviceStore.setIsInvoke(true);
-      } else {
-        const result = await device?.invoke(-1);
-        if (result) {
-          invoke.value = true;
-        } else {
-          Message.error(t('workplace.preview.message.invoke.failed'));
-          invoke.value = false;
-        }
-      }
-    } else {
-      deviceStore.setIsInvoke(false);
-      disable.value = true;
-      invoke.value = false;
-    }
-  };
-
-  watch(
-    () => deviceStore.deviceStatus,
-    (val) => {
-      handelRefresh(val);
-    }
-  );
-
-  onMounted(async () => {
-    device?.addEventListener(eventName, onInvoke);
-    handelRefresh(deviceStore.deviceStatus);
-  });
-
-  onBeforeUnmount(() => {
-    device?.removeEventListener(eventName);
-  });
+  defineExpose({ onInvoke });
 </script>
 
 <style scoped lang="less">

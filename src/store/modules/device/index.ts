@@ -6,6 +6,7 @@ const useDeviceStore = defineStore('device', {
     deviceStatus: DeviceStatus.UnConnected,
     tiou: 0,
     tscore: 0,
+    ready: false,
     isInvoke: false,
     hasLoadModel: false,
     models: [] as Model[],
@@ -16,6 +17,9 @@ const useDeviceStore = defineStore('device', {
   getters: {},
 
   actions: {
+    setReady(ready: boolean) {
+      this.ready = ready;
+    },
     setDeviceStatus(deviceStatus: DeviceStatus) {
       this.deviceStatus = deviceStatus;
     },

@@ -177,7 +177,6 @@
   const deviceManager = useDeviceManager();
   const device = deviceManager.value?.getDevice();
   const router = useRouter();
-
   const deviceTypes = ref(DEVICE_LIST);
 
   const { changeLocale, currentLocale } = useLocale();
@@ -242,13 +241,6 @@
       });
     }
   );
-
-  watch(router.currentRoute, () => {
-    const { params } = router.currentRoute.value ?? {};
-    if (typeof params?.deviceType === 'string') {
-      appStore.switchDevice(params?.deviceType);
-    }
-  });
 
   async function connect() {
     loading.value = true;
