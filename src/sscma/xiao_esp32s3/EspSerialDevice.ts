@@ -8,7 +8,7 @@ import { Message } from '@arco-design/web-vue';
 import { useAppStore } from '@/store';
 import Device from '../device';
 import { DeviceStatus } from '../types';
-import { DEVICE_LIST, deviceTypeObj } from '../constants';
+import { DEVICE_LIST, DeviceType, deviceTypeObj } from '../constants';
 
 export default class EspSerialDevice extends Device {
   public port: SerialPort | null;
@@ -44,7 +44,7 @@ export default class EspSerialDevice extends Device {
   public async requestPort() {
     try {
       const serialPort = await navigator.serial.requestPort({
-        filters: deviceTypeObj['XIAO ESP32S3'].filter.map((e) => ({
+        filters: deviceTypeObj[DeviceType.XiaoEsp32s3].filter.map((e) => ({
           usbVendorId: e.vendorId,
           usbProductId: e.productId,
         })),

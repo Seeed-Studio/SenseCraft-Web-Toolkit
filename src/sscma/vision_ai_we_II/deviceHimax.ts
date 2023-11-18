@@ -5,7 +5,7 @@ import Serial from './serial';
 import Xmodem from './xmodem';
 import { DeviceStatus } from '../types';
 import Device from '../device';
-import { DEVICE_LIST, deviceTypeObj } from '../constants';
+import { DEVICE_LIST, DeviceType, deviceTypeObj } from '../constants';
 
 export default class Himax extends Device {
   private serial: Serial | null = null;
@@ -219,7 +219,7 @@ export default class Himax extends Device {
 
   public async requestPort() {
     const serialPort = await navigator.serial.requestPort({
-      filters: deviceTypeObj['Vision AI (WE-II)'].filter.map((e) => ({
+      filters: deviceTypeObj[DeviceType.VisionAIWeII].filter.map((e) => ({
         usbVendorId: e.vendorId,
         usbProductId: e.productId,
       })),
