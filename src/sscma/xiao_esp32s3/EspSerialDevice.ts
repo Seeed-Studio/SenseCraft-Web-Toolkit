@@ -41,100 +41,72 @@ class EspSerialDevice extends Device {
   }
 
   public async requestPort() {
-    try {
-      const serialPort = await navigator.serial.requestPort({
-        filters: deviceTypeObj[DeviceType.XiaoEsp32s3].filter.map((e) => ({
-          usbVendorId: e.vendorId,
-          usbProductId: e.productId,
-        })),
-      });
-      this.port = serialPort;
-    } catch (err) {
-      console.error('在请求端口的地方出现了错误', err);
-      throw new Error('Request serial port failed');
-    }
+    const serialPort = await navigator.serial.requestPort({
+      filters: deviceTypeObj[DeviceType.XiaoEsp32s3].filter.map((e) => ({
+        usbVendorId: e.vendorId,
+        usbProductId: e.productId,
+      })),
+    });
+    this.port = serialPort;
   }
 
   public async connect() {
-    try {
-      if (this.port === null) {
-        try {
-          await this.requestPort();
-        } catch (error: any) {
-          console.log(error);
-          Message.error(error?.message);
-          return;
-        }
-      }
-      // 如果当前在esp连接，需要断开
-      if (
-        (this.deviceStore.deviceStatus === DeviceStatus.EspConnected ||
-          this.deviceStore.deviceStatus === DeviceStatus.Flashing) &&
-        this.transport
-      ) {
-        await this.transport.disconnect();
-        this.transport = null;
-        this.esploader = null;
-      }
-      navigator.serial.ondisconnect = this.ondisconnect.bind(this);
-      this.cacheData = [];
-      if (this.port?.readable === null || this.port?.writable === null) {
-        await this.port.open({ baudRate: 115200 });
-      }
-
-      await this.port?.setSignals({ dataTerminalReady: false });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
-      await this.port?.setSignals({ dataTerminalReady: true });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 2000);
-      });
-
-      this.reader = this.port?.readable?.getReader();
-      this.writer = this.port?.writable?.getWriter();
-      this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
-      this.readLoop();
-    } catch (error) {
-      console.log(error, '在连接串口的过程中出现了错误');
-      Message.error('Device connect failed');
+    if (this.port === null) {
+      await this.requestPort();
     }
+    // 如果当前在esp连接，需要断开
+    if (
+      (this.deviceStore.deviceStatus === DeviceStatus.EspConnected ||
+        this.deviceStore.deviceStatus === DeviceStatus.Flashing) &&
+      this.transport
+    ) {
+      await this.transport.disconnect();
+      this.transport = null;
+      this.esploader = null;
+    }
+    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
+    this.cacheData = [];
+    if (this.port?.readable === null || this.port?.writable === null) {
+      await this.port.open({ baudRate: 115200 });
+    }
+
+    await this.port?.setSignals({ dataTerminalReady: false });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+    await this.port?.setSignals({ dataTerminalReady: true });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 2000);
+    });
+
+    this.reader = this.port?.readable?.getReader();
+    this.writer = this.port?.writable?.getWriter();
+    this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
+    this.readLoop();
   }
 
   public async esploaderConnect(terminal?: IEspLoaderTerminal) {
-    try {
-      if (this.port === null) {
-        try {
-          const serialPort = await navigator.serial.requestPort();
-          this.port = serialPort;
-        } catch (error) {
-          console.log(error);
-          Message.error('Request serial port failed');
-          return;
-        }
-      }
-      navigator.serial.ondisconnect = this.ondisconnect.bind(this);
-      // 如果当前在串口连接，需要断开
-      if (this.deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
-        this.reader?.releaseLock();
-        this.writer?.releaseLock();
-        await this.port?.close();
-      }
-      if (!this.transport || !this.esploader) {
-        this.transport = new Transport(this.port);
-        const flashOptions = {
-          transport: this.transport,
-          baudrate: 115200,
-          terminal,
-        } as LoaderOptions;
-        this.esploader = new ESPLoader(flashOptions);
-      }
-      await this.esploader.main_fn();
-      this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
-    } catch (error) {
-      console.log(error);
-      Message.error('Device connect failed');
+    if (this.port === null) {
+      await this.requestPort();
     }
+    navigator.serial.ondisconnect = this.ondisconnect.bind(this);
+    // 如果当前在串口连接，需要断开
+    if (this.deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+      this.reader?.releaseLock();
+      this.writer?.releaseLock();
+      await this.port?.close();
+    }
+    if ((!this.transport || !this.esploader) && this.port) {
+      this.transport = new Transport(this.port);
+      const flashOptions = {
+        transport: this.transport,
+        baudrate: 115200,
+        terminal,
+      } as LoaderOptions;
+      this.esploader = new ESPLoader(flashOptions);
+    }
+    await this.esploader?.main_fn();
+    this.deviceStore.setDeviceStatus(DeviceStatus.EspConnected);
   }
 
   // 串口断开事件

@@ -375,6 +375,9 @@
         deviceStore.setCurrentModel(finallyModel);
       }
       deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
+    } else {
+      await device.value.disconnect();
+      deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
     }
     loadingTip.value = '';
     loading.value = false;
@@ -387,10 +390,7 @@
     }
     if (selectedModel.value > -1) {
       const model = deviceStore.models[selectedModel.value];
-      if (
-        model.checksum &&
-        model.checksum === deviceStore.currentModel?.checksum
-      ) {
+      if (model.uuid && model.uuid === deviceStore.currentModel?.uuid) {
         Message.warning(t('workplace.device.message.model.current'));
         return;
       }

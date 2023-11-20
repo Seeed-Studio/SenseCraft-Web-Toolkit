@@ -1,4 +1,3 @@
-import { ESPLoader } from 'esptool-js';
 import useDeviceManager from '@/hooks/deviceManager';
 import { useDeviceStore } from '@/store';
 import { delay } from '@/utils/timer';
@@ -8,7 +7,6 @@ import type { Himax as DeviceHimax } from './deviceHimax';
 class Flasher implements FlasherInterface {
   isNeedConnectDevice = false;
   isNeedResetDevice = true;
-  private espLoader: ESPLoader | null = null;
   private device: DeviceHimax | null = null;
   private deviceStore;
 
@@ -17,8 +15,6 @@ class Flasher implements FlasherInterface {
     this.device = device.value as DeviceHimax;
     this.deviceStore = useDeviceStore();
   }
-
-  private async espLoaderConnect() {}
 
   async writeFlashBefore() {
     await this.onConnectDevice();
@@ -50,11 +46,11 @@ class Flasher implements FlasherInterface {
   }
 
   async onEraseFlashBefore() {
-    await this.espLoaderConnect();
+    await this.onConnectDevice();
   }
 
   async onEraseFlash() {
-    await this.espLoader?.erase_flash();
+    await this.device?.eraseFlash();
     return true;
   }
 }

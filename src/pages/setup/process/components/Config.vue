@@ -13,7 +13,10 @@
           :min="0"
           :max="100"
           show-input
-          :disabled="!deviceStore.isInvoke"
+          :disabled="
+            !deviceStore.isInvoke ||
+            deviceStore.deviceStatus !== DeviceStatus.SerialConnected
+          "
           @change="handelConfidenceChange"
         />
       </a-space>
@@ -29,7 +32,10 @@
           :min="0"
           :max="100"
           show-input
-          :disabled="!deviceStore.isInvoke"
+          :disabled="
+            !deviceStore.isInvoke ||
+            deviceStore.deviceStatus !== DeviceStatus.SerialConnected
+          "
           @change="handelIouChange"
         />
       </a-space>
@@ -42,6 +48,7 @@
   import { throttle } from 'lodash';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
+  import { DeviceStatus } from '@/sscma';
 
   const { device } = useDeviceManager();
 

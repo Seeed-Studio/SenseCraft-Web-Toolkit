@@ -238,6 +238,7 @@
       }
     } catch (error) {
       console.error('设备连接失败', error);
+      Message.error(t('workplace.serial.connected.failed'));
     } finally {
       loading.value = false;
     }

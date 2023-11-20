@@ -33,13 +33,20 @@ class Flasher implements FlasherInterface {
   }
 
   private async espLoaderConnect() {
-    if (this.deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
-      await this.device?.esploaderConnect(this.espLoaderTerminal);
-    }
-    this.espLoader = this.device?.esploader ?? null;
-    this.transport = this.device?.transport ?? null;
-    if (!this.espLoader || !this.transport) {
-      throw new Error(i18n.global.t('workplace.serial.no.port'));
+    try {
+      if (this.deviceStore.deviceStatus !== DeviceStatus.EspConnected) {
+        await this.device?.esploaderConnect(this.espLoaderTerminal);
+      }
+      this.espLoader = this.device?.esploader ?? null;
+      this.transport = this.device?.transport ?? null;
+      if (!this.espLoader || !this.transport) {
+        throw new Error(i18n.global.t('workplace.serial.no.port'));
+      }
+    } catch (error: any) {
+      console.log('在 espLoader connect 的地方出现了错误', error);
+      if (error?.message?.includes('No port selected by the user')) {
+        throw new Error(i18n.global.t('workplace.serial.no.port'));
+      }
     }
   }
 
