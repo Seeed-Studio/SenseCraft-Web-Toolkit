@@ -357,10 +357,11 @@
       }
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
+    deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
-      loadingTip.value = t('workplace.device.message.tip.resetting');
       if (props.flasher.isNeedResetDevice) {
+        loadingTip.value = t('workplace.device.message.tip.resetting');
         await props.flasher.onResetDevice();
       }
       if (props.flasher.isNeedConnectDevice) {
@@ -369,10 +370,11 @@
 
       if (finallyModel) {
         const info = btoa(JSON.stringify(finallyModel));
-        device.value?.setInfo(info);
-        device.value?.deleteAction();
+        await device.value?.setInfo(info);
+        await device.value?.deleteAction();
         deviceStore.setCurrentModel(finallyModel);
       }
+      deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
     }
     loadingTip.value = '';
     loading.value = false;
@@ -385,7 +387,10 @@
     }
     if (selectedModel.value > -1) {
       const model = deviceStore.models[selectedModel.value];
-      if (model.checksum === deviceStore.currentModel?.checksum) {
+      if (
+        model.checksum &&
+        model.checksum === deviceStore.currentModel?.checksum
+      ) {
         Message.warning(t('workplace.device.message.model.current'));
         return;
       }

@@ -4,7 +4,7 @@ import { useDeviceStore } from '@/store';
 import i18n from '@/locale';
 import FlasherInterface from '../FlasherInterface';
 import { DeviceStatus } from '../types';
-import EspSerialDevice from './EspSerialDevice';
+import type { EspSerialDevice } from './EspSerialDevice';
 
 class Flasher implements FlasherInterface {
   isNeedConnectDevice = true;
@@ -21,13 +21,13 @@ class Flasher implements FlasherInterface {
     this.deviceStore = useDeviceStore();
     this.espLoaderTerminal = {
       clean() {
-        term.value?.clear();
+        term.clear();
       },
       writeLine(data: string) {
-        term.value?.writeln(data);
+        term.writeln(data);
       },
       write(data: string) {
-        term.value?.write(data);
+        term.write(data);
       },
     };
   }
@@ -49,7 +49,6 @@ class Flasher implements FlasherInterface {
 
   async onWriteFlash(data: any) {
     try {
-      this.deviceStore.setDeviceStatus(DeviceStatus.Flashing);
       const flashOptions: FlashOptions = {
         fileArray: data,
         flashSize: 'keep',
