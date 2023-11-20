@@ -9,8 +9,6 @@
   const { device } = useDeviceManager();
 
   const deviceStore = useDeviceStore();
-  const deviceName = ref<string | null>(null);
-  const deviceVersion = ref<string | null>(null);
 
   const flasher = new Flasher();
 
@@ -20,10 +18,10 @@
         const name = await device.value?.getName();
         const version = await device.value?.getVersion();
         if (name) {
-          deviceName.value = name;
+          deviceStore.setDeviceName(name);
         }
         if (version) {
-          deviceVersion.value = version;
+          deviceStore.setDeviceVersion(version);
         }
         const base64Str = await device.value?.getInfo();
         if (base64Str) {
@@ -67,10 +65,5 @@
 </script>
 
 <template>
-  <Device
-    :device-name="deviceName"
-    :device-version="deviceVersion"
-    :flasher="flasher"
-    :read-file="readFile"
-  />
+  <Device :flasher="flasher" :read-file="readFile" />
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, watch, onMounted } from 'vue';
+  import { watch, onMounted } from 'vue';
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
@@ -8,8 +8,6 @@
 
   const { device } = useDeviceManager();
   const deviceStore = useDeviceStore();
-  const deviceName = ref<string | null>(null);
-  const deviceVersion = ref<string | null>(null);
   const flasher = new Flasher();
 
   const handelRefresh = async () => {
@@ -19,10 +17,10 @@
         const name = await device.value?.getName();
         const version = await device.value?.getVersion();
         if (name) {
-          deviceName.value = name;
+          deviceStore.setDeviceName(name);
         }
         if (version) {
-          deviceVersion.value = version;
+          deviceStore.setDeviceVersion(version);
         }
         const base64Str = await device.value?.getInfo();
         if (base64Str) {
@@ -70,10 +68,5 @@
 </script>
 
 <template>
-  <Device
-    :device-name="deviceName"
-    :device-version="deviceVersion"
-    :flasher="flasher"
-    :read-file="readFile"
-  />
+  <Device :flasher="flasher" :read-file="readFile" />
 </template>

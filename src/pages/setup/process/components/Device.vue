@@ -17,13 +17,15 @@
             <div class="device-item-title">{{
               $t('workplace.device.name')
             }}</div>
-            <div class="device-item-value">{{ deviceName }}</div>
+            <div class="device-item-value">{{ deviceStore.deviceName }}</div>
           </a-space>
           <a-space class="device-item">
             <div class="device-item-title"
               >{{ $t('workplace.device.version') }}
             </div>
-            <div class="device-item-value"> {{ deviceVersion }}</div>
+            <div class="device-item-value">
+              {{ deviceStore.deviceVersion }}</div
+            >
           </a-space>
           <a-space class="device-item">
             <div class="device-item-title">{{
@@ -227,8 +229,6 @@
   };
 
   type Props = {
-    deviceName: string | null;
-    deviceVersion: string | null;
     flasher: FlasherInterface;
     readFile: (blob: Blob | File) => Promise<unknown>;
   };
@@ -250,8 +250,8 @@
 
   const hasDeviceContent = computed(() => {
     if (
-      props.deviceName === null ||
-      props.deviceVersion === null ||
+      deviceStore.deviceName === null ||
+      deviceStore.deviceVersion === null ||
       deviceStore.currentModel === undefined
     ) {
       return false;
@@ -327,7 +327,7 @@
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray = [];
-    const currentVersion = props.deviceVersion;
+    const currentVersion = deviceStore.deviceVersion;
     if (version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
