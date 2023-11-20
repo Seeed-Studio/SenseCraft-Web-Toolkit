@@ -251,4 +251,5 @@ class EspSerialDevice extends Device {
   }
 }
 
+export type { EspSerialDevice };
 export default new EspSerialDevice();

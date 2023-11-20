@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia';
 import type { RouteRecordNormalized } from 'vue-router';
 import defaultSettings from '@/config/settings.json';
-import { DEVICE_LIST } from '@/sscma/constants';
 import { AppState } from './types';
 
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     ...defaultSettings,
-    deviceType: DEVICE_LIST[0].name,
   }),
 
   getters: {

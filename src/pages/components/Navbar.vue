@@ -130,8 +130,12 @@
         </a-tooltip>
       </li>
       <li>
-        <a-select v-model="appStore.deviceType" :style="{}">
-          <a-option v-for="deviceType in deviceTypes" :key="deviceType.name">{{
+        <a-select
+          :model-value="deviceStore.deviceType.name"
+          :style="{}"
+          @update:model-value="deviceStore.setDeviceType"
+        >
+          <a-option v-for="deviceType in deviceTypes" :key="deviceType.id">{{
             deviceType.name
           }}</a-option>
         </a-select>

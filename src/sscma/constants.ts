@@ -1,6 +1,6 @@
 export const DeviceType = {
-  XiaoEsp32s3: 1,
-  VisionAIWeII: 2,
+  XiaoEsp32s3: 'xiao_esp32s3',
+  VisionAIWeII: 'we_ii',
 };
 
 export const DEVICE_LIST = [

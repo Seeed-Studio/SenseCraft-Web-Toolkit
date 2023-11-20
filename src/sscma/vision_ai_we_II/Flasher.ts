@@ -3,12 +3,11 @@ import useDeviceManager from '@/hooks/deviceManager';
 import { useDeviceStore } from '@/store';
 import { delay } from '@/utils/timer';
 import FlasherInterface from '../FlasherInterface';
-import { DeviceStatus } from '../types';
-import DeviceHimax from './deviceHimax';
+import type { Himax as DeviceHimax } from './deviceHimax';
 
 class Flasher implements FlasherInterface {
   isNeedConnectDevice = false;
-  isNeedResetDevice = false;
+  isNeedResetDevice = true;
   private espLoader: ESPLoader | null = null;
   private device: DeviceHimax | null = null;
   private deviceStore;
@@ -27,7 +26,6 @@ class Flasher implements FlasherInterface {
 
   async onWriteFlash(data: any) {
     try {
-      this.deviceStore.setDeviceStatus(DeviceStatus.Flashing);
       for (let index = 0; index < data.length; index += 1) {
         const item = data[index];
         // eslint-disable-next-line no-await-in-loop

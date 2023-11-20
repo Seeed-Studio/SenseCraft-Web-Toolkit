@@ -72,10 +72,10 @@ class Himax extends Device {
                     }
                   }
                 } catch (error) {
-                  console.log(error);
+                  console.error(error, '在解析返回数据的地方出现了错误');
                   const buffer = new Uint8Array(this.cacheData);
                   const str = this.textDecoder.decode(buffer);
-                  console.log('handleReceive:', str);
+                  console.error('handleReceive:', str);
                 }
                 this.cacheData = [];
               } else if (this.hasStart) {
@@ -102,10 +102,9 @@ class Himax extends Device {
     if (!this.serial) {
       return;
     }
-    this.serial.setRTS(false);
-    // eslint-disable-next-line no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    this.serial.setRTS(true);
+    await this.serial.setRTS(false);
+    await delay(100);
+    await this.serial.setRTS(true);
   }
 
   public async flash(data: Uint8Array, offset: number): Promise<void> {
@@ -209,7 +208,7 @@ class Himax extends Device {
     if (!this.serial) {
       return;
     }
-    this.serial.write(data);
+    await this.serial.write(data);
   }
 
   public async eraseFlash(): Promise<void> {
@@ -255,5 +254,5 @@ class Himax extends Device {
     this.watchLoop = false;
   }
 }
-
+export type { Himax };
 export default new Himax();
