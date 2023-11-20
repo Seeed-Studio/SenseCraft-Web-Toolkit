@@ -13,6 +13,8 @@ const useDeviceStore = defineStore('device', {
     firmware: null as Firmware | null | undefined,
     currentModel: null as Model | null | undefined,
     deviceType: DEVICE_LIST[0],
+    deviceName: null as string | null,
+    deviceVersion: null as string | null,
   }),
 
   getters: {},
@@ -49,6 +51,12 @@ const useDeviceStore = defineStore('device', {
       if (index !== -1) {
         this.deviceType = DEVICE_LIST[index];
       }
+    },
+    setDeviceName(name: string) {
+      this.deviceName = name;
+    },
+    setDeviceVersion(version: string) {
+      this.deviceVersion = version;
     },
   },
 });
