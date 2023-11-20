@@ -33,7 +33,6 @@
       } catch (error) {
         console.error(error, '在刷新设备数据的地方出现了错误');
       } finally {
-        console.log('这里什么时候执行222');
         deviceStore.setReady(true);
       }
     }
