@@ -235,7 +235,7 @@
   const props = defineProps<Props>();
   const { t } = useI18n();
   const deviceStore = useDeviceStore();
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
   const modalName = ref('');
   const modalVisible = ref(false);
   const inputRef = ref(null);
@@ -399,6 +399,7 @@
     } catch (error: any) {
       console.error(error, '在 process 烧录的位置出现了错误');
       Message.error(error?.message ?? '');
+      term.writeln(`Error: ${error?.message}`);
     } finally {
       loadingTip.value = '';
       loading.value = false;

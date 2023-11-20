@@ -6,7 +6,7 @@
   import Flasher from '@/sscma/vision_ai_we_II/Flasher';
   import Device from '../components/Device.vue';
 
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
   const deviceStore = useDeviceStore();
   const flasher = new Flasher();
 
@@ -30,8 +30,9 @@
         } else {
           deviceStore.setCurrentModel(undefined);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(error, '在刷新设备数据的地方出现了错误');
+        term.writeln(`Error: ${error?.message}`);
       } finally {
         deviceStore.setReady(true);
       }
