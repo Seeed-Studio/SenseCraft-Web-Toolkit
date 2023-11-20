@@ -377,7 +377,6 @@
       deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
     } else {
       await device.value.disconnect();
-      deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
     }
     loadingTip.value = '';
     loading.value = false;

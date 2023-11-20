@@ -249,9 +249,12 @@ class Himax extends Device {
     if (!this.serial) {
       return;
     }
-    await this.serial.close();
-    this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
-    this.watchLoop = false;
+    try {
+      await this.serial.close();
+    } finally {
+      this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
+      this.watchLoop = false;
+    }
   }
 }
 export type { Himax };
