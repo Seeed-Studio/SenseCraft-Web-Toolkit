@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import Config from '../components/Config.vue';
-  import Preview from './Preview.vue';
+  import Preview from '../components/Preview.vue';
   import Device from './Device.vue';
 </script>
 
