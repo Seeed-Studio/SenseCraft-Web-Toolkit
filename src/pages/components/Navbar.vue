@@ -247,6 +247,7 @@
   async function disconnect() {
     try {
       await device.value?.disconnect();
+      deviceStore.setReady(false);
     } catch (error) {
       console.log('断开连接失败', error);
     }
