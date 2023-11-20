@@ -12,4 +12,9 @@
       deviceStore.deviceType.id === deviceTypeObj[DeviceType.XiaoEsp32s3].id
     "
   />
+  <XiaoESP32S3Output
+    v-else-if="
+      deviceStore.deviceType.id === deviceTypeObj[DeviceType.VisionAIWeII].id
+    "
+  />
 </template>
