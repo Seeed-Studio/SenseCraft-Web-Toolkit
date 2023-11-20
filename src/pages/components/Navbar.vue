@@ -177,7 +177,7 @@
   const appStore = useAppStore();
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
   const deviceTypes = ref(DEVICE_LIST);
 
   const { changeLocale, currentLocale } = useLocale();
@@ -236,9 +236,10 @@
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success(t('workplace.serial.device.connected.successfully'));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('设备连接失败', error);
       Message.error(t('workplace.serial.connected.failed'));
+      term.writeln(`Error: ${error?.message}`);
     } finally {
       loading.value = false;
     }
@@ -248,8 +249,9 @@
     try {
       await device.value?.disconnect();
       deviceStore.setReady(false);
-    } catch (error) {
+    } catch (error: any) {
       console.log('断开连接失败', error);
+      term.writeln(`Error: ${error?.message}`);
     }
   }
 </script>

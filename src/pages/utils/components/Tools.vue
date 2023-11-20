@@ -83,7 +83,7 @@
     flasher: FlasherInterface;
   };
   const props = defineProps<Props>();
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
 
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
@@ -119,6 +119,7 @@
     } catch (error: any) {
       console.error(error);
       Message.success(error?.message);
+      term.writeln(`Error: ${error?.message}`);
     } finally {
       loadingTip.value = '';
       loading.value = false;
@@ -190,6 +191,7 @@
       deviceStore.setCurrentModel();
     } catch (error: any) {
       Message.error(error?.message);
+      term.writeln(`Error: ${error?.message}`);
     } finally {
       loadingTip.value = '';
       loading.value = false;

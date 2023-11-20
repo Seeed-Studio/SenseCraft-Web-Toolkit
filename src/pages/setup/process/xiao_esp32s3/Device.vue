@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import { ref, watch, onMounted } from 'vue';
+  import { watch, onMounted } from 'vue';
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
   import Flasher from '@/sscma/xiao_esp32s3/Flasher';
   import Device from '../components/Device.vue';
 
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
 
   const deviceStore = useDeviceStore();
 
@@ -31,8 +31,9 @@
         } else {
           deviceStore.setCurrentModel(undefined);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        term.writeln(`Error: ${error?.message}`);
       }
     }
   };

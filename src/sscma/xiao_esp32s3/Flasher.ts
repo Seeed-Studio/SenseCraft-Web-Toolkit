@@ -44,6 +44,7 @@ class Flasher implements FlasherInterface {
       }
     } catch (error: any) {
       console.log('在 espLoader connect 的地方出现了错误', error);
+      this.espLoaderTerminal.writeLine(`Error: ${error.message}`);
       if (error?.message?.includes('No port selected by the user')) {
         throw new Error(i18n.global.t('workplace.serial.no.port'));
       }
@@ -67,8 +68,9 @@ class Flasher implements FlasherInterface {
       } as FlashOptions;
       await this.espLoader?.write_flash(flashOptions);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error(error, '在烧录的过程中出现了错误');
+      this.espLoaderTerminal.writeLine(`Error: ${error.message}`);
       return false;
     }
   }
