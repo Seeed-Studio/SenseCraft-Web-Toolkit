@@ -27,25 +27,27 @@
               {{ deviceStore.deviceVersion }}</div
             >
           </a-space>
-          <a-space class="device-item">
-            <div class="device-item-title">{{
-              $t('workplace.device.model.name')
-            }}</div>
-            <div class="device-item-value">{{
-              deviceStore.currentModel?.name
-            }}</div>
-          </a-space>
-          <a-space class="device-item">
-            <div class="device-item-title"
-              >{{ $t('workplace.device.model.version') }}
-            </div>
-            <div class="device-item-value">
-              {{ deviceStore.currentModel?.version }}</div
-            >
-          </a-space>
+          <template v-if="deviceStore.currentAvailableModel">
+            <a-space class="device-item">
+              <div class="device-item-title">{{
+                $t('workplace.device.model.name')
+              }}</div>
+              <div class="device-item-value">{{
+                deviceStore.currentModel?.name
+              }}</div>
+            </a-space>
+            <a-space class="device-item">
+              <div class="device-item-title"
+                >{{ $t('workplace.device.model.version') }}
+              </div>
+              <div class="device-item-value">
+                {{ deviceStore.currentModel?.version }}</div
+              >
+            </a-space>
+          </template>
         </a-space>
         <div v-else class="device-item">
-          <!-- {{ $t('workplace.device.model.nomodel') }} -->
+          {{ $t('workplace.device.model.nomodel') }}
         </div>
       </div>
       <div class="models-item-title">
@@ -209,7 +211,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, nextTick, computed } from 'vue';
+  import { ref, nextTick, computed, watch } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
@@ -389,7 +391,11 @@
     }
     if (selectedModel.value > -1) {
       const model = deviceStore.models[selectedModel.value];
-      if (model.uuid && model.uuid === deviceStore.currentModel?.uuid) {
+      if (
+        deviceStore.currentAvailableModel &&
+        model.uuid &&
+        model.uuid === deviceStore.currentModel?.uuid
+      ) {
         Message.warning(t('workplace.device.message.model.current'));
         return;
       }
@@ -468,6 +474,18 @@
     flashFirmware(true);
     return true;
   };
+
+  watch(
+    () => deviceStore.currentModel,
+    (model?: Model | null) => {
+      if (model?.uuid && deviceStore.currentAvailableModel) {
+        const index = deviceStore.models?.findIndex(
+          (e) => e.uuid === model.uuid
+        );
+        selectedModel.value = index;
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">

@@ -15,6 +15,7 @@ const useDeviceStore = defineStore('device', {
     deviceType: DEVICE_LIST[0],
     deviceName: null as string | null,
     deviceVersion: null as string | null,
+    currentAvailableModel: false,
   }),
 
   getters: {},
@@ -57,6 +58,9 @@ const useDeviceStore = defineStore('device', {
     },
     setDeviceVersion(version: string) {
       this.deviceVersion = version;
+    },
+    setCurrentAvailableModel(model: boolean) {
+      this.currentAvailableModel = model;
     },
   },
 });

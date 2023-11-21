@@ -23,6 +23,7 @@ class EspSerialDevice extends Device {
   private hasStart: boolean;
   private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
   private cacheData: Array<number>;
+  private loggerManager: string[] = [];
   name = 'EspSerialDevice';
 
   constructor() {
@@ -119,15 +120,22 @@ class EspSerialDevice extends Device {
     });
   }
 
+  public cleanLogger() {
+    this.loggerManager = [];
+  }
+
   public async disconnect() {
+    this.cleanLogger();
     try {
-      this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
       this.reader?.releaseLock();
       this.writer?.releaseLock();
       await this.port?.close();
     } catch (error) {
       this.port = null;
       console.log(error);
+    } finally {
+      this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
+      this.deviceStore.setCurrentAvailableModel(false);
     }
   }
 
@@ -151,8 +159,9 @@ class EspSerialDevice extends Device {
   };
 
   public handleReceive(data: Uint8Array) {
-    // const str = this.textDecoder.decode(data);
-    // console.log('handleReceive', str);
+    this.loggerManager.push(
+      `[${new Date()}]: ${this.textDecoder.decode(data)}`
+    );
     try {
       let index = 0;
       while (index < data.length) {
@@ -207,6 +216,7 @@ class EspSerialDevice extends Device {
         index += 1;
       }
     } catch (error) {
+      console.log('Device raw log:', this.loggerManager);
       // 解析报错也不知道是哪个指令，只能等请求超时
       console.log(error);
       // this.cacheReject?.('')
@@ -214,6 +224,7 @@ class EspSerialDevice extends Device {
   }
 
   public async write(data: Uint8Array) {
+    console.log('Does writer exist?', !!this.writer);
     if (this.writer === null) {
       return;
     }

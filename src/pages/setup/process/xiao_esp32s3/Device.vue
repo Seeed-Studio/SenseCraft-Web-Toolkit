@@ -24,10 +24,12 @@
           deviceStore.setDeviceVersion(version);
         }
         const base64Str = await device.value?.getInfo();
+        const tempModel = await device.value?.getModel();
         if (base64Str) {
           const str = atob(base64Str);
           const model = JSON.parse(str);
           deviceStore.setCurrentModel(model);
+          deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
         } else {
           deviceStore.setCurrentModel(undefined);
         }

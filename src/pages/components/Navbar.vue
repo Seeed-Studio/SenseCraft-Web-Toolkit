@@ -237,7 +237,7 @@
         Message.success(t('workplace.serial.device.connected.successfully'));
       }
     } catch (error: any) {
-      console.error('设备连接失败', error);
+      console.error('Device connection failed: ', error);
       Message.error(t('workplace.serial.connected.failed'));
       term.writeln(`Error: ${error?.message}`);
     } finally {
@@ -250,7 +250,7 @@
       await device.value?.disconnect();
       deviceStore.setReady(false);
     } catch (error: any) {
-      console.log('断开连接失败', error);
+      console.log('Disconnect failed: ', error);
       term.writeln(`Error: ${error?.message}`);
     }
   }

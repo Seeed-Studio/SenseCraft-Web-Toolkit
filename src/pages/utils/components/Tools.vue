@@ -118,7 +118,7 @@
       }
     } catch (error: any) {
       console.error(error);
-      Message.success(error?.message);
+      Message.error(error?.message);
       term.writeln(`Error: ${error?.message}`);
     } finally {
       loadingTip.value = '';

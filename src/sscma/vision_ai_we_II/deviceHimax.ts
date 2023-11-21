@@ -13,6 +13,7 @@ class Himax extends Device {
   private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
   private cacheData: Array<number>;
   private watchLoop: boolean | undefined = undefined;
+  private loggerManager: string[] = [];
 
   name = 'EspSerialDevice';
   constructor() {
@@ -30,7 +31,9 @@ class Himax extends Device {
       if (this.watchLoop && this.serial.available()) {
         // eslint-disable-next-line no-await-in-loop
         const data = await this.serial.read();
-        // console.log('handleReceive:', this.textDecoder.decode(data));
+        this.loggerManager.push(
+          `[${new Date()}]: ${this.textDecoder.decode(data)}`
+        );
         try {
           let index = 0;
           while (index < data.length) {
@@ -72,10 +75,11 @@ class Himax extends Device {
                     }
                   }
                 } catch (error) {
-                  console.error(error, '在解析返回数据的地方出现了错误');
-                  const buffer = new Uint8Array(this.cacheData);
-                  const str = this.textDecoder.decode(buffer);
-                  console.error('handleReceive:', str);
+                  console.log('Device raw log:', this.loggerManager);
+                  console.error(
+                    'An error occurred while parsing the returned data:',
+                    error
+                  );
                 }
                 this.cacheData = [];
               } else if (this.hasStart) {
@@ -204,7 +208,7 @@ class Himax extends Device {
 
   public async write(data: Uint8Array) {
     const str = this.textDecoder.decode(data);
-    console.log('handleWrite:', str);
+    console.log('Does serial exist?', !!this.serial, 'handleWrite:', str);
     if (!this.serial) {
       return;
     }
@@ -245,7 +249,13 @@ class Himax extends Device {
     this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
   }
 
+  public cleanLogger() {
+    this.loggerManager = [];
+  }
+
   public async disconnect(): Promise<void> {
+    console.log('Called when disconnected, Does serial exist?', !!this.serial);
+    this.cleanLogger();
     if (!this.serial) {
       return;
     }
@@ -253,6 +263,7 @@ class Himax extends Device {
       await this.serial.close();
     } finally {
       this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
+      this.deviceStore.setCurrentAvailableModel(false);
       this.watchLoop = false;
     }
   }
