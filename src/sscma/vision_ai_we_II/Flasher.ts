@@ -29,7 +29,7 @@ class Flasher implements FlasherInterface {
       }
       return true;
     } catch (error) {
-      console.error(error, '在烧录的过程中出现了错误');
+      console.error('An error occurred during the burning process:', error);
       return false;
     }
   }
