@@ -256,7 +256,12 @@
   }
 
   // Clear the logs when switching
-  watch(() => deviceStore.deviceType, device.value.cleanLogger);
+  watch(
+    () => deviceStore.deviceType,
+    () => {
+      device.value.cleanLogger();
+    }
+  );
 </script>
 
 <style scoped lang="less">
