@@ -12,7 +12,11 @@
         <div class="device-item"> {{ $t('workplace.device.noconnect') }} </div>
       </a-space>
       <div v-else>
-        <a-space v-if="hasDeviceContent" direction="vertical" size="large">
+        <a-space
+          v-if="deviceStore.currentAvailableModel"
+          direction="vertical"
+          size="large"
+        >
           <a-space class="device-item">
             <div class="device-item-title">{{
               $t('workplace.device.name')
@@ -27,24 +31,22 @@
               {{ deviceStore.deviceVersion }}</div
             >
           </a-space>
-          <template v-if="deviceStore.currentAvailableModel">
-            <a-space class="device-item">
-              <div class="device-item-title">{{
-                $t('workplace.device.model.name')
-              }}</div>
-              <div class="device-item-value">{{
-                deviceStore.currentModel?.name
-              }}</div>
-            </a-space>
-            <a-space class="device-item">
-              <div class="device-item-title"
-                >{{ $t('workplace.device.model.version') }}
-              </div>
-              <div class="device-item-value">
-                {{ deviceStore.currentModel?.version }}</div
-              >
-            </a-space>
-          </template>
+          <a-space class="device-item">
+            <div class="device-item-title">{{
+              $t('workplace.device.model.name')
+            }}</div>
+            <div class="device-item-value">{{
+              deviceStore.currentModel?.name
+            }}</div>
+          </a-space>
+          <a-space class="device-item">
+            <div class="device-item-title"
+              >{{ $t('workplace.device.model.version') }}
+            </div>
+            <div class="device-item-value">
+              {{ deviceStore.currentModel?.version }}</div
+            >
+          </a-space>
         </a-space>
         <div v-else class="device-item">
           {{ $t('workplace.device.model.nomodel') }}
@@ -211,7 +213,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, nextTick, computed, watch } from 'vue';
+  import { ref, nextTick, watch } from 'vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
@@ -249,17 +251,6 @@
   const loadingTip = ref('');
   const selectedModel = ref(-1);
   const isSelectedCustomModel = ref(false);
-
-  const hasDeviceContent = computed(() => {
-    if (
-      deviceStore.deviceName === null ||
-      deviceStore.deviceVersion === null ||
-      deviceStore.currentModel === undefined
-    ) {
-      return false;
-    }
-    return true;
-  });
 
   const handleSelectedModel = (index: number) => {
     selectedModel.value = index;

@@ -42,7 +42,7 @@
 
   onMounted(async () => {
     if (terminal.value) {
-      term.value?.open(terminal.value);
+      term?.open(terminal.value);
     }
   });
 
@@ -56,7 +56,7 @@
     const terminalWidth = payload.w;
     const rows = Math.floor(terminalHeight / 18);
     const columns = Math.floor(terminalWidth / 9) - 3;
-    term.value?.resize(columns, rows);
+    term?.resize(columns, rows);
   };
 
   const handleClose = () => {

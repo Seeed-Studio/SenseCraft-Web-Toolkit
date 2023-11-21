@@ -95,6 +95,7 @@ class Flasher implements FlasherInterface {
 
   async onEraseFlash() {
     await this.espLoader?.erase_flash();
+    this.deviceStore.setCurrentAvailableModel(false);
     return true;
   }
 }

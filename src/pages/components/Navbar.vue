@@ -162,7 +162,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, inject } from 'vue';
+  import { computed, ref, inject, watch } from 'vue';
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
@@ -254,6 +254,9 @@
       term.writeln(`Error: ${error?.message}`);
     }
   }
+
+  // Clear the logs when switching
+  watch(() => deviceStore.deviceType, device.value.cleanLogger);
 </script>
 
 <style scoped lang="less">
