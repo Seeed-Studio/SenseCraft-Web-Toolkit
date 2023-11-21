@@ -69,7 +69,7 @@ class Flasher implements FlasherInterface {
       await this.espLoader?.write_flash(flashOptions);
       return true;
     } catch (error: any) {
-      console.error(error, '在烧录的过程中出现了错误');
+      console.error('An error occurred during the burning process:', error);
       this.espLoaderTerminal.writeLine(`Error: ${error.message}`);
       return false;
     }

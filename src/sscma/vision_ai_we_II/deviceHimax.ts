@@ -253,6 +253,10 @@ class Himax extends Device {
     this.loggerManager = [];
   }
 
+  public showLogger() {
+    return [...this.loggerManager];
+  }
+
   public async disconnect(): Promise<void> {
     console.log('Called when disconnected, Does serial exist?', !!this.serial);
     this.cleanLogger();
