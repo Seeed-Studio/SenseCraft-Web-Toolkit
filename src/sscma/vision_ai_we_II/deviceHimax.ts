@@ -238,9 +238,10 @@ class Himax extends Device {
       this.readLoop();
       this.watchLoop = true;
     }
-    navigator.serial.ondisconnect = () => {
+    navigator.serial.ondisconnect = async () => {
       Message.warning('Device disconnected');
-      this.disconnect();
+      await this.disconnect();
+      this.serial = null;
     };
     await this.hardReset();
     // eslint-disable-next-line no-promise-executor-return
@@ -265,6 +266,8 @@ class Himax extends Device {
     }
     try {
       await this.serial.close();
+    } catch (error) {
+      console.error(error);
     } finally {
       this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
       this.deviceStore.setCurrentAvailableModel(false);

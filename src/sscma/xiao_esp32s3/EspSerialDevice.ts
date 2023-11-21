@@ -5,6 +5,7 @@ import {
   IEspLoaderTerminal,
 } from 'esptool-js';
 import { Message } from '@arco-design/web-vue';
+import { delay } from '@/utils/timer';
 import Device from '../device';
 import { DeviceStatus } from '../types';
 import { DeviceType, deviceTypeObj } from '../constants';
@@ -72,13 +73,9 @@ class EspSerialDevice extends Device {
     }
 
     await this.port?.setSignals({ dataTerminalReady: false });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    await delay(100);
     await this.port?.setSignals({ dataTerminalReady: true });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2000);
-    });
+    await delay(2000);
 
     this.reader = this.port?.readable?.getReader();
     this.writer = this.port?.writable?.getWriter();
@@ -112,11 +109,13 @@ class EspSerialDevice extends Device {
 
   // 串口断开事件
   public ondisconnect(ev: Event) {
+    if (this.deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+      Message.error('Device is disconnected');
+    }
     this.disconnect().then(() => {
       this.port = null;
       this.transport = null;
       this.esploader = null;
-      Message.error('Device is disconnected');
     });
   }
 
@@ -149,7 +148,9 @@ class EspSerialDevice extends Device {
         /* eslint-disable no-await-in-loop */
         if (this.reader) {
           const { value } = await this.reader.read();
-          this.handleReceive(value);
+          if (value) {
+            this.handleReceive(value);
+          }
         }
       } catch (error) {
         console.log(error);
