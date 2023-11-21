@@ -125,10 +125,10 @@ export default class Xmodem {
           );
           block += 1;
           offset += this.blocksize;
+          errors = 0;
           if (offset < data.length) {
             sendBlock();
           } else {
-            errors = 0;
             timeouts = 0;
             crcAttempts = 0;
             emitter.emit('waitEnd');
