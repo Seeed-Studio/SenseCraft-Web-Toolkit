@@ -67,8 +67,9 @@
 
   const handleInvoke = async () => {
     const model = await device.value?.getModel();
-    deviceStore.setCurrentAvailableModel(model?.id !== undefined);
-    if (!model) {
+    const isAvailable = model?.id !== undefined;
+    deviceStore.setCurrentAvailableModel(isAvailable);
+    if (!isAvailable) {
       Message.warning(t('workplace.device.model.nomodel'));
       return;
     }
@@ -176,23 +177,23 @@
   defineExpose({ onInvoke });
 
   const handelRefresh = async () => {
-    if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+    if (
+      deviceStore.deviceStatus === DeviceStatus.SerialConnected &&
+      deviceStore.currentAvailableModel
+    ) {
       device.value?.addEventListener(eventName, onInvoke);
       disable.value = false;
-      // Only start inference when you have a model
-      if (deviceStore.currentAvailableModel) {
-        const isInvoke = await device.value?.isInvoke();
-        if (isInvoke) {
+      const isInvoke = await device.value?.isInvoke();
+      if (isInvoke) {
+        invoke.value = true;
+        deviceStore.setIsInvoke(true);
+      } else {
+        const result = await device.value?.invoke(-1);
+        if (result) {
           invoke.value = true;
-          deviceStore.setIsInvoke(true);
         } else {
-          const result = await device.value?.invoke(-1);
-          if (result) {
-            invoke.value = true;
-          } else {
-            Message.error(t('workplace.preview.message.invoke.failed'));
-            invoke.value = false;
-          }
+          Message.error(t('workplace.preview.message.invoke.failed'));
+          invoke.value = false;
         }
       }
     } else {
