@@ -66,6 +66,12 @@
   const length = computed(() => classes.value.length);
 
   const handleInvoke = async () => {
+    const model = await device.value?.getModel();
+    deviceStore.setCurrentAvailableModel(model?.id !== undefined);
+    if (!model) {
+      Message.warning(t('workplace.device.model.nomodel'));
+      return;
+    }
     const result = await device.value?.invoke(-1);
     if (result) {
       invoke.value = true;
@@ -173,17 +179,20 @@
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       device.value?.addEventListener(eventName, onInvoke);
       disable.value = false;
-      const isInvoke = await device.value?.isInvoke();
-      if (isInvoke) {
-        invoke.value = true;
-        deviceStore.setIsInvoke(true);
-      } else {
-        const result = await device.value?.invoke(-1);
-        if (result) {
+      // Only start inference when you have a model
+      if (deviceStore.currentAvailableModel) {
+        const isInvoke = await device.value?.isInvoke();
+        if (isInvoke) {
           invoke.value = true;
+          deviceStore.setIsInvoke(true);
         } else {
-          Message.error(t('workplace.preview.message.invoke.failed'));
-          invoke.value = false;
+          const result = await device.value?.invoke(-1);
+          if (result) {
+            invoke.value = true;
+          } else {
+            Message.error(t('workplace.preview.message.invoke.failed'));
+            invoke.value = false;
+          }
         }
       }
     } else {
@@ -192,7 +201,7 @@
       invoke.value = false;
     }
   };
-  watch(() => deviceStore.deviceStatus, handelRefresh);
+  watch(() => deviceStore.currentAvailableModel, handelRefresh);
 
   onMounted(handelRefresh);
 

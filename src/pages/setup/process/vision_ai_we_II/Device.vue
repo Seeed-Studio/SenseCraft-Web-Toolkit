@@ -23,15 +23,17 @@
           deviceStore.setDeviceVersion(version);
         }
         const base64Str = await device.value?.getInfo();
+        const tempModel = await device.value?.getModel();
         if (base64Str) {
           const str = atob(base64Str);
           const model = JSON.parse(str);
           deviceStore.setCurrentModel(model);
+          deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
         } else {
           deviceStore.setCurrentModel(undefined);
         }
       } catch (error: any) {
-        console.error(error, '在刷新设备数据的地方出现了错误');
+        console.error(error);
         term.writeln(`Error: ${error?.message}`);
       } finally {
         deviceStore.setReady(true);
