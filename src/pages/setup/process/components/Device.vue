@@ -221,6 +221,7 @@
   import 'swiper/css/navigation';
   import { Navigation } from 'swiper/modules';
   import { Message } from '@arco-design/web-vue';
+  import { encode } from 'js-base64';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, Bin, Model } from '@/sscma';
   import customModelIcon from '@/assets/images/custom-model.png';
@@ -364,7 +365,7 @@
       }
 
       if (finallyModel) {
-        const info = btoa(JSON.stringify(finallyModel));
+        const info = encode(JSON.stringify(finallyModel));
         await device.value?.setInfo(info);
         await device.value?.deleteAction();
         deviceStore.setCurrentModel(finallyModel);
@@ -396,7 +397,7 @@
     try {
       await flashFirmware(false);
     } catch (error: any) {
-      console.error(error, '在 process 烧录的位置出现了错误');
+      console.error(error);
       Message.error(error?.message ?? '');
       term.writeln(`Error: ${error?.message}`);
     } finally {
@@ -452,26 +453,34 @@
   };
 
   const handleCustomModelOk = async () => {
-    if (modalName.value == null || modalName.value === '') {
-      Message.error(t('workplace.device.message.model.name'));
-      return false;
+    try {
+      if (modalName.value == null || modalName.value === '') {
+        throw new Error(t('workplace.device.message.model.name'));
+      }
+      if (!modelFile.value) {
+        throw new Error(t('workplace.device.message.model.file'));
+      }
+      if (modelObjects.value.length === 0) {
+        throw new Error(t('workplace.device.message.model.object'));
+      }
+      await flashFirmware(true);
+      return true;
+    } catch (error: any) {
+      console.error(error);
+      Message.error(error?.message);
+    } finally {
+      loadingTip.value = '';
+      loading.value = false;
     }
-    if (!modelFile.value) {
-      Message.error(t('workplace.device.message.model.file'));
-      return false;
-    }
-    if (modelObjects.value.length === 0) {
-      Message.error(t('workplace.device.message.model.object'));
-      return false;
-    }
-    flashFirmware(true);
-    return true;
+    return false;
   };
 
   watch(
     () => deviceStore.currentModel,
     (model?: Model | null) => {
-      if (model?.uuid && deviceStore.currentAvailableModel) {
+      if (model?.isCustom) {
+        isSelectedCustomModel.value = model?.isCustom;
+      } else if (model?.uuid && deviceStore.currentAvailableModel) {
         const index = deviceStore.models?.findIndex(
           (e) => e.uuid === model.uuid
         );
