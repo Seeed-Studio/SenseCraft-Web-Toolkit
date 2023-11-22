@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { watch, onMounted } from 'vue';
+  import { decode } from 'js-base64';
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
@@ -25,7 +26,7 @@
         const base64Str = await device.value?.getInfo();
         const tempModel = await device.value?.getModel();
         if (base64Str) {
-          const str = atob(base64Str);
+          const str = decode(base64Str);
           const model = JSON.parse(str);
           deviceStore.setCurrentModel(model);
           deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
