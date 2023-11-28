@@ -91,4 +91,5 @@ export default {
   'workplace.serial.device.disconnected': '设备已断开连接',
   'workplace.serial.device.errorCode': '请检查设备连接状态、错误代码:',
   'workplace.serial.no.port': '用户未选择端口',
+  'workplace.serial.command.timeout': '固件可能存在问题，请重新烧录',
 };

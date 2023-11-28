@@ -46,6 +46,7 @@
     "mitt": "^3.0.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.0.23",
+    "pinia-plugin-persist": "^1.0.0",
     "query-string": "^8.0.3",
     "sortablejs": "^1.15.0",
     "swiper": "^10.2.0",

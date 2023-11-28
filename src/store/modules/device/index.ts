@@ -16,6 +16,16 @@ const useDeviceStore = defineStore('device', {
     deviceVersion: null as string | null,
     currentAvailableModel: false,
   }),
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: 'device',
+        storage: localStorage,
+        paths: ['deviceType'],
+      },
+    ],
+  },
 
   getters: {},
 
