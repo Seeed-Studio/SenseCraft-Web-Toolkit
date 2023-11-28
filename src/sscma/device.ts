@@ -5,7 +5,7 @@ import { Algo } from './types';
 export default class Device {
   public deviceStore;
 
-  public port: SerialPort | USBDevice | null;
+  public port: SerialPort | null;
 
   public client: ATClient;
 
