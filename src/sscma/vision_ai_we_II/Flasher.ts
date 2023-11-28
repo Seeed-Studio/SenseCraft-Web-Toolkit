@@ -3,6 +3,7 @@ import { useDeviceStore } from '@/store';
 import { delay } from '@/utils/timer';
 import FlasherInterface from '../FlasherInterface';
 import type { Himax as DeviceHimax } from './deviceHimax';
+import { DeviceStatus } from '../types';
 
 class Flasher implements FlasherInterface {
   isNeedConnectDevice = false;
@@ -40,7 +41,7 @@ class Flasher implements FlasherInterface {
   }
 
   async onConnectDevice() {
-    if (!this.deviceStore.ready) {
+    if (this.deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
       await this.device?.connect();
     }
   }

@@ -181,6 +181,7 @@
   import { computed, onMounted, watch, reactive, ref, Ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
+  import { decode } from 'js-base64';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
@@ -275,7 +276,7 @@
     if (deviceStatus === DeviceStatus.SerialConnected && !loaded.value) {
       const base64Str = await device.value?.getInfo();
       if (base64Str) {
-        const str = atob(base64Str);
+        const str = decode(base64Str);
         const model = JSON.parse(str);
         deviceStore.setCurrentModel(model);
       }

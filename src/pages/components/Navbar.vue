@@ -248,7 +248,6 @@
   async function disconnect() {
     try {
       await device.value?.disconnect();
-      deviceStore.setReady(false);
     } catch (error: any) {
       console.log('Disconnect failed: ', error);
       term.writeln(`Error: ${error?.message}`);

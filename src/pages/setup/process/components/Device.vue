@@ -352,7 +352,6 @@
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
-    deviceStore.setReady(false);
     deviceStore.setCurrentAvailableModel(false);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
