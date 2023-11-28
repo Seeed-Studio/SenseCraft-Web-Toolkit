@@ -11,7 +11,7 @@ const useDeviceStore = defineStore('device', {
     models: [] as Model[],
     firmware: null as Firmware | null | undefined,
     currentModel: null as Model | null | undefined,
-    deviceType: DEVICE_LIST[0],
+    deviceType: { ...DEVICE_LIST[0] },
     deviceName: null as string | null,
     deviceVersion: null as string | null,
     currentAvailableModel: false,
@@ -20,7 +20,6 @@ const useDeviceStore = defineStore('device', {
     enabled: true,
     strategies: [
       {
-        key: 'device',
         storage: localStorage,
         paths: ['deviceType'],
       },
@@ -56,7 +55,7 @@ const useDeviceStore = defineStore('device', {
     setDeviceType(name: string) {
       const index = DEVICE_LIST.findIndex((e) => e.name === name);
       if (index !== -1) {
-        this.deviceType = DEVICE_LIST[index];
+        this.deviceType = { ...DEVICE_LIST[index] };
       }
     },
     setDeviceName(name: string) {

@@ -135,7 +135,7 @@
           :style="{}"
           @update:model-value="deviceStore.setDeviceType"
         >
-          <a-option v-for="deviceType in deviceTypes" :key="deviceType.id">{{
+          <a-option v-for="deviceType in DEVICE_LIST" :key="deviceType.id">{{
             deviceType.name
           }}</a-option>
         </a-select>
@@ -178,7 +178,6 @@
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
   const { device, term } = useDeviceManager();
-  const deviceTypes = ref(DEVICE_LIST);
 
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
