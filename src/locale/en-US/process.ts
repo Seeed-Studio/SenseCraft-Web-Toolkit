@@ -103,4 +103,6 @@ export default {
   'workplace.serial.device.errorCode':
     'Please check device connection status, errorCode:',
   'workplace.serial.no.port': 'No port selected by the user',
+  'workplace.serial.command.timeout':
+    'There may be a problem with the firmware, please re-burn it.',
 };

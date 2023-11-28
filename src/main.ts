@@ -9,7 +9,6 @@ import App from './App.vue';
 import '@/assets/style/global.less';
 
 const app = createApp(App);
-
 app.use(ArcoVue, {});
 app.use(ArcoVueIcon);
 app.use(store);

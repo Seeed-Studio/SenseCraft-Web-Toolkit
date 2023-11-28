@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import { watch, onMounted } from 'vue';
   import { decode } from 'js-base64';
+  import { Message } from '@arco-design/web-vue';
+  import { useI18n } from 'vue-i18n';
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
@@ -10,6 +12,7 @@
   const { device, term } = useDeviceManager();
   const deviceStore = useDeviceStore();
   const flasher = new Flasher();
+  const { t } = useI18n();
 
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
@@ -31,6 +34,10 @@
           deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
         } else {
           deviceStore.setCurrentModel(undefined);
+        }
+        if (!name && !version && !base64Str && !tempModel) {
+          // 代表这些指令都超时了
+          Message.warning(t('workplace.serial.command.timeout'));
         }
       } catch (error: any) {
         console.error(error);
