@@ -28,6 +28,7 @@ class Flasher implements FlasherInterface {
         // eslint-disable-next-line no-await-in-loop
         await this.device?.flash(item.data, item.address);
       }
+      await delay(2000);
       return true;
     } catch (error) {
       console.error('An error occurred during the burning process:', error);

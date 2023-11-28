@@ -57,12 +57,12 @@
   const confidence = ref(deviceStore.tscore);
   const iou = ref(deviceStore.tiou);
 
-  const setConfidence = (value: number | [number, number]) => {
-    device.value?.setScore(value as number);
+  const setConfidence = async (value: number | [number, number]) => {
+    await device.value?.setScore(value as number);
   };
 
-  const setIou = (value: number | [number, number]) => {
-    device.value?.setIOU(value as number);
+  const setIou = async (value: number | [number, number]) => {
+    await device.value?.setIOU(value as number);
   };
 
   const handelConfidenceChange = throttle(setConfidence, 1000);
