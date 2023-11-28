@@ -18,7 +18,7 @@ export const DEVICE_LIST = [
 
 export const deviceTypeObj = DEVICE_LIST.reduce(
   (obj: Record<string, (typeof DEVICE_LIST)[0]>, e) => {
-    obj[e.id] = e;
+    obj[e.id] = { ...e };
     return obj;
   },
   {}
