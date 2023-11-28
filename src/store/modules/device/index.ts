@@ -7,7 +7,6 @@ const useDeviceStore = defineStore('device', {
     deviceStatus: DeviceStatus.UnConnected,
     tiou: 0,
     tscore: 0,
-    ready: false,
     isInvoke: false,
     models: [] as Model[],
     firmware: null as Firmware | null | undefined,
@@ -21,9 +20,6 @@ const useDeviceStore = defineStore('device', {
   getters: {},
 
   actions: {
-    setReady(ready: boolean) {
-      this.ready = ready;
-    },
     setDeviceStatus(deviceStatus: DeviceStatus) {
       this.deviceStatus = deviceStatus;
     },

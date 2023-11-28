@@ -13,7 +13,6 @@
 
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
-      deviceStore.setReady(false);
       try {
         const name = await device.value?.getName();
         const version = await device.value?.getVersion();
@@ -36,8 +35,6 @@
       } catch (error: any) {
         console.error(error);
         term.writeln(`Error: ${error?.message}`);
-      } finally {
-        deviceStore.setReady(true);
       }
     }
   };
