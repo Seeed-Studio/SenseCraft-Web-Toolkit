@@ -1,11 +1,11 @@
 import { RouteRecordRaw } from 'vue-router';
 import { DEFAULT_LAYOUT } from '../base';
 
-const ESPTOOL: RouteRecordRaw = {
-  path: '/esptool',
-  name: 'esptool',
+const TOOL: RouteRecordRaw = {
+  path: '/tool',
+  name: 'tool',
   component: DEFAULT_LAYOUT,
-  redirect: '/esptool/esptool',
+  redirect: '/tool/tool',
   meta: {
     locale: 'menu.tool',
     requiresAuth: true,
@@ -15,17 +15,17 @@ const ESPTOOL: RouteRecordRaw = {
   },
   children: [
     {
-      path: 'esptool',
-      name: 'esptool',
+      path: 'tool',
+      name: 'tool',
       component: () => import('@/pages/utils/index.vue'),
       meta: {
         locale: 'menu.tool',
         requiresAuth: true,
         roles: ['*'],
-        activeMenu: 'esptool',
+        activeMenu: 'tool',
       },
     },
   ],
 };
 
-export default ESPTOOL;
+export default TOOL;

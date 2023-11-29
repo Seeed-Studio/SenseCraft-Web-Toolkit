@@ -1,6 +1,6 @@
 <template>
   <a-spin :loading="loading" :tip="loadingTip" class="item-card">
-    <a-card class="general-card" :title="$t('workplace.device.card.esptool')">
+    <a-card class="general-card" :title="$t('workplace.device.card.tool')">
       <template #extra>
         <a-button type="primary" status="danger" @click="handleEraseFlash">
           {{ $t('workplace.firmware.eraseflash') }}

@@ -53,7 +53,7 @@ export default {
   'workplace.device.card.aimodel': '上传AI模型',
   'workplace.device.card.binFile': '上传Bin文件',
   'workplace.device.btn.upload': '上传',
-  'workplace.device.card.esptool': 'ESP Tool',
+  'workplace.device.card.tool': '烧录工具',
   'workplace.device.message.firmware.no': '没有固件',
   'workplace.device.message.model.no': '请选择模型',
   'workplace.device.message.model.current': '设备正在运行当前模型',

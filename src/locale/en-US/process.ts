@@ -59,7 +59,7 @@ export default {
   'workplace.device.card.aimodel': 'Upload AI model',
   'workplace.device.card.binFile': 'Upload Bin files',
   'workplace.device.btn.upload': 'Upload',
-  'workplace.device.card.esptool': 'ESP Tool',
+  'workplace.device.card.tool': 'Flash Tool',
   'workplace.device.message.firmware.no': 'No firmware',
   'workplace.device.message.model.no': 'Please select a model',
   'workplace.device.message.model.current':
