@@ -81,6 +81,7 @@
 
   type Props = {
     flasher: FlasherInterface;
+    readFile: (blob: Blob | File) => Promise<unknown>;
   };
   const props = defineProps<Props>();
   const { device, term } = useDeviceManager();
@@ -126,22 +127,11 @@
     }
   };
 
-  const readFile = (file: File): Promise<string> => {
-    return new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const data = ev?.target?.result as string;
-        resolve(data);
-      };
-      reader.readAsBinaryString(file);
-    });
-  };
-
   const flashFirmware = async () => {
     try {
       loading.value = true;
       const fileArray = [] as {
-        data: string;
+        data: unknown;
         address: number;
       }[];
       let noNumber = false;
@@ -150,7 +140,7 @@
         const item = data.value[index];
         // eslint-disable-next-line no-continue
         if (!item.file) continue;
-        const content = await readFile(item.file);
+        const content = await props.readFile(item.file);
         let address;
         if (/0[xX][0-9a-fA-F]+/.test(item.address)) {
           address = parseInt(item.address, 16);
