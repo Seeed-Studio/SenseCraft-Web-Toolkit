@@ -67,8 +67,7 @@ class Himax extends Device {
                     // 事件
                     const code = obj?.code;
                     const listener = this.eventMap.get(name);
-                    listener?.(obj);
-                    if (code !== 0) {
+                    if (listener?.(obj) && code !== 0) {
                       Message.error(
                         `Please check device connection status, errorCode[${code}]`
                       );

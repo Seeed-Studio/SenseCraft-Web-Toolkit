@@ -5,6 +5,8 @@ import { DEVICE_LIST } from '@/sscma/constants';
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
+    wifi: false,
+    mqtt: false,
     tiou: 0,
     tscore: 0,
     isInvoke: false,

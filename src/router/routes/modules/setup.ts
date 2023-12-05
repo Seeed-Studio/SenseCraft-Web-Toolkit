@@ -24,6 +24,16 @@ const SETUP: RouteRecordRaw = {
       },
     },
     {
+      path: 'config',
+      name: 'config',
+      component: () => import('@/pages/setup/config/index.vue'),
+      meta: {
+        locale: 'menu.setup.config',
+        requiresAuth: true,
+        roles: ['*'],
+      },
+    },
+    {
       path: 'output',
       name: 'output',
       component: () => import('@/pages/setup/output/index.vue'),

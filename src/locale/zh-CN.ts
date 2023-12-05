@@ -4,6 +4,7 @@ import localeSettings from './zh-CN/setup';
 export default {
   'menu.setup': '设置',
   'menu.setup.process': '工作台',
+  'menu.setup.config': '配置',
   'menu.setup.output': '输出',
   'menu.tool': '工具',
   'menu.data': '数据采集',
