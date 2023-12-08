@@ -96,12 +96,13 @@ export default {
   'workplace.firmware.message.flash.successful': '烧录成功',
   'workplace.firmware.message.flash.failed': '烧录失败',
   'workplace.device.btn.flash': '烧录',
-  'workplace.config.title': '预览配置',
-  'workplace.config.confidence.label': '置信度',
-  'workplace.config.confidence.tip':
+  'workplace.preview.config.title': '预览配置',
+  'workplace.preview.config.confidence.label': '置信度',
+  'workplace.preview.config.confidence.tip':
     '置信度是指模型为其预测分配的确定性或概率水平',
-  'workplace.config.iou.label': 'IoU',
-  'workplace.config.iou.tip': 'IoU用于评估预测边界框与真实边界框相比的准确性',
+  'workplace.preview.config.iou.label': 'IoU',
+  'workplace.preview.config.iou.tip':
+    'IoU用于评估预测边界框与真实边界框相比的准确性',
   'workplace.serial.port.failed': '请求串口失败',
   'workplace.serial.connected.failed': '设备连接失败',
   'workplace.serial.device.connected.successfully': '设备连接成功',

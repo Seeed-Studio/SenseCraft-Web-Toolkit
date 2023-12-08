@@ -105,12 +105,12 @@ export default {
   'workplace.firmware.message.flash.successful': 'Flash successful',
   'workplace.firmware.message.flash.failed': 'Flash failed',
   'workplace.device.btn.flash': 'Flash',
-  'workplace.config.title': 'Preview Settings',
-  'workplace.config.confidence.label': 'Confidence',
-  'workplace.config.confidence.tip':
+  'workplace.preview.config.title': 'Preview Settings',
+  'workplace.preview.config.confidence.label': 'Confidence',
+  'workplace.preview.config.confidence.tip':
     'Confidence refers to the level of certainty or probability assigned by a model to its predictions',
-  'workplace.config.iou.label': 'IoU',
-  'workplace.config.iou.tip':
+  'workplace.preview.config.iou.label': 'IoU',
+  'workplace.preview.config.iou.tip':
     'IoU is used to assess the accuracy of predicted bounding boxes compared to truth bounding boxes',
   'workplace.serial.port.failed': 'Request serial port failed',
   'workplace.serial.connected.failed': 'Device connect failed',

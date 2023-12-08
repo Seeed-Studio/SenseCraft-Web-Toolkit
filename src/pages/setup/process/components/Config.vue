@@ -1,10 +1,10 @@
 <template>
-  <a-card class="general-card" :title="$t('workplace.config.title')">
+  <a-card class="general-card" :title="$t('workplace.preview.config.title')">
     <a-space class="item-card" direction="vertical" size="large">
       <a-space direction="vertical" class="slider">
         <div class="slider-top">
-          <div>{{ $t('workplace.config.confidence.label') }}</div>
-          <a-tooltip :content="$t('workplace.config.confidence.tip')">
+          <div>{{ $t('workplace.preview.config.confidence.label') }}</div>
+          <a-tooltip :content="$t('workplace.preview.config.confidence.tip')">
             <icon-question-circle class="slider-tooltip" />
           </a-tooltip>
         </div>
@@ -22,8 +22,8 @@
       </a-space>
       <a-space direction="vertical" class="slider">
         <div class="slider-top">
-          <div>{{ $t('workplace.config.iou.label') }}</div>
-          <a-tooltip :content="$t('workplace.config.iou.tip')">
+          <div>{{ $t('workplace.preview.config.iou.label') }}</div>
+          <a-tooltip :content="$t('workplace.preview.config.iou.tip')">
             <icon-question-circle class="slider-tooltip" />
           </a-tooltip>
         </div>
