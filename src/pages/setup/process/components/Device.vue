@@ -322,15 +322,15 @@
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray = [];
     const currentVersion = deviceStore.deviceVersion;
-    if (version !== currentVersion) {
-      if (bins.length === 0) {
-        throw new Error(t('workplace.device.message.firmware.no'));
-      }
-      // 下载固件
-      loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
-      const firmwareArray = await downloadFirmware(bins);
-      fileArray.push(...firmwareArray);
-    }
+    // if (version !== currentVersion) {
+    //   if (bins.length === 0) {
+    //     throw new Error(t('workplace.device.message.firmware.no'));
+    //   }
+    //   // 下载固件
+    //   loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
+    //   const firmwareArray = await downloadFirmware(bins);
+    //   fileArray.push(...firmwareArray);
+    // }
     let finallyModel: Model | null = null;
     if (isCustom) {
       if (!modelFile.value) {

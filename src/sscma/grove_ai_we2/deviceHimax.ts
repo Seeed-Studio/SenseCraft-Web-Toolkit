@@ -220,7 +220,7 @@ class Himax extends Device {
 
   public async requestPort() {
     const serialPort = await navigator.serial.requestPort({
-      filters: deviceTypeObj[DeviceType.VisionAIWeII].filter.map((e) => ({
+      filters: deviceTypeObj[DeviceType.GroveAIWE2].filter.map((e) => ({
         usbVendorId: e.vendorId,
         usbProductId: e.productId,
       })),
@@ -271,6 +271,74 @@ class Himax extends Device {
       this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
       this.deviceStore.setCurrentAvailableModel(false);
       this.watchLoop = false;
+    }
+  }
+
+  public async getAction(): Promise<any> {
+    try {
+      const tag = 'ACTION?';
+      const command = this.client.getAction();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const action = response.data?.action;
+        const conditionMatches = action.match(
+          /(\w+\(.*?\))(>=|<=|==|!=|>|<)(\d+)/g
+        );
+        if (conditionMatches) {
+          return conditionMatches[0];
+        }
+        return null;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  public async setAction(
+    target: number,
+    condition: string,
+    score: number
+  ): Promise<boolean> {
+    try {
+      const tag = 'ACTION';
+      const command = `AT+ACTION="((max_score(target,${target})${condition}${score})&&led(1))||led(0)"\r`;
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      return code === 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  public async invoke(times: number): Promise<any> {
+    try {
+      const tag = 'INVOKE';
+      const command = `AT+INVOKE=${times},0,0\r`;
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data;
+        if (data) {
+          const config = data.algorithm?.config;
+          if (config) {
+            const tiou = config.tiou || 0;
+            const tscore = config.tscore || 0;
+            this.deviceStore.setIOU(tiou);
+            this.deviceStore.setScore(tscore);
+          }
+          this.deviceStore.setIsInvoke(true);
+        }
+        return data;
+      }
+      return null;
+    } catch (error) {
+      return null;
     }
   }
 }

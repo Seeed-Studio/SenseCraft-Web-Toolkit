@@ -2,7 +2,7 @@
   import { DeviceType, deviceTypeObj } from '@/sscma/constants';
   import { useDeviceStore } from '@/store';
   import XiaoESP32S3Process from './xiao_esp32s3/index.vue';
-  import VisionAIWeIIProcess from './vision_ai_we_II/index.vue';
+  import GroveAIWE2Process from './grove_ai_we2/index.vue';
 
   const deviceStore = useDeviceStore();
 </script>
@@ -14,9 +14,9 @@
     "
   />
 
-  <VisionAIWeIIProcess
+  <GroveAIWE2Process
     v-else-if="
-      deviceStore.deviceType.id === deviceTypeObj[DeviceType.VisionAIWeII].id
+      deviceStore.deviceType.id === deviceTypeObj[DeviceType.GroveAIWE2].id
     "
   />
 </template>

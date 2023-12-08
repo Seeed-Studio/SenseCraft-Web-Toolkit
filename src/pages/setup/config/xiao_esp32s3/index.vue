@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import Config from '../components/Config.vue';
+  import Config from '../../../others/comming-soon/index.vue';
 </script>
 
 <template>

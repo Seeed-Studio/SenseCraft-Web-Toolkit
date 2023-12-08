@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-  import Flasher from '@/sscma/vision_ai_we_II/Flasher';
+  import Flasher from '@/sscma/grove_ai_we2/Flasher';
   import Tools from '../components/Tools.vue';
 
   const flasher = new Flasher();

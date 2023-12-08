@@ -6,7 +6,7 @@
   import { DeviceStatus } from '@/sscma';
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
-  import Flasher from '@/sscma/vision_ai_we_II/Flasher';
+  import Flasher from '@/sscma/grove_ai_we2/Flasher';
   import Device from '../components/Device.vue';
 
   const { device, term } = useDeviceManager();
@@ -61,7 +61,7 @@
 
   const fetchAvailableModels = async () => {
     const data = await fetch(
-      `https://files.seeedstudio.com/sscma/sscma-model-test.json?timestamp=${new Date().getTime()}`
+      `https://files.seeedstudio.com/sscma/sscma-model-we2.json?timestamp=${new Date().getTime()}`
     ).then((response) => response.json());
     deviceStore.setModels(data.models);
     const firmwares = data.firmwares;
