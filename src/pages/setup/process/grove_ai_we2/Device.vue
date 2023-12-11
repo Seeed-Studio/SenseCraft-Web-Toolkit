@@ -66,7 +66,7 @@
     deviceStore.setModels(data.models);
     const firmwares = data.firmwares;
     if (firmwares?.length > 0) {
-      deviceStore.setFirmware(firmwares[1]);
+      deviceStore.setFirmware(firmwares[0]);
     }
   };
 

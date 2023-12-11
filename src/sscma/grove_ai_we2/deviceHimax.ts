@@ -15,7 +15,7 @@ class Himax extends Device {
   private watchLoop: boolean | undefined = undefined;
   private loggerManager: string[] = [];
 
-  name = 'EspSerialDevice';
+  name = 'Grove AI WE2';
   constructor() {
     super();
     this.hasStart = false;
@@ -114,6 +114,7 @@ class Himax extends Device {
     if (this.deviceStore.deviceStatus === DeviceStatus.UnConnected) {
       await this.connect();
     }
+    console.log('flash', data, offset);
     this.watchLoop = false;
     const xmodem = new Xmodem({});
     const progress = (current: number, total: number, percent: number) => {

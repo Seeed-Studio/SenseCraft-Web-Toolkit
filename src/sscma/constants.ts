@@ -1,6 +1,6 @@
 export const DeviceType = {
   XiaoEsp32s3: 'xiao_esp32s3',
-  GroveAIWE2: 'we_ii',
+  GroveAIWE2: 'we2',
 };
 
 export const DEVICE_LIST = [
@@ -11,7 +11,7 @@ export const DEVICE_LIST = [
   },
   {
     id: DeviceType.GroveAIWE2,
-    name: 'Grove AI WE2',
+    name: 'Grove Vision AI(WE2)',
     filter: [{ vendorId: 0x1a86, productId: 0x55d3 }],
   },
 ];

@@ -197,7 +197,6 @@ export default class Xmodem {
       }
       console.log('waitStart');
       const value = await this.read(1, timeout);
-      console.log(value);
       code = value[0];
 
       switch (code) {
