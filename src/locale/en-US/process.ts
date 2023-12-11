@@ -42,6 +42,8 @@ export default {
   'workplace.device.upload.aimodel': 'Upload Custom AI Model',
   'workplace.device.select.aimodel':
     'Please select a preset AI model or upload a custom AI model',
+  'workplace.device.select.comeToSenseCraft':
+    'Send Al model to device and preview the inference result',
   'workplace.device.send': 'Send',
   'workplace.device.model.aimodel': 'Custom AI Model',
   'workplace.device.model.sendmodel': 'Send Model',

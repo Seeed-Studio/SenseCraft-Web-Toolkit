@@ -49,6 +49,7 @@
   import { ref, computed, provide, onMounted, watch } from 'vue';
   import { useRoute } from 'vue-router';
   import { useAppStore } from '@/store';
+  import useSenseCraftAIComesToFlash from '@/hooks/senseCraftAIComesToFlash';
   import Logger from './components/Logger.vue';
   import TabBar from './components/TabBar.vue';
   import Menu from './components/Menu.vue';
@@ -58,6 +59,7 @@
 
   const isInit = ref(false);
   const appStore = useAppStore();
+  useSenseCraftAIComesToFlash();
   const navbarHeight = `60px`;
   const navbar = computed(() => appStore.navbar);
   const renderMenu = computed(() => appStore.menu && !appStore.topMenu);

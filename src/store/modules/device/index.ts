@@ -2,6 +2,12 @@ import { defineStore } from 'pinia';
 import { DeviceStatus, Model, Firmware } from '@/sscma/types';
 import { DEVICE_LIST } from '@/sscma/constants';
 
+export const FlashWayType = {
+  Prefabricated: 0,
+  Custom: 1,
+  ComeToSenseCraftAI: 2,
+};
+
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
@@ -15,6 +21,8 @@ const useDeviceStore = defineStore('device', {
     deviceName: null as string | null,
     deviceVersion: null as string | null,
     currentAvailableModel: false,
+    comeToSenseCraftAI: {} as Record<string, any>,
+    flashWay: FlashWayType.Prefabricated,
   }),
   persist: {
     enabled: true,
@@ -66,6 +74,12 @@ const useDeviceStore = defineStore('device', {
     },
     setCurrentAvailableModel(model: boolean) {
       this.currentAvailableModel = model;
+    },
+    setComeToSenseCraftAI(data: Record<string, any>) {
+      this.comeToSenseCraftAI = data;
+    },
+    setFlashWay(flashWay: number) {
+      this.flashWay = flashWay;
     },
   },
 });

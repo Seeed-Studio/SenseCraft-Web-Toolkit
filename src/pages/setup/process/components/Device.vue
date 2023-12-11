@@ -56,12 +56,23 @@
         <a-typography-title :heading="6">{{
           $t('workplace.device.use.aimodel')
         }}</a-typography-title>
-        <a-button type="primary" @click="handleShowCustomModel">{{
-          $t('workplace.device.upload.aimodel')
-        }}</a-button>
+        <a-button
+          v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+          type="primary"
+          @click="handleShowCustomModel"
+          >{{ $t('workplace.device.upload.aimodel') }}</a-button
+        >
       </div>
-      <div class="device-item">{{ $t('workplace.device.select.aimodel') }}</div>
+      <div
+        v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+        class="device-item"
+        >{{ $t('workplace.device.select.aimodel') }}</div
+      >
+      <div v-else class="device-item">{{
+        $t('workplace.device.select.aimodel')
+      }}</div>
       <swiper
+        v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
         class="carousel"
         :slides-per-view="3"
         :space-between="30"
@@ -103,12 +114,20 @@
           </div>
         </swiper-slide>
       </swiper>
+
       <div
-        v-if="deviceStore.currentModel?.isCustom"
-        :class="[
-          'custom-model-wrapper',
-          { 'custom-model-selected': isSelectedCustomModel },
-        ]"
+        v-if="deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI"
+        class="come-to-sense-craft-ai"
+      >
+        <img :src="deviceStore.comeToSenseCraftAI.modelImg" alt="" />
+        <div class="custom-model-name">{{
+          deviceStore.comeToSenseCraftAI.model.name
+        }}</div>
+      </div>
+
+      <div
+        v-if="deviceStore.flashWay === FlashWayType.Custom"
+        class="custom-model-wrapper custom-model-selected"
         :onclick="() => handleSelectedCustomModel()"
       >
         <img :src="customModelIcon" class="custom-model-image" alt="" />
@@ -227,6 +246,7 @@
   import customModelIcon from '@/assets/images/custom-model.png';
   import FlasherInterface from '@/sscma/FlasherInterface';
   import useDeviceManager from '@/hooks/deviceManager';
+  import { FlashWayType } from '@/store/modules/device';
 
   export type FileType<T> = {
     data: T;
@@ -570,6 +590,20 @@
     }
   }
 
+  .come-to-sense-craft-ai {
+    width: 150px;
+    height: 150px;
+    margin-top: 20px;
+    border: 1px solid var(--color-neutral-3);
+    border-radius: var(--border-radius-small);
+
+    img {
+      width: 100%;
+      height: 75%;
+      object-fit: contain;
+    }
+  }
+
   .custom-model-wrapper {
     width: 150px;
     height: 150px;
@@ -581,15 +615,15 @@
       width: 100%;
       height: 75%;
     }
+  }
 
-    .custom-model-name {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 25%;
-      margin: 0 5px;
-      text-align: center;
-    }
+  .custom-model-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 25%;
+    margin: 0 5px;
+    text-align: center;
   }
 
   .custom-model-selected {
