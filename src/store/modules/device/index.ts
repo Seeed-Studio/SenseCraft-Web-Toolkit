@@ -8,6 +8,23 @@ export const FlashWayType = {
   ComeToSenseCraftAI: 2,
 };
 
+export type ComeToSenseCraftAIType = {
+  model: {
+    description: string;
+    classes: string[];
+    algorithm: string;
+    name: string;
+    version: string;
+    category: string;
+    model_type: string;
+    size: string;
+    modelImg: string;
+    isCustom: boolean;
+  };
+  modelUrl: string;
+  isFlashed: boolean;
+};
+
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
@@ -21,7 +38,7 @@ const useDeviceStore = defineStore('device', {
     deviceName: null as string | null,
     deviceVersion: null as string | null,
     currentAvailableModel: false,
-    comeToSenseCraftAI: {} as Record<string, any>,
+    comeToSenseCraftAI: {} as ComeToSenseCraftAIType,
     flashWay: FlashWayType.Prefabricated,
   }),
   persist: {
@@ -75,8 +92,13 @@ const useDeviceStore = defineStore('device', {
     setCurrentAvailableModel(model: boolean) {
       this.currentAvailableModel = model;
     },
-    setComeToSenseCraftAI(data: Record<string, any>) {
+    setComeToSenseCraftAI(data: ComeToSenseCraftAIType) {
       this.comeToSenseCraftAI = data;
+    },
+    setComeToSenseCraftAIIsFlashed(isFlashed: boolean) {
+      if (typeof this.comeToSenseCraftAI === 'object') {
+        this.comeToSenseCraftAI.isFlashed = isFlashed;
+      }
     },
     setFlashWay(flashWay: number) {
       this.flashWay = flashWay;

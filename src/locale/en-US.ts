@@ -17,6 +17,8 @@ export default {
   'menu.faq': 'FAQ',
   'navbar.docs': 'Docs',
   'navbar.action.locale': 'Switch to English',
+  'confirm': 'Confirm',
+  'cancel': 'Cancel',
   ...localeSettings,
   ...localeProcess,
 };

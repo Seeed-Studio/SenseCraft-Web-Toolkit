@@ -107,4 +107,6 @@ export default {
   'workplace.serial.no.port': 'No port selected by the user',
   'workplace.serial.command.timeout':
     'There may be a problem with the firmware, please re-burn it.',
+  'workplace.serial.device.flash.confirm':
+    'Clicking confirm will deploy the model to the device',
 };

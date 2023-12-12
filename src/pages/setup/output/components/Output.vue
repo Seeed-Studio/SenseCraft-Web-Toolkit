@@ -103,7 +103,7 @@
       <a-popconfirm
         :content="$t('workplace.output.delete.confirm')"
         type="warning"
-        ok-text="Confirm"
+        :ok-text="$t('confirm')"
         @ok="handleDelete"
       >
         <a-button

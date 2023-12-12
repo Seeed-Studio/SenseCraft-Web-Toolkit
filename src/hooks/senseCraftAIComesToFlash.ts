@@ -79,7 +79,6 @@ const useSenseCraftAIComesToFlash = () => {
         deviceStore.setDeviceType(deviceKeyToId[deviceType]);
       }
       deviceStore.setComeToSenseCraftAI({
-        modelImg,
         model: {
           description,
           classes:
@@ -99,8 +98,11 @@ const useSenseCraftAIComesToFlash = () => {
           category: modelFile.algorithm[0].algorithm_name ?? 'Object Detection',
           model_type: constant.model_format_array[modelFormat],
           size,
+          modelImg,
+          isCustom: true,
         },
         modelUrl: modelFile.arguments.url,
+        isFlashed: false,
       });
       deviceStore.setFlashWay(FlashWayType.ComeToSenseCraftAI);
     }
