@@ -31,9 +31,11 @@
         if (base64Str) {
           const str = decode(base64Str);
           const model = JSON.parse(str);
-          deviceStore.setFlashWay(
-            FlashWayType[model.isCustom ? 'Custom' : 'Prefabricated']
-          );
+          if (deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI) {
+            deviceStore.setFlashWay(
+              FlashWayType[model.isCustom ? 'Custom' : 'Prefabricated']
+            );
+          }
           deviceStore.setCurrentModel(model);
           deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
         } else {
