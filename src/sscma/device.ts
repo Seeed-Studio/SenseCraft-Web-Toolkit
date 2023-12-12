@@ -559,6 +559,94 @@ export default class Device {
     }
   }
 
+  public async setWifi(
+    ssid: string,
+    password: string,
+    encryption: number
+  ): Promise<any> {
+    try {
+      const tag = 'WIFI';
+      const command = this.client.setWifi(ssid, password, encryption);
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as keyof typeof ERROR_LIST;
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data;
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  public async getWifi(): Promise<any> {
+    try {
+      const tag = 'WIFI?';
+      const command = this.client.getWifi();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const cond = response.data;
+        return cond;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  public async getMqttServer(): Promise<any> {
+    try {
+      const tag = 'MQTTSERVER?';
+      const command = this.client.getMqttServer();
+      const response = await this.sendCommand(command, tag);
+      const code = response.code;
+      this.deleteMap(tag);
+      if (code === 0) {
+        const cond = response.data;
+        return cond;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  public async setMqttServer(
+    host: string,
+    port: number,
+    username: string,
+    password: string,
+    ssl: number
+  ): Promise<any> {
+    try {
+      const tag = 'MQTTSERVER';
+      const command = this.client.setMqttServer(
+        host,
+        port,
+        username,
+        password,
+        ssl
+      );
+      const response = await this.sendCommand(command, tag);
+      const code = response.code as keyof typeof ERROR_LIST;
+      const errorMsg = ERROR_LIST[code] || 'unknown code';
+      this.resolveMap.delete(tag);
+      this.rejectMap.delete(tag);
+      if (code === 0) {
+        const data = response.data;
+        return data;
+      }
+      return `code[${code}]:${errorMsg}`;
+    } catch (error) {
+      return error;
+    }
+  }
+
   public async reset(): Promise<any> {
     try {
       const tag = 'RST';

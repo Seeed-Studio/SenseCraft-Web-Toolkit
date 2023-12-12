@@ -18,8 +18,8 @@
         {{ $t('workplace.preview.invoke') }}
       </a-button>
     </template>
-    <div class="monitor-wrapper">
-      <canvas ref="canvas" class="monitor-preview" />
+    <div class="monitor">
+      <canvas ref="canvas" class="preview" />
     </div>
   </a-card>
 </template>
@@ -32,7 +32,7 @@
   import useDeviceManager from '@/hooks/deviceManager';
   import { DeviceStatus } from '@/sscma';
 
-  const { device } = useDeviceManager();
+  const { device, term } = useDeviceManager();
 
   const COLORS = [
     'red',
@@ -100,6 +100,15 @@
       return;
     }
 
+    if (data?.perf) {
+      const perf = {
+        preprocess: data.perf[0],
+        inference: data.perf[1],
+        postprocess: data.perf[2],
+      };
+      term.writeln(`perf: ${JSON.stringify(perf)}`);
+    }
+
     if (data?.image) {
       const image = data.image;
       img.onload = () => {
@@ -112,6 +121,7 @@
         ctx.drawImage(img, 0, 0, img.width, img.height);
         if (data?.boxes) {
           const boxes = data.boxes;
+          term.writeln(`boxes: ${JSON.stringify(boxes)}`);
           for (let i = 0; i < boxes.length; i += 1) {
             const rect = boxes[i];
             if (rect?.length === 6) {
@@ -121,7 +131,7 @@
               const h = rect[3];
               const score = rect[4];
               const tar = parseInt(rect[5], 10);
-              const color = COLORS[x % COLORS.length];
+              const color = COLORS[tar % COLORS.length];
               let tarStr = '';
               if (classes.value && tar < length.value) {
                 tarStr = classes.value[tar];
@@ -140,6 +150,7 @@
           }
         }
         if (data?.classes && canvas.value) {
+          term.writeln(`classes: ${JSON.stringify(data.classes)}`);
           const tagets = data.classes;
           for (let i = 0; i < tagets.length; i += 1) {
             const tar = tagets[i][1];
@@ -212,8 +223,9 @@
 </script>
 
 <style scoped lang="less">
-  .monitor-wrapper {
+  .monitor {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     width: 100%;
     min-width: 320px;
@@ -223,7 +235,7 @@
     margin: 0 auto;
     border-radius: 5px;
 
-    .monitor-preview {
+    .preview {
       min-width: 240px;
       max-width: 640px;
       min-height: 240px;
@@ -231,6 +243,16 @@
       margin: auto;
       border-radius: 5px;
     }
+
+    .text {
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: rgb(var(--success-6));
+      font-size: 16px;
+    }
   }
 </style>
-@/sscma@/sscma/deviceManager @/sscma/xiao_esp32s3/deviceManager

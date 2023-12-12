@@ -1,6 +1,6 @@
 <template>
   <a-spin :loading="loading" :tip="loadingTip" class="item-card">
-    <a-card class="general-card" :title="$t('workplace.device.card.esptool')">
+    <a-card class="general-card" :title="$t('workplace.device.card.tool')">
       <template #extra>
         <a-button type="primary" status="danger" @click="handleEraseFlash">
           {{ $t('workplace.firmware.eraseflash') }}
@@ -221,7 +221,7 @@
   };
 
   const addFile = () => {
-    data.value.push({ address: '0x1000', file: null });
+    data.value.push({ address: '0x0000', file: null });
   };
 
   const removeFile = (index: number) => {

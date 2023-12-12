@@ -327,7 +327,7 @@
     const data = await props.readFile(blob);
     return {
       data,
-      address: deviceStore.firmware?.model_slots[0].address || 4194304,
+      address: deviceStore.firmware?.model_slots[0].address || 1024 * 1024,
     };
   };
 

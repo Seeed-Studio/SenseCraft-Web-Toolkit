@@ -4,6 +4,7 @@ import localeSettings from './en-US/setup';
 export default {
   'menu.setup': 'Setup',
   'menu.setup.process': 'Process',
+  'menu.setup.config': 'Configuration',
   'menu.setup.output': 'Output',
   'menu.tool': 'Tool',
   'menu.data': 'Data Acquisition',

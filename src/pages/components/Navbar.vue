@@ -140,7 +140,6 @@
           }}</a-option>
         </a-select>
       </li>
-
       <li v-else class="come-to-sense-craft-name">{{
         deviceStore.deviceType.name
       }}</li>
@@ -236,7 +235,6 @@
   async function connect() {
     loading.value = true;
     try {
-      console.log(navigator.serial);
       await device.value?.connect();
       if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
         Message.success(t('workplace.serial.device.connected.successfully'));

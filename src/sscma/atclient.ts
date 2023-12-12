@@ -1,14 +1,14 @@
 export const ERROR_LIST = {
-  0: '成功',
-  1: '请重试',
-  2: '逻辑错误',
-  3: '超时',
-  4: 'IO错误',
-  5: '无效参数',
-  6: '内存不足',
-  7: '忙碌',
-  8: '不支持',
-  9: '操作不允许',
+  0: 'Success',
+  1: 'Please retry',
+  2: 'Logical error',
+  3: 'Timeout',
+  4: 'IO error',
+  5: 'Invalid parameter',
+  6: 'Out of memory',
+  7: 'Busy',
+  8: 'Not supported',
+  9: 'Operation not permitted',
 };
 
 export class ATClient {
@@ -116,6 +116,28 @@ export class ATClient {
 
   public setLed(state: number): string {
     return `AT+LED=${state}\r`;
+  }
+
+  public getWifi(): string {
+    return 'AT+WIFI?\r';
+  }
+
+  public getMqttServer(): string {
+    return 'AT+MQTTSERVER?\r';
+  }
+
+  public setWifi(ssid: string, password: string, encryption: number): string {
+    return `AT+WIFI="${ssid}", ${encryption}, "${password}"\r`;
+  }
+
+  public setMqttServer(
+    host: string,
+    port: number,
+    username: string,
+    password: string,
+    ssl: number
+  ): string {
+    return `AT+MQTTSERVER="","${host}",${port},"${username}","${password}", ${ssl} \r`;
   }
 
   public reset(): string {
