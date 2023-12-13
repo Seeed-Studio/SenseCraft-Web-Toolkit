@@ -69,7 +69,7 @@
         >{{ $t('workplace.device.select.aimodel') }}</div
       >
       <div v-else class="device-item">{{
-        $t('workplace.device.select.aimodel')
+        $t('workplace.device.select.comeToSenseCraft')
       }}</div>
       <swiper
         v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
@@ -117,7 +117,7 @@
 
       <div
         v-if="deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI"
-        class="come-to-sense-craft-ai"
+        class="come-to-sense-craft-ai custom-model-selected"
       >
         <img :src="deviceStore.comeToSenseCraftAI.model.modelImg" alt="" />
         <span>{{ deviceStore.comeToSenseCraftAI.model.name }}</span>
@@ -287,6 +287,7 @@
   const loadingTip = ref('');
   const selectedModel = ref(-1);
   const isSelectedCustomModel = ref(false);
+  const isComeToFlashFinished = ref(false);
   const visible = ref<boolean>(false);
 
   const handleSelectedModel = (index: number) => {
@@ -419,7 +420,22 @@
     loading.value = false;
   };
 
+  const comeToSenseCraftAIFlash = async () => {
+    await flashFirmware().finally(() => {
+      deviceStore.setComeToSenseCraftAIIsFlashed(true);
+    });
+    isComeToFlashFinished.value = true;
+  };
+
   const handleUpload = async () => {
+    if (deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI) {
+      if (isComeToFlashFinished.value) {
+        Message.warning(t('workplace.device.message.model.current'));
+      } else {
+        await comeToSenseCraftAIFlash();
+      }
+      return;
+    }
     if (isSelectedCustomModel.value) {
       Message.warning(t('workplace.device.message.model.current'));
       return;
@@ -516,12 +532,6 @@
       loading.value = false;
     }
     return false;
-  };
-
-  const comeToSenseCraftAIFlash = () => {
-    flashFirmware().finally(() => {
-      deviceStore.setComeToSenseCraftAIIsFlashed(true);
-    });
   };
 
   const handleOk = () => {
@@ -647,6 +657,7 @@
     flex-direction: column;
     width: 150px;
     margin-top: 10px;
+    overflow: hidden;
     border: 1px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
 
