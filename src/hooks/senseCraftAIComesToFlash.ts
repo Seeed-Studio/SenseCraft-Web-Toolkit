@@ -1,18 +1,18 @@
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 import { useDeviceStore } from '@/store';
-import { DEVICE_LIST, DeviceType } from '@/sscma/constants';
+import { DeviceType } from '@/sscma/constants';
 import { FlashWayType } from '@/store/modules/device';
 
 export async function fetchConstant() {
-  return fetch('http://test-sensecraft.seeed.cc/aiserverapi/user/get_constant')
+  return fetch('https://sensecraft.seeed.cc/aiserverapi/user/get_constant')
     .then((res) => res.json())
     .then((res) => res.data);
 }
 
 export async function fetchModelDetail(modelId: string, needParams?: string[]) {
   const response: Record<string, any> = await fetch(
-    `http://test-sensecraft.seeed.cc/aiserverapi/model/view_model?model_id=${modelId}`
+    `https://sensecraft.seeed.cc/aiserverapi/model/view_model?model_id=${modelId}`
   ).then((res) => res.json());
   if (response?.code !== '0') {
     throw new Error('No model found.');
@@ -25,7 +25,7 @@ export async function fetchModelDetail(modelId: string, needParams?: string[]) {
 
 export async function fetchModelFileUrl(modelId: string, token: string) {
   const response = await fetch(
-    `http://test-sensecraft.seeed.cc/aiserverapi/model/apply_model?model_id=${modelId}`,
+    `https://sensecraft.seeed.cc/aiserverapi/model/apply_model?model_id=${modelId}`,
     { headers: { Authorization: token } }
   ).then((res) => res.json());
   if (response?.code !== '0') {
