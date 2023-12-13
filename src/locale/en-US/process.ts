@@ -126,4 +126,5 @@ export default {
     'There may be a problem with the firmware, please re-burn it.',
   'workplace.serial.device.flash.confirm':
     'Clicking confirm will deploy the model to the device',
+  'workplace.serial.device.port.occupied': 'Device is occupied',
 };

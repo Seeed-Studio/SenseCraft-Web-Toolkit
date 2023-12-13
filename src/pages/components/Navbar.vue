@@ -176,6 +176,7 @@
   import useDeviceManager from '@/hooks/deviceManager';
   import { DEVICE_LIST } from '@/sscma/constants';
   import { FlashWayType } from '@/store/modules/device';
+  import { flashErrorHandle } from '@/utils/flash';
   import Menu from './Menu.vue';
 
   const appStore = useAppStore();
@@ -241,7 +242,7 @@
       }
     } catch (error: any) {
       console.error('Device connection failed: ', error);
-      Message.error(t('workplace.serial.connected.failed'));
+      flashErrorHandle(error, t('workplace.serial.connected.failed'));
       term.writeln(`Error: ${error?.message}`);
     } finally {
       loading.value = false;
