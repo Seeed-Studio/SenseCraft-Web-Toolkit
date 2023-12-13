@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { Ref, ref, defineProps } from 'vue';
+  import { Ref, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption } from '@arco-design/web-vue/es/upload';
   import { Message } from '@arco-design/web-vue';
