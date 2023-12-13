@@ -358,7 +358,7 @@
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray = [];
     const currentVersion = deviceStore.deviceVersion;
-    if (currentVersion && version !== currentVersion) {
+    if (!currentVersion || version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
       }
