@@ -1,5 +1,6 @@
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
+import { Message } from '@arco-design/web-vue';
 import { useDeviceStore } from '@/store';
 import { DeviceType } from '@/sscma/constants';
 import { FlashWayType } from '@/store/modules/device';
@@ -15,7 +16,7 @@ export async function fetchModelDetail(modelId: string, needParams?: string[]) {
     `https://sensecraft.seeed.cc/aiserverapi/model/view_model?model_id=${modelId}`
   ).then((res) => res.json());
   if (response?.code !== '0') {
-    throw new Error('No model found.');
+    throw new Error(response.msg);
   }
   if (!needParams) {
     return response;
@@ -29,7 +30,7 @@ export async function fetchModelFileUrl(modelId: string, token: string) {
     { headers: { Authorization: token } }
   ).then((res) => res.json());
   if (response?.code !== '0') {
-    throw new Error('No model found.');
+    throw new Error(response.msg);
   }
   const modelFile = JSON.parse(response.data.model_snapshot);
   return modelFile;
@@ -107,7 +108,13 @@ const useSenseCraftAIComesToFlash = () => {
     }
     return null;
   };
-  onMounted(handleSenseCraftAI);
+  onMounted(async () => {
+    try {
+      await handleSenseCraftAI();
+    } catch (err: any) {
+      Message.warning(err?.message ?? '');
+    }
+  });
 };
 
 export default useSenseCraftAIComesToFlash;
