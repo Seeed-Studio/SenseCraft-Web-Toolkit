@@ -55,6 +55,8 @@ export default {
   'workplace.device.use.aimodel': '可用的AI模型',
   'workplace.device.upload.aimodel': '上传自定义AI模型',
   'workplace.device.select.aimodel': '请选择预设AI模型或上传自定义AI模型',
+  'workplace.device.select.comeToSenseCraft':
+    '将Al模型发送到设备并预览推理结果',
   'workplace.device.send': '发送',
   'workplace.device.model.aimodel': '自定义AI模型',
   'workplace.device.model.sendmodel': '发送模型',
@@ -111,4 +113,5 @@ export default {
   'workplace.serial.no.port': '用户未选择端口',
   'workplace.serial.command.timeout': '固件可能存在问题，请重新烧录',
   'workplace.serial.device.flash.confirm': '点击确定将部署模型到设备',
+  'workplace.serial.device.port.occupied': '设备已被占用',
 };

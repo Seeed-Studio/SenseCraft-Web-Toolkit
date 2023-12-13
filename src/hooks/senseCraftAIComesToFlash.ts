@@ -76,7 +76,7 @@ const useSenseCraftAIComesToFlash = () => {
         '32': DeviceType.XiaoEsp32s3,
       };
       if (typeof deviceKeyToId[deviceType] === 'string') {
-        deviceStore.setDeviceType(deviceKeyToId[deviceType]);
+        deviceStore.setDeviceTypeById(deviceKeyToId[deviceType]);
       }
       deviceStore.setComeToSenseCraftAI({
         model: {
@@ -102,7 +102,6 @@ const useSenseCraftAIComesToFlash = () => {
           isCustom: true,
         },
         modelUrl: modelFile.arguments.url,
-        isFlashed: false,
       });
       deviceStore.setFlashWay(FlashWayType.ComeToSenseCraftAI);
     }

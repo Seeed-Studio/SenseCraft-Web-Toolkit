@@ -262,6 +262,7 @@
   import FlasherInterface from '@/sscma/FlasherInterface';
   import useDeviceManager from '@/hooks/deviceManager';
   import { FlashWayType } from '@/store/modules/device';
+  import { flashErrorHandle } from '@/utils/flash';
 
   export type FileType<T> = {
     data: T;
@@ -421,10 +422,15 @@
   };
 
   const comeToSenseCraftAIFlash = async () => {
-    await flashFirmware().finally(() => {
-      deviceStore.setComeToSenseCraftAIIsFlashed(true);
-    });
-    isComeToFlashFinished.value = true;
+    try {
+      await flashFirmware();
+      isComeToFlashFinished.value = true;
+    } catch (error: any) {
+      flashErrorHandle(error);
+    } finally {
+      loadingTip.value = '';
+      loading.value = false;
+    }
   };
 
   const handleUpload = async () => {
@@ -456,7 +462,7 @@
       await flashFirmware();
     } catch (error: any) {
       console.error(error);
-      Message.error(error?.message ?? '');
+      flashErrorHandle(error);
       term.writeln(`Error: ${error?.message}`);
     } finally {
       loadingTip.value = '';
@@ -526,7 +532,7 @@
       return true;
     } catch (error: any) {
       console.error(error);
-      Message.error(error?.message);
+      flashErrorHandle(error);
     } finally {
       loadingTip.value = '';
       loading.value = false;
@@ -562,7 +568,7 @@
     async () => {
       if (
         deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI &&
-        !deviceStore.comeToSenseCraftAI.isFlashed
+        !isComeToFlashFinished.value
       ) {
         visible.value = true;
       }

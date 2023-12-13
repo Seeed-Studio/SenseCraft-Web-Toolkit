@@ -22,9 +22,7 @@ export type ComeToSenseCraftAIType = {
     isCustom: boolean;
   };
   modelUrl: string;
-  isFlashed: boolean;
 };
-
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
@@ -85,6 +83,12 @@ const useDeviceStore = defineStore('device', {
         this.deviceType = { ...DEVICE_LIST[index] };
       }
     },
+    setDeviceTypeById(id: string) {
+      const index = DEVICE_LIST.findIndex((e) => e.id === id);
+      if (index !== -1) {
+        this.deviceType = { ...DEVICE_LIST[index] };
+      }
+    },
     setDeviceName(name: string) {
       this.deviceName = name;
     },
@@ -96,11 +100,6 @@ const useDeviceStore = defineStore('device', {
     },
     setComeToSenseCraftAI(data: ComeToSenseCraftAIType) {
       this.comeToSenseCraftAI = data;
-    },
-    setComeToSenseCraftAIIsFlashed(isFlashed: boolean) {
-      if (typeof this.comeToSenseCraftAI === 'object') {
-        this.comeToSenseCraftAI.isFlashed = isFlashed;
-      }
     },
     setFlashWay(flashWay: number) {
       this.flashWay = flashWay;
