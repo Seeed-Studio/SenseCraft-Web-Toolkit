@@ -7,6 +7,7 @@
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
   import Flasher from '@/sscma/grove_ai_we2/Flasher';
+  import { FlashWayType } from '@/store/modules/device';
   import Device from '../components/Device.vue';
 
   const { device, term } = useDeviceManager();
@@ -30,6 +31,11 @@
         if (base64Str) {
           const str = decode(base64Str);
           const model = JSON.parse(str);
+          if (deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI) {
+            deviceStore.setFlashWay(
+              FlashWayType[model.isCustom ? 'Custom' : 'Prefabricated']
+            );
+          }
           deviceStore.setCurrentModel(model);
           deviceStore.setCurrentAvailableModel(tempModel?.id !== undefined);
         } else {

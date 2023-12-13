@@ -2,6 +2,29 @@ import { defineStore } from 'pinia';
 import { DeviceStatus, Model, Firmware } from '@/sscma/types';
 import { DEVICE_LIST } from '@/sscma/constants';
 
+export const FlashWayType = {
+  Prefabricated: 0,
+  Custom: 1,
+  ComeToSenseCraftAI: 2,
+};
+
+export type ComeToSenseCraftAIType = {
+  model: {
+    description: string;
+    classes: string[];
+    algorithm: string;
+    name: string;
+    version: string;
+    category: string;
+    model_type: string;
+    size: string;
+    modelImg: string;
+    isCustom: boolean;
+  };
+  modelUrl: string;
+  isFlashed: boolean;
+};
+
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
@@ -17,6 +40,8 @@ const useDeviceStore = defineStore('device', {
     deviceName: null as string | null,
     deviceVersion: null as string | null,
     currentAvailableModel: false,
+    comeToSenseCraftAI: {} as ComeToSenseCraftAIType,
+    flashWay: FlashWayType.Prefabricated,
   }),
   persist: {
     enabled: true,
@@ -68,6 +93,17 @@ const useDeviceStore = defineStore('device', {
     },
     setCurrentAvailableModel(model: boolean) {
       this.currentAvailableModel = model;
+    },
+    setComeToSenseCraftAI(data: ComeToSenseCraftAIType) {
+      this.comeToSenseCraftAI = data;
+    },
+    setComeToSenseCraftAIIsFlashed(isFlashed: boolean) {
+      if (typeof this.comeToSenseCraftAI === 'object') {
+        this.comeToSenseCraftAI.isFlashed = isFlashed;
+      }
+    },
+    setFlashWay(flashWay: number) {
+      this.flashWay = flashWay;
     },
   },
 });

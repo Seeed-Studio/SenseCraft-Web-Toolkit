@@ -39,6 +39,7 @@ export interface Model {
   checksum?: string;
   size: string;
   isCustom?: boolean;
+  modelImg?: string;
 }
 
 export enum AlgoType {

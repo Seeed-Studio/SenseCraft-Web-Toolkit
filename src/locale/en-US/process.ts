@@ -59,6 +59,8 @@ export default {
   'workplace.device.upload.aimodel': 'Upload Custom AI Model',
   'workplace.device.select.aimodel':
     'Please select a preset AI model or upload a custom AI model',
+  'workplace.device.select.comeToSenseCraft':
+    'Send Al model to device and preview the inference result',
   'workplace.device.send': 'Send',
   'workplace.device.model.aimodel': 'Custom AI Model',
   'workplace.device.model.sendmodel': 'Send Model',
@@ -122,4 +124,6 @@ export default {
   'workplace.serial.no.port': 'No port selected by the user',
   'workplace.serial.command.timeout':
     'There may be a problem with the firmware, please re-burn it.',
+  'workplace.serial.device.flash.confirm':
+    'Clicking confirm will deploy the model to the device',
 };

@@ -3,17 +3,23 @@ import { RouteRecordRaw, RouteRecordNormalized } from 'vue-router';
 import { cloneDeep } from 'lodash';
 import usePermission from '@/hooks/permission';
 import appClientMenus from '@/router/app-menus';
+import { useDeviceStore } from '@/store';
+import { FlashWayType } from '@/store/modules/device';
 
 export default function useMenuTree() {
   const permission = usePermission();
+  const deviceStore = useDeviceStore();
   const appRoute = computed(() => {
     return appClientMenus;
   });
   const menuTree = computed(() => {
-    const copyRouter = cloneDeep(appRoute.value) as RouteRecordNormalized[];
+    let copyRouter = cloneDeep(appRoute.value) as RouteRecordNormalized[];
     copyRouter.sort((a: RouteRecordNormalized, b: RouteRecordNormalized) => {
       return (a.meta.order || 0) - (b.meta.order || 0);
     });
+    if (deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI) {
+      copyRouter = copyRouter.filter((route) => route.name === 'setup');
+    }
     function travel(_routes: RouteRecordRaw[], layer: number) {
       if (!_routes) return null;
 

@@ -129,7 +129,7 @@
           </a-button>
         </a-tooltip>
       </li>
-      <li>
+      <li v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI">
         <a-select
           :model-value="deviceStore.deviceType.name"
           :style="{}"
@@ -140,6 +140,9 @@
           }}</a-option>
         </a-select>
       </li>
+      <li v-else class="come-to-sense-craft-name">{{
+        deviceStore.deviceType.name
+      }}</li>
       <li>
         <a-button
           v-if="deviceStore.deviceStatus === DeviceStatus.SerialConnected"
@@ -172,6 +175,7 @@
   import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
   import { DEVICE_LIST } from '@/sscma/constants';
+  import { FlashWayType } from '@/store/modules/device';
   import Menu from './Menu.vue';
 
   const appStore = useAppStore();

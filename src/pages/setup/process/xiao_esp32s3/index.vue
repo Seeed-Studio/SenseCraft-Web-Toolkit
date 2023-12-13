@@ -25,6 +25,7 @@
       overflow-x: auto;
 
       .item {
+        flex: 1;
         margin: 16px;
       }
 

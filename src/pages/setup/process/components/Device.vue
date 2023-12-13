@@ -56,12 +56,23 @@
         <a-typography-title :heading="6">{{
           $t('workplace.device.use.aimodel')
         }}</a-typography-title>
-        <a-button type="primary" @click="handleShowCustomModel">{{
-          $t('workplace.device.upload.aimodel')
-        }}</a-button>
+        <a-button
+          v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+          type="primary"
+          @click="handleShowCustomModel"
+          >{{ $t('workplace.device.upload.aimodel') }}</a-button
+        >
       </div>
-      <div class="device-item">{{ $t('workplace.device.select.aimodel') }}</div>
+      <div
+        v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+        class="device-item"
+        >{{ $t('workplace.device.select.aimodel') }}</div
+      >
+      <div v-else class="device-item">{{
+        $t('workplace.device.select.comeToSenseCraft')
+      }}</div>
       <swiper
+        v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
         class="carousel"
         :slides-per-view="3"
         :space-between="30"
@@ -103,17 +114,30 @@
           </div>
         </swiper-slide>
       </swiper>
+
       <div
-        v-if="deviceStore.currentModel?.isCustom"
+        v-if="deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI"
+        class="come-to-sense-craft-ai custom-model-selected"
+      >
+        <img :src="deviceStore.comeToSenseCraftAI.model.modelImg" alt="" />
+        <span>{{ deviceStore.comeToSenseCraftAI.model.name }}</span>
+      </div>
+
+      <div
+        v-if="deviceStore.flashWay === FlashWayType.Custom"
         :class="[
           'custom-model-wrapper',
           { 'custom-model-selected': isSelectedCustomModel },
         ]"
         :onclick="() => handleSelectedCustomModel()"
       >
-        <img :src="customModelIcon" class="custom-model-image" alt="" />
+        <img
+          :src="deviceStore?.currentModel?.modelImg ?? customModelIcon"
+          class="custom-model-image"
+          alt=""
+        />
         <div class="custom-model-name">{{
-          deviceStore.currentModel?.name
+          modalVisible ? modalName : deviceStore.currentModel?.name
         }}</div>
       </div>
       <div class="bottom">
@@ -209,6 +233,16 @@
         </a-col>
       </a-row>
     </a-modal>
+    <a-modal
+      v-model:visible="visible"
+      :closable="false"
+      :ok-text="$t('confirm')"
+      :cancel-text="$t('cancel')"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <p>{{ $t('workplace.serial.device.flash.confirm') }}</p>
+    </a-modal>
   </a-spin>
 </template>
 
@@ -227,6 +261,7 @@
   import customModelIcon from '@/assets/images/custom-model.png';
   import FlasherInterface from '@/sscma/FlasherInterface';
   import useDeviceManager from '@/hooks/deviceManager';
+  import { FlashWayType } from '@/store/modules/device';
 
   export type FileType<T> = {
     data: T;
@@ -252,6 +287,8 @@
   const loadingTip = ref('');
   const selectedModel = ref(-1);
   const isSelectedCustomModel = ref(false);
+  const isComeToFlashFinished = ref(false);
+  const visible = ref<boolean>(false);
 
   const handleSelectedModel = (index: number) => {
     selectedModel.value = index;
@@ -285,10 +322,8 @@
     return fileList;
   };
 
-  const downloadModel = async (model: Model) => {
-    const response = await fetch(
-      `${model.url}?timestamp=${new Date().getTime()}`
-    );
+  const downloadModel = async (url: string) => {
+    const response = await fetch(`${url}?timestamp=${new Date().getTime()}`);
     const blob = await response.blob();
     const data = await props.readFile(blob);
     return {
@@ -314,16 +349,15 @@
     return { data, model };
   };
 
-  const flashFirmware = async (isCustom: boolean) => {
+  const flashFirmware = async () => {
     loading.value = true;
     loadingTip.value = t('workplace.device.message.tip.connecting');
     await props.flasher.writeFlashBefore();
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
-
     const fileArray = [];
     const currentVersion = deviceStore.deviceVersion;
-    if (version !== currentVersion) {
+    if (currentVersion && version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
       }
@@ -333,13 +367,19 @@
       fileArray.push(...firmwareArray);
     }
     let finallyModel: Model | null = null;
-    if (isCustom) {
+    if (deviceStore.flashWay === FlashWayType.Custom) {
       if (!modelFile.value) {
         loading.value = false;
       }
       const { model, data } = await handleCustomModelData();
       finallyModel = model;
       fileArray.push({ data, address: 0x400000 });
+    } else if (deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI) {
+      const modelFile = await downloadModel(
+        deviceStore.comeToSenseCraftAI.modelUrl
+      );
+      finallyModel = deviceStore.comeToSenseCraftAI.model;
+      fileArray.push(modelFile);
     } else {
       if (selectedModel.value < 0) {
         throw new Error(t('workplace.device.message.model.no'));
@@ -347,8 +387,10 @@
       if (deviceStore.models.length > 0) {
         loadingTip.value = t('workplace.device.message.tip.downloading.model');
         finallyModel = deviceStore.models[selectedModel.value];
-        const modelFile = await downloadModel(finallyModel);
-        fileArray.push(modelFile);
+        if (finallyModel?.url) {
+          const modelFile = await downloadModel(finallyModel.url);
+          fileArray.push(modelFile);
+        }
       }
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
@@ -378,7 +420,22 @@
     loading.value = false;
   };
 
+  const comeToSenseCraftAIFlash = async () => {
+    await flashFirmware().finally(() => {
+      deviceStore.setComeToSenseCraftAIIsFlashed(true);
+    });
+    isComeToFlashFinished.value = true;
+  };
+
   const handleUpload = async () => {
+    if (deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI) {
+      if (isComeToFlashFinished.value) {
+        Message.warning(t('workplace.device.message.model.current'));
+      } else {
+        await comeToSenseCraftAIFlash();
+      }
+      return;
+    }
     if (isSelectedCustomModel.value) {
       Message.warning(t('workplace.device.message.model.current'));
       return;
@@ -395,7 +452,8 @@
       }
     }
     try {
-      await flashFirmware(false);
+      deviceStore.setFlashWay(FlashWayType.Prefabricated);
+      await flashFirmware();
     } catch (error: any) {
       console.error(error);
       Message.error(error?.message ?? '');
@@ -463,7 +521,8 @@
       if (modelObjects.value.length === 0) {
         throw new Error(t('workplace.device.message.model.object'));
       }
-      await flashFirmware(true);
+      deviceStore.setFlashWay(FlashWayType.Custom);
+      await flashFirmware();
       return true;
     } catch (error: any) {
       console.error(error);
@@ -473,6 +532,15 @@
       loading.value = false;
     }
     return false;
+  };
+
+  const handleOk = () => {
+    comeToSenseCraftAIFlash();
+    visible.value = false;
+  };
+
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   watch(
@@ -488,10 +556,23 @@
       }
     }
   );
+
+  watch(
+    () => deviceStore.flashWay,
+    async () => {
+      if (
+        deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI &&
+        !deviceStore.comeToSenseCraftAI.isFlashed
+      ) {
+        visible.value = true;
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">
   .item-card {
+    width: 100%;
     height: 100%;
 
     .device-item {
@@ -571,6 +652,27 @@
     }
   }
 
+  .come-to-sense-craft-ai {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    margin-top: 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-neutral-3);
+    border-radius: var(--border-radius-small);
+
+    img {
+      width: 150px;
+      height: 112.5px;
+      object-fit: cover;
+    }
+
+    span {
+      align-self: center;
+      padding: 10px 0;
+    }
+  }
+
   .custom-model-wrapper {
     width: 150px;
     height: 150px;
@@ -582,15 +684,15 @@
       width: 100%;
       height: 75%;
     }
+  }
 
-    .custom-model-name {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 25%;
-      margin: 0 5px;
-      text-align: center;
-    }
+  .custom-model-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 25%;
+    margin: 0 5px;
+    text-align: center;
   }
 
   .custom-model-selected {
