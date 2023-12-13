@@ -173,6 +173,7 @@
         config.mqtt.ssl
       );
     }
+    oldConfig = JSON.parse(JSON.stringify(config));
     loading.value = false;
     change.value = true;
   };
