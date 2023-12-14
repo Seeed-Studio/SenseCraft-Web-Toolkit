@@ -48,10 +48,17 @@ export default {
   'workplace.output.message.action.delete.successful':
     'Delete action successful',
   'workplace.output.message.action.delete.failed': 'Delete action failed',
+  'workplace.device.id': 'Device ID',
   'workplace.device.name': 'Device Name',
   'workplace.device.version': 'Device Version',
   'workplace.device.model.name': 'Model Name',
   'workplace.device.model.version': 'Model Version',
+  'workplace.device.model.ip.address': 'IP Address',
+  'workplace.device.model.server.state': 'Service status',
+  'workplace.device.model.server.state.0':
+    'MQTT not initialized or not connected',
+  'workplace.device.model.server.state.1': 'MQTT connected, config old',
+  'workplace.device.model.server.state.2': 'MQTT connected, settings updated',
   'workplace.device.noconnect': 'Please connect the device to your PC',
   'workplace.device.nomodel':
     'Your device does not have a deployment model, please select a model and click the send button',

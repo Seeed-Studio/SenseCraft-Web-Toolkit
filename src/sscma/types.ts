@@ -38,6 +38,7 @@ export interface Model {
   url?: string;
   checksum?: string;
   size: string;
+  author?: string;
   isCustom?: boolean;
   modelImg?: string;
 }

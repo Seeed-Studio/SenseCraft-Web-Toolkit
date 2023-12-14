@@ -12,42 +12,82 @@
         <div class="device-item"> {{ $t('workplace.device.noconnect') }} </div>
       </a-space>
       <div v-else>
-        <a-space
-          v-if="deviceStore.currentAvailableModel"
-          direction="vertical"
-          size="large"
-        >
-          <a-space class="device-item">
-            <div class="device-item-title">{{
-              $t('workplace.device.name')
-            }}</div>
-            <div class="device-item-value">{{ deviceStore.deviceName }}</div>
-          </a-space>
-          <a-space class="device-item">
-            <div class="device-item-title"
-              >{{ $t('workplace.device.version') }}
-            </div>
-            <div class="device-item-value">
-              {{ deviceStore.deviceVersion }}</div
-            >
-          </a-space>
-          <a-space class="device-item">
-            <div class="device-item-title">{{
-              $t('workplace.device.model.name')
-            }}</div>
-            <div class="device-item-value">{{
-              deviceStore.currentModel?.name
-            }}</div>
-          </a-space>
-          <a-space class="device-item">
-            <div class="device-item-title"
-              >{{ $t('workplace.device.model.version') }}
-            </div>
-            <div class="device-item-value">
-              {{ deviceStore.currentModel?.version }}</div
-            >
-          </a-space>
-        </a-space>
+        <template v-if="deviceStore.currentAvailableModel">
+          <div class="device-basic-info">
+            <a-space class="device-item">
+              <div class="device-item-title">{{
+                $t('workplace.device.id')
+              }}</div>
+              <div class="device-item-value">{{ deviceStore.deviceId }}</div>
+            </a-space>
+            <a-space class="device-item">
+              <div class="device-item-title">{{
+                $t('workplace.device.name')
+              }}</div>
+              <div class="device-item-value">{{ deviceStore.deviceName }}</div>
+            </a-space>
+            <a-space class="device-item">
+              <div class="device-item-title"
+                >{{ $t('workplace.device.version') }}
+              </div>
+              <div class="device-item-value">
+                {{ deviceStore.deviceVersion }}</div
+              >
+            </a-space>
+          </div>
+
+          <div class="device-basic-info">
+            <a-space class="device-item">
+              <div class="device-item-title">{{
+                $t('workplace.device.model.name')
+              }}</div>
+              <div class="device-item-value">{{
+                deviceStore.currentModel?.name
+              }}</div>
+            </a-space>
+            <a-space class="device-item">
+              <div class="device-item-title"
+                >{{ $t('workplace.device.model.version') }}
+              </div>
+              <div class="device-item-value">
+                {{ deviceStore.currentModel?.version }}</div
+              >
+            </a-space>
+          </div>
+
+          <div
+            v-if="deviceStore.isCanMqtt || deviceStore.isCanWifi"
+            class="device-basic-info"
+          >
+            <a-space v-if="deviceStore.isCanWifi" class="device-item">
+              <div class="device-item-title"
+                >{{ $t('workplace.device.model.ip.address') }}
+              </div>
+              <span
+                v-if="
+                  deviceStore.deviceIPStatus !==
+                  DeviceWIFIStatus.NotInitOrJoined
+                "
+                class="device-item-value"
+              >
+                {{ deviceStore.deviceIPv4Address }}</span
+              >
+              <span v-else class="device-item-value">-</span>
+            </a-space>
+            <a-space v-if="deviceStore.isCanMqtt" class="device-item">
+              <div class="device-item-title"
+                >{{ $t('workplace.device.model.server.state') }}
+              </div>
+              <div class="device-item-value">
+                {{
+                  $t(
+                    `workplace.device.model.server.state.${deviceStore.deviceServerState}`
+                  )
+                }}</div
+              >
+            </a-space>
+          </div>
+        </template>
         <div v-else class="device-item">
           {{ $t('workplace.device.model.nomodel') }}
         </div>
@@ -106,12 +146,22 @@
           :onclick="() => handleSelectedModel(index)"
           :virtual-index="index"
         >
-          <div>
-            <div class="carousel-item">
-              <img class="carousel-item-image" :src="item.image" alt="" />
+          <a-popover position="top">
+            <template #content>
+              <a-descriptions
+                style="margin-top: 20px"
+                :data="getModelHoverData(item)"
+                size="medium"
+                :column="1"
+              />
+            </template>
+            <div>
+              <div class="carousel-item">
+                <img class="carousel-item-image" :src="item.image" alt="" />
+              </div>
+              <div class="carousel-item-name">{{ item.name }}</div>
             </div>
-            <div class="carousel-item-name">{{ item.name }}</div>
-          </div>
+          </a-popover>
         </swiper-slide>
       </swiper>
 
@@ -254,14 +304,14 @@
   import 'swiper/css';
   import 'swiper/css/navigation';
   import { Navigation } from 'swiper/modules';
-  import { Message } from '@arco-design/web-vue';
+  import { DescData, Message } from '@arco-design/web-vue';
   import { encode } from 'js-base64';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, Bin, Model } from '@/sscma';
   import customModelIcon from '@/assets/images/custom-model.png';
   import FlasherInterface from '@/sscma/FlasherInterface';
   import useDeviceManager from '@/hooks/deviceManager';
-  import { FlashWayType } from '@/store/modules/device';
+  import { FlashWayType, DeviceWIFIStatus } from '@/store/modules/device';
   import { flashErrorHandle } from '@/utils/flash';
 
   export type FileType<T> = {
@@ -290,6 +340,36 @@
   const isSelectedCustomModel = ref(false);
   const isComeToFlashFinished = ref(false);
   const visible = ref<boolean>(false);
+  const getModelHoverData = (item: Model): DescData[] => [
+    {
+      label: 'Name',
+      value: item.name,
+    },
+    {
+      label: 'Algorithm',
+      value: item.algorithm ?? '',
+    },
+    {
+      label: 'Author',
+      value: item.author ?? '',
+    },
+    {
+      label: 'Category',
+      value: item.category,
+    },
+    {
+      label: 'Model Type',
+      value: item.model_type ?? '',
+    },
+    {
+      label: 'Description',
+      value: item.description ?? '',
+    },
+    {
+      label: 'Version',
+      value: item.version,
+    },
+  ];
 
   const handleSelectedModel = (index: number) => {
     selectedModel.value = index;
@@ -716,6 +796,16 @@
   .grid-left {
     height: 48px;
     color: var(--color-text-2);
+  }
+
+  .device-basic-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: var(--color-fill-1);
+    border-radius: 3px;
   }
 </style>
 @/sscma
