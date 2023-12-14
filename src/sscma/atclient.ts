@@ -72,6 +72,10 @@ export class ATClient {
     return 'AT+ACTION?\r';
   }
 
+  public getMqttPubsub(): string {
+    return 'AT+MQTTPUBSUB?\r';
+  }
+
   public setModel(modelId: string): string {
     return `AT+MODEL=${modelId}\r`;
   }

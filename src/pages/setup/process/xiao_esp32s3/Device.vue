@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { watch, onMounted } from 'vue';
+  import { watch, onMounted, onUnmounted } from 'vue';
   import { decode } from 'js-base64';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
@@ -77,7 +77,7 @@
   };
 
   onMounted(fetchAvailableModels);
-
+  onUnmounted(deviceStore.clearDeviceInfo);
   watch(() => deviceStore.deviceStatus, handelRefresh);
 </script>
 

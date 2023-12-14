@@ -8,6 +8,18 @@ export const FlashWayType = {
   ComeToSenseCraftAI: 2,
 };
 
+export const DeviceWIFIStatus = {
+  NotInitOrJoined: 0,
+  JoinedConfigNotApplied: 1,
+  JoinedLatestConfigApplied: 2,
+};
+
+export const MqttServerStatus = {
+  NotInitOrConnect: 0,
+  ConnectedNotApplied: 1,
+  ConnectedApplied: 2,
+};
+
 export type ComeToSenseCraftAIType = {
   model: {
     description: string;
@@ -26,8 +38,8 @@ export type ComeToSenseCraftAIType = {
 const useDeviceStore = defineStore('device', {
   state: () => ({
     deviceStatus: DeviceStatus.UnConnected,
-    wifi: false,
-    mqtt: false,
+    isCanWifi: false,
+    isCanMqtt: false,
     tiou: 0,
     tscore: 0,
     isInvoke: false,
@@ -37,6 +49,10 @@ const useDeviceStore = defineStore('device', {
     deviceType: { ...DEVICE_LIST[0] },
     deviceName: null as string | null,
     deviceVersion: null as string | null,
+    deviceId: null as string | null,
+    deviceServerState: MqttServerStatus.NotInitOrConnect,
+    deviceIPv4Address: null as string | null,
+    deviceIPStatus: DeviceWIFIStatus.NotInitOrJoined,
     currentAvailableModel: false,
     comeToSenseCraftAI: {} as ComeToSenseCraftAIType,
     flashWay: FlashWayType.Prefabricated,
@@ -74,7 +90,7 @@ const useDeviceStore = defineStore('device', {
     setFirmware(firmware: Firmware) {
       this.firmware = firmware;
     },
-    setCurrentModel(currentModel?: Model) {
+    setCurrentModel(currentModel: Model | null = null) {
       this.currentModel = currentModel;
     },
     setDeviceType(name: string) {
@@ -89,11 +105,14 @@ const useDeviceStore = defineStore('device', {
         this.deviceType = { ...DEVICE_LIST[index] };
       }
     },
-    setDeviceName(name: string) {
+    setDeviceName(name: string | null) {
       this.deviceName = name;
     },
-    setDeviceVersion(version: string) {
+    setDeviceVersion(version: string | null) {
       this.deviceVersion = version;
+    },
+    setDeviceId(id: string | null) {
+      this.deviceId = id;
     },
     setCurrentAvailableModel(model: boolean) {
       this.currentAvailableModel = model;
@@ -103,6 +122,37 @@ const useDeviceStore = defineStore('device', {
     },
     setFlashWay(flashWay: number) {
       this.flashWay = flashWay;
+    },
+    setDeviceServerState(status: number = MqttServerStatus.NotInitOrConnect) {
+      this.deviceServerState = status;
+    },
+    setDeviceIPv4AddressAndStatus(
+      ipv4: string | null = null,
+      status: number = DeviceWIFIStatus.NotInitOrJoined
+    ) {
+      this.deviceIPv4Address = ipv4;
+      this.deviceIPStatus = status;
+    },
+
+    setIsCanWifi(isCanWifi: boolean) {
+      this.isCanWifi = isCanWifi;
+    },
+    setIsCanMqtt(isCanMqtt: boolean) {
+      this.isCanMqtt = isCanMqtt;
+    },
+
+    clearDeviceInfo() {
+      this.deviceName = null;
+      this.deviceVersion = null;
+      this.deviceId = null;
+      this.deviceServerState = MqttServerStatus.NotInitOrConnect;
+      this.deviceIPv4Address = null;
+      this.deviceIPStatus = DeviceWIFIStatus.NotInitOrJoined;
+      this.currentAvailableModel = false;
+      this.currentModel = null;
+      this.firmware = null;
+      this.isCanMqtt = false;
+      this.isCanWifi = false;
     },
   },
 });
