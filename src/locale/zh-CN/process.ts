@@ -18,6 +18,7 @@ export default {
   'workplace.config.mqtt.port': '端口',
   'workplace.config.mqtt.username': '用户名',
   'workplace.config.mqtt.password': '密码',
+  'workplace.config.mqtt.ssl': 'SSL',
   'workplace.config.mqtt.message.host': '请输入主机',
   'workplace.config.mqtt.message.port': '请输入端口',
   'workplace.config.mqtt.message.username': '请输入用户名',

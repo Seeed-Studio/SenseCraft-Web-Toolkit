@@ -69,6 +69,7 @@
           />
         </a-form-item>
         <a-form-item
+          v-if="!config.mqtt.ssl"
           field="mqtt.username"
           :label="$t('workplace.config.mqtt.username')"
         >
@@ -80,6 +81,7 @@
           />
         </a-form-item>
         <a-form-item
+          v-if="!config.mqtt.ssl"
           field="mqtt.password"
           :label="$t('workplace.config.mqtt.password')"
         >
@@ -89,6 +91,9 @@
             size="large"
             allow-clear
           />
+        </a-form-item>
+        <a-form-item :label="$t('workplace.config.mqtt.ssl')">
+          <a-switch v-model="config.mqtt.ssl" />
         </a-form-item>
       </div>
       <a-form-item>
@@ -144,7 +149,7 @@
     mqtt: {
       enabled: false,
       host: '',
-      port: 0,
+      port: 1883,
       username: '',
       password: '',
       ssl: 0,
