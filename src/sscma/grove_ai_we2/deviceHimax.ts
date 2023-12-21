@@ -74,11 +74,10 @@ class Himax extends Device {
                     }
                   }
                 } catch (error) {
-                  console.log('Device raw log:', this.loggerManager);
-                  console.error(
-                    'An error occurred while parsing the returned data:',
-                    error
-                  );
+                  // console.error(
+                  //   'An error occurred while parsing the returned data:',
+                  //   error
+                  // );
                 }
                 this.cacheData = [];
               } else if (this.hasStart) {
