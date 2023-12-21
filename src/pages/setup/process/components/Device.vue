@@ -366,6 +366,10 @@
       value: item.description ?? '',
     },
     {
+      label: 'License',
+      value: item.license ?? '',
+    },
+    {
       label: 'Version',
       value: item.version,
     },
