@@ -65,8 +65,8 @@
               </div>
               <span
                 v-if="
-                  deviceStore.deviceIPStatus !==
-                  DeviceWIFIStatus.NotInitOrJoined
+                  deviceStore.deviceIPStatus ===
+                  DeviceWIFIStatus.JoinedLatestConfigApplied
                 "
                 class="device-item-value"
               >
