@@ -41,6 +41,7 @@ export interface Model {
   author?: string;
   isCustom?: boolean;
   modelImg?: string;
+  license?: string;
 }
 
 export enum AlgoType {
