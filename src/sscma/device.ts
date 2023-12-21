@@ -54,6 +54,8 @@ export default class Device {
     await this.write(this.textEncoder.encode('\r\n'));
   }
 
+  public async hardReset(): Promise<void> {}
+
   public async sendCommand(
     command: string | undefined,
     tag: string,

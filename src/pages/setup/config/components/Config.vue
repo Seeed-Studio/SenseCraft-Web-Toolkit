@@ -162,11 +162,19 @@
 
   const handleSubmit = async () => {
     loading.value = true;
-    let ret = await device.value?.setWifi(
-      config.wifi.ssid,
-      config.wifi.password,
-      parseInt(config.wifi.encryption, 10)
-    );
+    let ret = 0;
+    if (
+      oldConfig.wifi.ssid !== config.wifi.ssid ||
+      oldConfig.wifi.password !== config.wifi.password ||
+      oldConfig.wifi.encryption !== config.wifi.encryption
+    ) {
+      ret = await device.value?.setWifi(
+        config.wifi.ssid,
+        config.wifi.password,
+        parseInt(config.wifi.encryption, 10)
+      );
+    }
+
     if (!config.mqtt.enabled) {
       ret = await device.value?.setMqttServer('', 0, '', '', 0);
     } else {
@@ -178,6 +186,7 @@
         config.mqtt.ssl ? 1 : 0
       );
     }
+    await device.value.hardReset();
     oldConfig = JSON.parse(JSON.stringify(config));
     loading.value = false;
     change.value = true;
