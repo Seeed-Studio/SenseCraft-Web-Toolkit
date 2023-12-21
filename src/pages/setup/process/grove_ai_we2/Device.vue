@@ -8,18 +8,19 @@
   import useDeviceManager from '@/hooks/deviceManager';
   import Flasher from '@/sscma/grove_ai_we2/Flasher';
   import { FlashWayType } from '@/store/modules/device';
-  import { delay } from '@/utils/timer';
+  import useWifiAndMqttDetection from '@/hooks/wifiAndMqttDetection';
   import Device from '../components/Device.vue';
 
   const { device, term } = useDeviceManager();
   const deviceStore = useDeviceStore();
   const flasher = new Flasher();
   const { t } = useI18n();
+  useWifiAndMqttDetection();
 
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       try {
-        const [name, version, model, currentModel, deviceId, mqttServer] =
+        const [name, version, model, currentModel, deviceId] =
           await Promise.all([
             device.value?.getName(),
             device.value?.getVersion(),
@@ -30,14 +31,12 @@
             }),
             device.value?.getModel(),
             device.value?.getID(),
-            device.value?.getMqttServer(),
           ]);
         deviceStore.setDeviceName(name);
         deviceStore.setDeviceVersion(version);
         deviceStore.setDeviceId(deviceId);
         deviceStore.setIsCanMqtt(true);
         deviceStore.setIsCanWifi(true);
-        deviceStore.setDeviceServerState(mqttServer?.status);
         deviceStore.setCurrentModel(model);
         deviceStore.setCurrentAvailableModel(currentModel?.id !== undefined);
         if (deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI) {
@@ -80,53 +79,12 @@
     }
   };
 
-  const checkWifiStatusAndGetInfo = () => {
-    let isStarted = false;
-    let isLoop = true;
-    async function start(isFirst = true) {
-      if (isStarted) {
-        return;
-      }
-      if (deviceStore.deviceStatus !== DeviceStatus.SerialConnected) {
-        return;
-      }
-      isStarted = true;
-      try {
-        await delay(isFirst ? 1000 : 10000);
-        const wifi = await device.value?.getWifi();
-        deviceStore.setDeviceIPv4AddressAndStatus(
-          wifi?.in4_info?.ip,
-          wifi?.status
-        );
-      } catch (error) {
-        console.log('get wifi info error', error);
-      } finally {
-        isStarted = false;
-        if (isLoop) {
-          await start(false);
-        }
-      }
-    }
-    function stop() {
-      isLoop = false;
-    }
-    return { start, stop };
-  };
-
-  const { start, stop } = checkWifiStatusAndGetInfo();
-
   onMounted(fetchAvailableModels);
   onMounted(handelRefresh);
-  onMounted(start);
 
   onUnmounted(deviceStore.clearDeviceInfo);
-  onUnmounted(stop);
 
   watch(() => deviceStore.deviceStatus, handelRefresh);
-  watch(
-    () => deviceStore.deviceStatus,
-    () => start()
-  );
 </script>
 
 <template>
