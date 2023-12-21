@@ -19,7 +19,7 @@ const useWifiAndMqttDetection = () => {
       }
       isStarted = true;
       try {
-        await delay(isFirst ? 1000 : 10000);
+        await delay(isFirst ? 0 : 2000);
         await behavior();
       } catch (error) {
         console.log('get wifi info error', error);
