@@ -126,6 +126,7 @@ class EspSerialDevice extends Device {
   public async disconnect() {
     this.cleanLogger();
     try {
+      this.break();
       this.reader?.releaseLock();
       this.writer?.releaseLock();
       await this.port?.close();
