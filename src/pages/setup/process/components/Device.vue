@@ -674,7 +674,7 @@
     gap: 10px;
     justify-content: center;
     max-height: 500px;
-    margin-top: 20px;
+    margin: 20px 0;
     overflow-y: auto;
   }
 
