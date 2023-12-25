@@ -169,7 +169,7 @@
           alt=""
         />
         <div class="custom-model-name">{{
-          modalVisible ? modalName : deviceStore.currentModel?.name
+          modalName ?? deviceStore.currentModel?.name
         }}</div>
       </div>
       <div class="bottom">
@@ -307,7 +307,7 @@
   const { t } = useI18n();
   const deviceStore = useDeviceStore();
   const { device, term } = useDeviceManager();
-  const modalName = ref('');
+  const modalName = ref<undefined | string>();
   const modalVisible = ref(false);
   const inputRef = ref(null);
   const showInput = ref(false);
@@ -397,7 +397,7 @@
     if (!modelFile.value) throw new Error('文件不存在');
     const data = await props.readFile(modelFile.value);
     const model: Model = {
-      name: modalName.value,
+      name: modalName.value ?? '',
       version: '1.0.0',
       category: 'Object Detection',
       model_type: 'TFLite',
@@ -675,7 +675,6 @@
     display: flex;
     flex-flow: row wrap;
     gap: 10px;
-    justify-content: center;
     max-height: 500px;
     margin: 20px 0;
     overflow-y: auto;
