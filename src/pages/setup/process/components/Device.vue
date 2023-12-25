@@ -111,7 +111,10 @@
       <div v-else class="device-item">{{
         $t('workplace.device.select.comeToSenseCraft')
       }}</div>
-      <div class="img-container">
+      <div
+        v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+        class="img-container"
+      >
         <div
           v-for="(item, index) in deviceStore.models"
           :key="index"
