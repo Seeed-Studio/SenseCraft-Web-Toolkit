@@ -10,3 +10,25 @@ export function delay(time: number, isReject = false) {
     }, time);
   });
 }
+
+export async function retry(
+  fn: () => Promise<any>,
+  retryCount: number,
+  interval: number,
+  errSymbol?: any
+) {
+  try {
+    const result = await fn();
+    if (errSymbol !== undefined && result === errSymbol && retryCount > 0) {
+      await delay(interval);
+      return retry(fn, retryCount - 1, errSymbol);
+    }
+    return result;
+  } catch (err) {
+    if (errSymbol === undefined && retryCount > 0) {
+      await delay(interval);
+      return retry(fn, retryCount - 1, errSymbol);
+    }
+    throw err;
+  }
+}

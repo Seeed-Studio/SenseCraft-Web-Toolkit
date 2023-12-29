@@ -17,5 +17,8 @@ export interface AppState {
   menuFromServer: boolean;
   serverMenu: RouteRecordNormalized[];
   log: boolean;
+  globalLoading: boolean;
+  loadingText: string;
+  loadingTime?: number;
   [key: string]: unknown;
 }

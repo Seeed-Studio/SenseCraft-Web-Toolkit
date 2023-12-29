@@ -35,7 +35,12 @@
         <a-layout class="layout-content" :style="paddingStyle">
           <TabBar v-if="appStore.tabBar" />
           <a-layout-content>
-            <PageLayout />
+            <div class="page-layout">
+              <div v-if="appStore.globalLoading" class="loading-container">
+                <Loading />
+              </div>
+              <PageLayout />
+            </div>
           </a-layout-content>
           <Footer v-if="footer" />
         </a-layout>
@@ -46,8 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, provide, onMounted, watch } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { ref, computed, provide, onMounted } from 'vue';
   import { useAppStore } from '@/store';
   import useSenseCraftAIComesToFlash from '@/hooks/senseCraftAIComesToFlash';
   import Logger from './components/Logger.vue';
@@ -56,6 +60,7 @@
   import Navbar from './components/Navbar.vue';
   import Footer from './components/Footer.vue';
   import PageLayout from './components/PageLayout.vue';
+  import Loading from './components/Loading.vue';
 
   const isInit = ref(false);
   const appStore = useAppStore();
@@ -79,6 +84,7 @@
     const paddingTop = navbar.value ? { paddingTop: navbarHeight } : {};
     return { ...paddingLeft, ...paddingTop };
   });
+
   const setCollapsed = (val: boolean) => {
     if (!isInit.value) return; // for page initialization menu state problem
     appStore.updateSettings({ menuCollapse: val });
@@ -167,5 +173,20 @@
     overflow-y: hidden;
     background-color: var(--color-fill-1);
     transition: padding 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
+  }
+
+  .page-layout {
+    position: relative;
+    height: 100%;
+  }
+
+  .loading-container {
+    position: absolute;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0 0 0 / 30%);
   }
 </style>
