@@ -102,7 +102,9 @@
           html-type="submit"
           size="large"
           :loading="loading"
-          :disabled="change"
+          :disabled="
+            change || deviceStore.deviceStatus !== DeviceStatus.SerialConnected
+          "
           >{{ $t('workplace.config.wifi.save') }}</a-button
         >
       </a-form-item>
@@ -112,12 +114,14 @@
 
 <script lang="ts" setup>
   import { onMounted, watch, reactive, ref } from 'vue';
-  import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
-  import { useDeviceStore } from '@/store';
+  import { Message } from '@arco-design/web-vue';
+  import { useAppStore, useDeviceStore } from '@/store';
   import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
+  import { retry } from '@/utils/timer';
 
+  const appStore = useAppStore();
   const { device } = useDeviceManager();
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
@@ -190,28 +194,38 @@
     oldConfig = JSON.parse(JSON.stringify(config));
     loading.value = false;
     change.value = true;
+    Message.success(t('config.save.success'));
   };
 
   const handelRefresh = async (deviceStatus: DeviceStatus) => {
     if (deviceStatus === DeviceStatus.SerialConnected && !loaded.value) {
-      const wifi = await device.value?.getWifi();
-      const mqtt = await device.value?.getMqttServer();
-      config.wifi.password = wifi.config.password;
-      config.wifi.ssid = wifi.config.name;
-      config.wifi.encryption = wifi.config.security.toString();
-      if (mqtt.config.address !== '') {
-        config.mqtt.enabled = true;
-        config.mqtt.host = mqtt.config.address;
-        config.mqtt.port = mqtt.config.port;
-        config.mqtt.username = mqtt.config.username;
-        config.mqtt.password = mqtt.config.password;
-        config.mqtt.ssl = mqtt.config.use_ssl;
-      } else {
-        config.mqtt.enabled = false;
+      try {
+        appStore.showLoading();
+        // Sometimes it may not be possible to obtain the data, so try a few more times.
+        const [wifi, mqtt] = await Promise.all([
+          retry(() => device.value?.getWifi(), 5, 500, null),
+          retry(() => device.value?.getMqttServer(), 5, 500, null),
+        ]);
+
+        config.wifi.password = wifi.config.password;
+        config.wifi.ssid = wifi.config.name;
+        config.wifi.encryption = wifi.config.security.toString();
+        if (mqtt.config.address !== '') {
+          config.mqtt.enabled = true;
+          config.mqtt.host = mqtt.config.address;
+          config.mqtt.port = mqtt.config.port;
+          config.mqtt.username = mqtt.config.username;
+          config.mqtt.password = mqtt.config.password;
+          config.mqtt.ssl = mqtt.config.use_ssl;
+        } else {
+          config.mqtt.enabled = false;
+        }
+        oldConfig = JSON.parse(JSON.stringify(config));
+        loaded.value = true;
+        change.value = true;
+      } finally {
+        appStore.hideLoading();
       }
-      oldConfig = JSON.parse(JSON.stringify(config));
-      loaded.value = true;
-      change.value = true;
     }
   };
 

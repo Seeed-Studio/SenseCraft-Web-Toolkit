@@ -8,6 +8,7 @@
   import useDeviceManager from '@/hooks/deviceManager';
   import Flasher from '@/sscma/xiao_esp32s3/Flasher';
   import { FlashWayType } from '@/store/modules/device';
+  import { retry } from '@/utils/timer';
   import Device from '../components/Device.vue';
 
   const { device, term } = useDeviceManager();
@@ -54,9 +55,14 @@
   };
 
   const fetchAvailableModels = async () => {
-    const data = await fetch(
-      `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
-    ).then((response) => response.json());
+    const data = await retry(
+      () =>
+        fetch(
+          `https://files.seeedstudio.com/sscma/sscma-model.json?timestamp=${new Date().getTime()}`
+        ).then((response) => response.json()),
+      5,
+      500
+    );
     deviceStore.setModels(data.models);
     const firmwares = data.firmwares;
     if (firmwares?.length > 0) {

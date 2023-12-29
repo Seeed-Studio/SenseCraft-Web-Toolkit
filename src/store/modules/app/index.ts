@@ -6,6 +6,8 @@ import { AppState } from './types';
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     ...defaultSettings,
+    globalLoading: false,
+    loadingText: 'loading...',
   }),
 
   getters: {
@@ -49,6 +51,25 @@ const useAppStore = defineStore('app', {
     async fetchServerMenuConfig() {},
     clearServerMenu() {
       this.serverMenu = [];
+    },
+    showLoading(text?: string) {
+      this.loadingTime = Date.now();
+      const timer = setTimeout(() => {
+        if (this.loadingTime) {
+          this.globalLoading = true;
+          if (text) {
+            this.loadingText = text;
+          }
+        }
+        clearTimeout(timer);
+      }, 500);
+    },
+    hideLoading() {
+      if (this.loadingTime && Date.now() - this.loadingTime < 500) {
+        this.loadingTime = undefined;
+      }
+      this.globalLoading = false;
+      this.loadingText = 'loading...';
     },
   },
 });

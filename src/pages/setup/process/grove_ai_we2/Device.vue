@@ -9,6 +9,7 @@
   import Flasher from '@/sscma/grove_ai_we2/Flasher';
   import { FlashWayType } from '@/store/modules/device';
   import useWifiAndMqttDetection from '@/hooks/wifiAndMqttDetection';
+  import { retry } from '@/utils/timer';
   import Device from '../components/Device.vue';
 
   const { device, term } = useDeviceManager();
@@ -69,9 +70,14 @@
   };
 
   const fetchAvailableModels = async () => {
-    const data = await fetch(
-      `https://files.seeedstudio.com/sscma/sscma-model-we2.json?timestamp=${new Date().getTime()}`
-    ).then((response) => response.json());
+    const data = await retry(
+      () =>
+        fetch(
+          `https://files.seeedstudio.com/sscma/sscma-model-we2.json?timestamp=${new Date().getTime()}`
+        ).then((response) => response.json()),
+      5,
+      500
+    );
     deviceStore.setModels(data.models);
     const firmwares = data.firmwares;
     if (firmwares?.length > 0) {

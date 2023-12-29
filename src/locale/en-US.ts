@@ -20,6 +20,7 @@ export default {
   'navbar.action.locale': 'Switch to English',
   'confirm': 'Confirm',
   'cancel': 'Cancel',
+  'config.save.success': 'Save Success',
   ...localeSettings,
   ...localeProcess,
 };

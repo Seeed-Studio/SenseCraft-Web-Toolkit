@@ -20,6 +20,7 @@ export default {
   'navbar.action.locale': '切换为中文',
   'confirm': '确定',
   'cancel': '取消',
+  'config.save.success': '保存成功',
   ...localeSettings,
   ...localeProcess,
 };
