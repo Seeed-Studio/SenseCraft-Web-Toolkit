@@ -682,7 +682,7 @@
 
   .carousel-item-wrapper {
     flex-shrink: 0;
-    width: 200px;
+    width: 180px;
     border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
     cursor: pointer;
@@ -736,9 +736,9 @@
   }
 
   .custom-model-wrapper {
-    width: 150px;
-    height: 150px;
-    margin-left: 45px;
+    width: 180px;
+    height: 165px;
+    margin-left: 20px;
     border: 1px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
 
