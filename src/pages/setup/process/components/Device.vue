@@ -111,29 +111,11 @@
       <div v-else class="device-item">{{
         $t('workplace.device.select.comeToSenseCraft')
       }}</div>
-      <swiper
+      <div
         v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
-        class="carousel"
-        :slides-per-view="3"
-        :space-between="30"
-        :navigation="true"
-        :modules="[Navigation]"
-        :breakpoints="{
-          1080: {
-            slidesPerView: 3,
-            spaceBetween: 30,
-          },
-          1920: {
-            slidesPerView: 4,
-            spaceBetween: 40,
-          },
-          3840: {
-            slidesPerView: 7,
-            spaceBetween: 50,
-          },
-        }"
+        class="img-container"
       >
-        <swiper-slide
+        <div
           v-for="(item, index) in deviceStore.models"
           :key="index"
           :class="[
@@ -149,21 +131,21 @@
           <a-popover position="top">
             <template #content>
               <a-descriptions
-                style="margin-top: 20px"
+                style="width: 400px; margin-top: 20px"
                 :data="getModelHoverData(item)"
                 size="medium"
                 :column="1"
               />
             </template>
-            <div>
+            <div class="carousel-container">
               <div class="carousel-item">
                 <img class="carousel-item-image" :src="item.image" alt="" />
               </div>
-              <div class="carousel-item-name">{{ item.name }}</div>
+              <span class="carousel-item-name">{{ item.name }}</span>
             </div>
           </a-popover>
-        </swiper-slide>
-      </swiper>
+        </div>
+      </div>
 
       <div
         v-if="deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI"
@@ -187,7 +169,7 @@
           alt=""
         />
         <div class="custom-model-name">{{
-          modalVisible ? modalName : deviceStore.currentModel?.name
+          modalName ?? deviceStore.currentModel?.name
         }}</div>
       </div>
       <div class="bottom">
@@ -298,12 +280,10 @@
 
 <script lang="ts" setup>
   import { ref, nextTick, watch } from 'vue';
-  import { Swiper, SwiperSlide } from 'swiper/vue';
   import { useI18n } from 'vue-i18n';
   import { RequestOption, FileItem } from '@arco-design/web-vue/es/upload';
   import 'swiper/css';
   import 'swiper/css/navigation';
-  import { Navigation } from 'swiper/modules';
   import { DescData, Message } from '@arco-design/web-vue';
   import { encode } from 'js-base64';
   import { useDeviceStore } from '@/store';
@@ -327,7 +307,7 @@
   const { t } = useI18n();
   const deviceStore = useDeviceStore();
   const { device, term } = useDeviceManager();
-  const modalName = ref('');
+  const modalName = ref<undefined | string>();
   const modalVisible = ref(false);
   const inputRef = ref(null);
   const showInput = ref(false);
@@ -350,10 +330,6 @@
       value: item.algorithm ?? '',
     },
     {
-      label: 'Author',
-      value: item.author ?? '',
-    },
-    {
       label: 'Category',
       value: item.category,
     },
@@ -362,16 +338,16 @@
       value: item.model_type ?? '',
     },
     {
-      label: 'Description',
-      value: item.description ?? '',
-    },
-    {
       label: 'License',
       value: item.license ?? '',
     },
     {
       label: 'Version',
       value: item.version,
+    },
+    {
+      label: 'Description',
+      value: item.description ?? '',
     },
   ];
 
@@ -421,7 +397,7 @@
     if (!modelFile.value) throw new Error('文件不存在');
     const data = await props.readFile(modelFile.value);
     const model: Model = {
-      name: modalName.value,
+      name: modalName.value ?? '',
       version: '1.0.0',
       category: 'Object Detection',
       model_type: 'TFLite',
@@ -695,51 +671,47 @@
     width: 10px;
   }
 
-  .carousel {
-    width: 40vw;
-    margin: 30px auto;
-    padding: 0 45px;
+  .img-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 42px;
+    max-height: 500px;
+    margin: 20px 0;
+    overflow-y: auto;
+  }
 
-    --swiper-navigation-size: 26px;
-    // --swiper-navigation-color: #fff;
-    .carousel-item-wrapper {
-      flex-shrink: 0;
-      // width: 150px;
-      // height: 150px;
-      border: 1px solid var(--color-neutral-3);
-      border-radius: var(--border-radius-small);
-      cursor: pointer;
+  .carousel-item-wrapper {
+    flex-shrink: 0;
+    width: 200px;
+    border: 2px solid var(--color-neutral-3);
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+  }
+
+  .carousel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .carousel-item {
+    width: 100%;
+
+    .carousel-item-image {
+      width: 198px;
+      height: 165px;
+      object-fit: cover;
     }
+  }
 
-    .carousel-item {
-      position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 75%;
+  .carousel-item-name {
+    padding: 10px 5px;
+  }
 
-      .carousel-item-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .carousel-item-name {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 35px;
-      margin: 0 5px;
-      text-align: center;
-    }
-
-    .carousel-item-selected {
-      border-color: rgb(var(--primary-6));
-      border-width: 2px;
-    }
+  .carousel-item-selected {
+    border-color: rgb(var(--primary-6));
+    border-width: 2px;
   }
 
   .come-to-sense-craft-ai {
@@ -812,4 +784,3 @@
     border-radius: 3px;
   }
 </style>
-@/sscma
