@@ -674,7 +674,7 @@
   .img-container {
     display: flex;
     flex-flow: row wrap;
-    gap: 10px;
+    gap: 42px;
     max-height: 500px;
     margin: 20px 0;
     overflow-y: auto;
@@ -682,7 +682,7 @@
 
   .carousel-item-wrapper {
     flex-shrink: 0;
-    width: 150px;
+    width: 200px;
     border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
     cursor: pointer;
@@ -699,8 +699,8 @@
     width: 100%;
 
     .carousel-item-image {
-      width: 148px;
-      height: 115px;
+      width: 198px;
+      height: 165px;
       object-fit: cover;
     }
   }
@@ -784,4 +784,3 @@
     border-radius: 3px;
   }
 </style>
-@/sscma
