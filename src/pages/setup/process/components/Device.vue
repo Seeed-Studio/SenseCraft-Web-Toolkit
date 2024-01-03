@@ -674,7 +674,7 @@
   .img-container {
     display: flex;
     flex-flow: row wrap;
-    gap: 42px;
+    gap: 40px;
     max-height: 500px;
     margin: 20px 0;
     overflow-y: auto;
@@ -682,7 +682,7 @@
 
   .carousel-item-wrapper {
     flex-shrink: 0;
-    width: 180px;
+    width: 200px;
     border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
     cursor: pointer;
@@ -699,9 +699,8 @@
     width: 100%;
 
     .carousel-item-image {
-      width: 198px;
-      height: 165px;
-      object-fit: cover;
+      width: 200px;
+      height: 150px;
     }
   }
 
@@ -736,15 +735,14 @@
   }
 
   .custom-model-wrapper {
-    width: 180px;
-    height: 165px;
-    margin-left: 20px;
-    border: 1px solid var(--color-neutral-3);
+    width: 202px;
+    margin: 20px 0;
+    border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
 
     .custom-model-image {
-      width: 100%;
-      height: 75%;
+      width: 200px;
+      height: 150px;
     }
   }
 
@@ -754,6 +752,7 @@
     justify-content: center;
     height: 25%;
     margin: 0 5px;
+    padding: 10px 5px;
     text-align: center;
   }
 
