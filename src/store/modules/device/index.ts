@@ -150,7 +150,6 @@ const useDeviceStore = defineStore('device', {
       this.deviceIPStatus = DeviceWIFIStatus.NotInitOrJoined;
       this.currentAvailableModel = false;
       this.currentModel = null;
-      this.firmware = null;
       this.isCanMqtt = false;
       this.isCanWifi = false;
     },
