@@ -349,6 +349,20 @@
       label: 'Description',
       value: item.description ?? '',
     },
+    {
+      label: 'Metrics',
+      value: () => {
+        if (item.metrics) {
+          if (Object.keys(item.metrics).length === 0) {
+            return 'null';
+          }
+          const firstKey = Object.keys(item.metrics)[0];
+          const firstValue = Object.values(item.metrics)[0];
+          return `${firstKey} : ${firstValue}`;
+        }
+        return 'null';
+      },
+    },
   ];
 
   const handleSelectedModel = (index: number) => {
@@ -674,7 +688,7 @@
   .img-container {
     display: flex;
     flex-flow: row wrap;
-    gap: 40px;
+    gap: 48px 32px;
     max-height: 500px;
     margin: 20px 0;
     overflow-y: auto;
