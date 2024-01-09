@@ -26,7 +26,7 @@
 
       .item {
         flex: 1;
-        margin: 16px;
+        margin: 8px;
       }
 
       .right {

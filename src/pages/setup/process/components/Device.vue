@@ -96,12 +96,9 @@
         <a-typography-title :heading="6">{{
           $t('workplace.device.use.aimodel')
         }}</a-typography-title>
-        <a-button
-          v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
-          type="primary"
-          @click="handleShowCustomModel"
-          >{{ $t('workplace.device.upload.aimodel') }}</a-button
-        >
+        <a-button type="primary" @click="handleUpload">{{
+          $t('workplace.device.send')
+        }}</a-button>
       </div>
       <div
         v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
@@ -173,9 +170,12 @@
         }}</div>
       </div>
       <div class="bottom">
-        <a-button type="primary" @click="handleUpload">{{
-          $t('workplace.device.send')
-        }}</a-button>
+        <a-button
+          v-if="deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI"
+          type="primary"
+          @click="handleShowCustomModel"
+          >{{ $t('workplace.device.upload.aimodel') }}</a-button
+        >
       </div>
     </a-card>
 
@@ -688,15 +688,15 @@
   .img-container {
     display: flex;
     flex-flow: row wrap;
-    gap: 48px 32px;
-    max-height: 500px;
-    margin: 20px 0;
+    gap: 32px 12px;
+    max-height: 60vh;
+    margin: 40px 0;
     overflow-y: auto;
   }
 
   .carousel-item-wrapper {
     flex-shrink: 0;
-    width: 200px;
+    width: 240px;
     border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
     cursor: pointer;
@@ -713,8 +713,8 @@
     width: 100%;
 
     .carousel-item-image {
-      width: 200px;
-      height: 150px;
+      width: 240px;
+      height: 180px;
     }
   }
 
@@ -730,15 +730,15 @@
   .come-to-sense-craft-ai {
     display: flex;
     flex-direction: column;
-    width: 150px;
+    width: 240px;
     margin-top: 10px;
     overflow: hidden;
     border: 1px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
 
     img {
-      width: 150px;
-      height: 112.5px;
+      width: 240px;
+      height: 180px;
       object-fit: cover;
     }
 
@@ -749,14 +749,14 @@
   }
 
   .custom-model-wrapper {
-    width: 202px;
+    width: 240px;
     margin: 20px 0;
     border: 2px solid var(--color-neutral-3);
     border-radius: var(--border-radius-small);
 
     .custom-model-image {
-      width: 200px;
-      height: 150px;
+      width: 240px;
+      height: 180px;
     }
   }
 
