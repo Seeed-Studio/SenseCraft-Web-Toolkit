@@ -40,7 +40,7 @@
         deviceStore.setCurrentAvailableModel(currentModel?.id !== undefined);
         if (deviceStore.flashWay !== FlashWayType.ComeToSenseCraftAI) {
           deviceStore.setFlashWay(
-            FlashWayType[model.isCustom ? 'Custom' : 'Prefabricated']
+            FlashWayType[model?.isCustom ? 'Custom' : 'Prefabricated']
           );
         }
         if (!name && !version && !model && !currentModel) {

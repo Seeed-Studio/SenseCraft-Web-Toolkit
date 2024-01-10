@@ -258,14 +258,6 @@
       term.writeln(`Error: ${error?.message}`);
     }
   }
-
-  // Clear the logs when switching
-  watch(
-    () => deviceStore.deviceType,
-    () => {
-      device.value.cleanLogger();
-    }
-  );
 </script>
 
 <style scoped lang="less">

@@ -13,7 +13,6 @@ class Himax extends Device {
   private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
   private cacheData: Array<number>;
   private watchLoop: boolean | undefined = undefined;
-  private loggerManager: string[] = [];
 
   name = 'Grove AI WE2';
   constructor() {
@@ -31,9 +30,6 @@ class Himax extends Device {
       if (this.watchLoop && this.serial.available()) {
         // eslint-disable-next-line no-await-in-loop
         const data = await this.serial.read();
-        this.loggerManager.push(
-          `[${new Date()}]: ${this.textDecoder.decode(data)}`
-        );
         try {
           let index = 0;
           while (index < data.length) {
@@ -61,6 +57,7 @@ class Himax extends Device {
                   if (type === 0) {
                     // 指令响应
                     console.log('handleReceive:', obj);
+                    console.timeEnd(name);
                     const resolve = this.resolveMap.get(name);
                     if (resolve) resolve(obj);
                   } else if (type === 1) {
@@ -249,18 +246,9 @@ class Himax extends Device {
     this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
   }
 
-  public cleanLogger() {
-    this.loggerManager = [];
-  }
-
-  public showLogger() {
-    return [...this.loggerManager];
-  }
-
   public async disconnect(): Promise<void> {
     console.log('Called when disconnected, Does serial exist?', !!this.serial);
     this.break();
-    this.cleanLogger();
     if (!this.serial) {
       return;
     }
