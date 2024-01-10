@@ -69,6 +69,17 @@
           />
         </a-form-item>
         <a-form-item
+          field="mqtt.clientId"
+          :label="$t('workplace.config.mqtt.clientId')"
+        >
+          <a-input
+            v-model="config.mqtt.clientId"
+            :placeholder="$t('workplace.config.mqtt.message.clientId')"
+            size="large"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item
           v-if="!config.mqtt.ssl"
           field="mqtt.username"
           :label="$t('workplace.config.mqtt.username')"
@@ -134,6 +145,7 @@
       encryption: '0',
     },
     mqtt: {
+      clientId: '',
       enabled: false,
       host: '',
       port: 1883,
@@ -180,9 +192,10 @@
     }
 
     if (!config.mqtt.enabled) {
-      ret = await device.value?.setMqttServer('', 0, '', '', 0);
+      ret = await device.value?.setMqttServer('', '', 0, '', '', 0);
     } else {
       ret = await device.value?.setMqttServer(
+        config.mqtt.clientId,
         config.mqtt.host,
         config.mqtt.port,
         config.mqtt.username,
@@ -206,20 +219,26 @@
           retry(() => device.value?.getWifi(), 5, 500, null),
           retry(() => device.value?.getMqttServer(), 5, 500, null),
         ]);
-
-        config.wifi.password = wifi.config.password;
-        config.wifi.ssid = wifi.config.name;
-        config.wifi.encryption = wifi.config.security.toString();
-        if (mqtt.config.address !== '') {
-          config.mqtt.enabled = true;
-          config.mqtt.host = mqtt.config.address;
-          config.mqtt.port = mqtt.config.port;
-          config.mqtt.username = mqtt.config.username;
-          config.mqtt.password = mqtt.config.password;
-          config.mqtt.ssl = mqtt.config.use_ssl;
-        } else {
-          config.mqtt.enabled = false;
+        if (config?.wifi) {
+          config.wifi.password = wifi.config.password;
+          config.wifi.ssid = wifi.config.name;
+          config.wifi.encryption = wifi.config.security.toString();
         }
+
+        if (mqtt?.config) {
+          if (mqtt.config.address !== '') {
+            config.mqtt.enabled = true;
+            config.mqtt.clientId = mqtt.config.client_id;
+            config.mqtt.host = mqtt.config.address;
+            config.mqtt.port = mqtt.config.port;
+            config.mqtt.username = mqtt.config.username;
+            config.mqtt.password = mqtt.config.password;
+            config.mqtt.ssl = mqtt.config.use_ssl;
+          } else {
+            config.mqtt.enabled = false;
+          }
+        }
+
         oldConfig = JSON.parse(JSON.stringify(config));
         loaded.value = true;
         change.value = true;
