@@ -431,7 +431,11 @@
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray = [];
-    const currentVersion = deviceStore.deviceVersion;
+    let currentVersion = deviceStore.deviceVersion;
+    // When there is no current version number, you need to obtain the version number first before continuing with the operation.
+    if (currentVersion === null) {
+      currentVersion = await device.value?.getVersion();
+    }
     if (!currentVersion || version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
