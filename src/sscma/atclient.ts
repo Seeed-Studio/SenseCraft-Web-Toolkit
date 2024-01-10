@@ -91,7 +91,7 @@ export class ATClient {
 
   // times=-1` for infinity loop
   public invoke(times: number): string {
-    return `AT+INVOKE=${times},0\r`;
+    return `AT+INVOKE=${times},0,0\r`;
   }
 
   public setInfo(info: string): string {
