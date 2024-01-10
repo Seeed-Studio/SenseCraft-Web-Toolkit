@@ -16,7 +16,7 @@ export async function retry(
   retryCount: number,
   interval: number,
   errSymbol?: any
-) {
+): Promise<any> {
   try {
     const result = await fn();
     if (errSymbol !== undefined && result === errSymbol && retryCount > 0) {
