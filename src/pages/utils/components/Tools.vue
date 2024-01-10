@@ -263,6 +263,7 @@
 
         .list-item-content {
           display: flex;
+          flex-direction: row;
           align-items: center;
           justify-content: space-between;
         }
@@ -272,7 +273,10 @@
         }
 
         .list-item-file {
+          flex: 1;
+          width: 0;
           margin: 0 auto;
+          margin-right: 10px;
           margin-left: 0;
         }
       }
