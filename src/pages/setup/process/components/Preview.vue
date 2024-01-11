@@ -48,7 +48,14 @@
     'teal',
     'lavender',
     'turquoise',
-    'gray',
+    'yellow',
+    'indigo',
+    'maroon',
+    'navy',
+    'magenta',
+    'olive',
+    'sky blue',
+    'lime green',
   ];
 
   const eventName = 'INVOKE';
@@ -108,7 +115,6 @@
       };
       term.writeln(`perf: ${JSON.stringify(perf)}`);
     }
-
     if (data?.image) {
       const image = data.image;
       img.onload = () => {
@@ -177,6 +183,218 @@
               (canvas.value.width / tagets.length) * i,
               canvas.value.height / 16
             );
+          }
+        }
+        if (data?.keypoints) {
+          term.writeln(`keypoints: ${JSON.stringify(data.keypoints)}`);
+          const keypoints = data.keypoints;
+          for (let i = 0; i < keypoints.length; i += 1) {
+            const keypoint = keypoints[i];
+            const rect = keypoint[0];
+            const points = keypoint[1];
+            const pointSet = new Set();
+            // draw box
+            if (rect?.length === 6) {
+              const x = rect[0];
+              const y = rect[1];
+              const w = rect[2];
+              const h = rect[3];
+              const score = rect[4];
+              const tar = parseInt(rect[5], 10);
+              const color = COLORS[i % COLORS.length];
+              let tarStr = '';
+              if (classes.value && tar < length.value) {
+                tarStr = classes.value[tar];
+              } else {
+                tarStr = tar.toString();
+              }
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 2;
+              ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+              ctx.fillStyle = color;
+              ctx.fillRect(x - w / 2, y - h / 2 - 12, w, 12);
+              ctx.font = 'bold 12px arial';
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(`${tarStr}: ${score}`, x - w / 2 + 5, y - h / 2 - 2);
+            }
+            // fliter points
+            for (let j = 0; j < points.length; j += 1) {
+              const point = points[j];
+              const x = point[0];
+              const y = point[1];
+              const target = point[3];
+              // draw if point in the box
+              if (
+                x > rect[0] - rect[2] / 2 &&
+                x < rect[0] + rect[2] / 2 &&
+                y > rect[1] - rect[3] / 2 &&
+                y < rect[1] + rect[3] / 2
+              ) {
+                pointSet.add(target);
+              }
+            }
+            // draw lines
+            if (points.length === 17) {
+              ctx.lineWidth = 2;
+
+              // nose to left eye
+              if (pointSet.has(0) && pointSet.has(1)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[1][0], points[1][1]);
+                ctx.stroke();
+              }
+              // nose to right eye
+              if (pointSet.has(0) && pointSet.has(2)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[2][0], points[2][1]);
+                ctx.stroke();
+              }
+
+              // left eye to left ear
+              if (pointSet.has(1) && pointSet.has(3)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[1][0], points[1][1]);
+                ctx.lineTo(points[3][0], points[3][1]);
+                ctx.stroke();
+              }
+
+              // right eye to right ear
+              if (pointSet.has(2) && pointSet.has(4)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[2][0], points[2][1]);
+                ctx.lineTo(points[4][0], points[4][1]);
+                ctx.stroke();
+              }
+
+              // left shoulder to right shoulder
+              if (pointSet.has(5) && pointSet.has(6)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[5][0], points[5][1]);
+                ctx.lineTo(points[6][0], points[6][1]);
+                ctx.stroke();
+              }
+
+              // left shoulder to left hip
+              if (pointSet.has(5) && pointSet.has(11)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[5][0], points[5][1]);
+                ctx.lineTo(points[11][0], points[11][1]);
+                ctx.stroke();
+              }
+
+              // right shoulder to right hip
+              if (pointSet.has(6) && pointSet.has(12)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[6][0], points[6][1]);
+                ctx.lineTo(points[12][0], points[12][1]);
+                ctx.stroke();
+              }
+
+              // left hip to right hip
+              if (pointSet.has(11) && pointSet.has(12)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[11][0], points[11][1]);
+                ctx.lineTo(points[12][0], points[12][1]);
+                ctx.stroke();
+              }
+
+              // left shoulder to left elbow
+              if (pointSet.has(5) && pointSet.has(7)) {
+                ctx.strokeStyle = COLORS[5];
+                ctx.beginPath();
+                ctx.moveTo(points[5][0], points[5][1]);
+                ctx.lineTo(points[7][0], points[7][1]);
+                ctx.stroke();
+              }
+
+              // left elbow to left wrist
+              if (pointSet.has(7) && pointSet.has(9)) {
+                ctx.strokeStyle = COLORS[7];
+                ctx.beginPath();
+                ctx.moveTo(points[7][0], points[7][1]);
+                ctx.lineTo(points[9][0], points[9][1]);
+                ctx.stroke();
+              }
+
+              // right shoulder to right elbow
+              if (pointSet.has(6) && pointSet.has(8)) {
+                ctx.strokeStyle = COLORS[6];
+                ctx.beginPath();
+                ctx.moveTo(points[6][0], points[6][1]);
+                ctx.lineTo(points[8][0], points[8][1]);
+                ctx.stroke();
+              }
+
+              // right elbow to right wrist
+              if (pointSet.has(8) && pointSet.has(10)) {
+                ctx.strokeStyle = COLORS[8];
+                ctx.beginPath();
+                ctx.moveTo(points[8][0], points[8][1]);
+                ctx.lineTo(points[10][0], points[10][1]);
+                ctx.stroke();
+              }
+
+              // left hip to left knee
+              if (pointSet.has(11) && pointSet.has(13)) {
+                ctx.strokeStyle = COLORS[11];
+                ctx.beginPath();
+                ctx.moveTo(points[11][0], points[11][1]);
+                ctx.lineTo(points[13][0], points[13][1]);
+                ctx.stroke();
+              }
+
+              // left knee to left ankle
+              if (pointSet.has(13) && pointSet.has(15)) {
+                ctx.strokeStyle = COLORS[13];
+                ctx.beginPath();
+                ctx.moveTo(points[13][0], points[13][1]);
+                ctx.lineTo(points[15][0], points[15][1]);
+                ctx.stroke();
+              }
+
+              // right hip to right knee
+              if (pointSet.has(12) && pointSet.has(14)) {
+                ctx.strokeStyle = COLORS[12];
+                ctx.beginPath();
+                ctx.moveTo(points[12][0], points[12][1]);
+                ctx.lineTo(points[14][0], points[14][1]);
+                ctx.stroke();
+              }
+
+              // right knee to right ankle
+              if (pointSet.has(14) && pointSet.has(16)) {
+                ctx.strokeStyle = COLORS[14];
+                ctx.beginPath();
+                ctx.moveTo(points[14][0], points[14][1]);
+                ctx.lineTo(points[16][0], points[16][1]);
+                ctx.stroke();
+              }
+            }
+
+            // draw points
+            for (let j = 0; j < points.length; j += 1) {
+              const point = points[j];
+              const x = point[0];
+              const y = point[1];
+              const target = point[3];
+              const color = COLORS[target % COLORS.length];
+              if (pointSet.has(target)) {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fill();
+              }
+            }
           }
         }
       };
