@@ -75,6 +75,7 @@ const useSenseCraftAIComesToFlash = () => {
       const deviceType: string = deviceTypes[0];
       const deviceKeyToId: Record<string, string> = {
         '32': DeviceType.XiaoEsp32s3,
+        '36': DeviceType.GroveAIWE2,
       };
       if (typeof deviceKeyToId[deviceType] === 'string') {
         deviceStore.setDeviceTypeById(deviceKeyToId[deviceType]);

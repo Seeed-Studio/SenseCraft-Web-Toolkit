@@ -11,7 +11,7 @@ export const DEVICE_LIST = [
   },
   {
     id: DeviceType.GroveAIWE2,
-    name: 'Grove Vision AI(WE2)',
+    name: 'Grove Vision AI(V2)',
     filter: [{ vendorId: 0x1a86, productId: 0x55d3 }],
   },
 ];
