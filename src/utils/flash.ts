@@ -9,6 +9,8 @@ export function flashErrorHandle(error?: Error, defaultMsg?: string) {
     ].includes(error?.message ?? '')
   ) {
     Message.error(i18n.global.t('workplace.serial.device.port.occupied'));
+  } else if (error?.message?.includes('No port selected by the user')) {
+    Message.error(i18n.global.t('workplace.serial.no.port'));
   } else {
     Message.error(defaultMsg ?? error?.message ?? '');
   }
