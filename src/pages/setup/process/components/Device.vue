@@ -153,7 +153,10 @@
       </div>
 
       <div
-        v-if="deviceStore.flashWay === FlashWayType.Custom"
+        v-if="
+          deviceStore.flashWay === FlashWayType.Custom &&
+          deviceStore.deviceStatus === DeviceStatus.SerialConnected
+        "
         :class="[
           'custom-model-wrapper',
           { 'custom-model-selected': isSelectedCustomModel },

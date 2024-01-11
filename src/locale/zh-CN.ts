@@ -18,6 +18,9 @@ export default {
   'menu.faq': '常见问题',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
+  'navbar.swap.confirm.text':
+    '当处于连接状态下切换会导致当前连接断开，确定切换嘛？',
+  'navbar.switch': '切换',
   'confirm': '确定',
   'cancel': '取消',
   'config.save.success': '保存成功',

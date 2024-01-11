@@ -18,6 +18,9 @@ export default {
   'menu.faq': 'FAQ',
   'navbar.docs': 'Docs',
   'navbar.action.locale': 'Switch to English',
+  'navbar.swap.confirm.text':
+    'Switching while connected will cause the current connection to be disconnected. Are you sure you want to switch?',
+  'navbar.switch': 'Switch',
   'confirm': 'Confirm',
   'cancel': 'Cancel',
   'config.save.success': 'Save Success',
