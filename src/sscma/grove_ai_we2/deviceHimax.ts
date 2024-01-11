@@ -22,6 +22,37 @@ class Himax extends Device {
     this.cacheData = [];
   }
 
+  private parseAndProcessData = (data: number[]) => {
+    try {
+      const buffer = new Uint8Array(data);
+      const str = this.textDecoder.decode(buffer);
+      const obj = JSON.parse(str);
+      const type = obj?.type;
+      const name = obj?.name;
+      if (type === 0) {
+        // 指令响应
+        console.log('handleReceive:', obj);
+        console.timeEnd(name);
+        const resolve = this.resolveMap.get(name);
+        if (resolve) resolve(obj);
+      } else if (type === 1) {
+        // 事件
+        const code = obj?.code;
+        const listener = this.eventMap.get(name);
+        if (listener?.(obj) && code !== 0) {
+          Message.error(
+            `Please check device connection status, errorCode[${code}]`
+          );
+        }
+      }
+    } catch (error) {
+      // console.error(
+      //   'An error occurred while parsing the returned data:',
+      //   error
+      // );
+    }
+  };
+
   private readLoop = async () => {
     while (true) {
       if (!this.serial) {
@@ -48,34 +79,11 @@ class Himax extends Device {
               if (this.lastCode === 0x7d) {
                 // }
                 this.hasStart = false;
-                try {
-                  const buffer = new Uint8Array(this.cacheData);
-                  const str = this.textDecoder.decode(buffer);
-                  const obj = JSON.parse(str);
-                  const type = obj?.type;
-                  const name = obj?.name;
-                  if (type === 0) {
-                    // 指令响应
-                    console.log('handleReceive:', obj);
-                    console.timeEnd(name);
-                    const resolve = this.resolveMap.get(name);
-                    if (resolve) resolve(obj);
-                  } else if (type === 1) {
-                    // 事件
-                    const code = obj?.code;
-                    const listener = this.eventMap.get(name);
-                    if (listener?.(obj) && code !== 0) {
-                      Message.error(
-                        `Please check device connection status, errorCode[${code}]`
-                      );
-                    }
-                  }
-                } catch (error) {
-                  // console.error(
-                  //   'An error occurred while parsing the returned data:',
-                  //   error
-                  // );
-                }
+                const tempCache = [...this.cacheData];
+                requestIdleCallback(() => {
+                  this.parseAndProcessData(tempCache);
+                });
+                // this.parseAndProcessData(tempCache);
                 this.cacheData = [];
               } else if (this.hasStart) {
                 this.cacheData.push(num);
