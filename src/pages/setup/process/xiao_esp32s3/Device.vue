@@ -21,18 +21,22 @@
   const handelRefresh = async () => {
     if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
       try {
-        const [name, version, deviceId, model, currentModel] =
-          await Promise.all([
-            device.value?.getName(),
-            device.value?.getVersion(),
-            device.value?.getID(),
-            device.value?.getInfo().then((base64Str) => {
-              if (!base64Str) return null;
-              const str = decode(base64Str);
-              return JSON.parse(str);
-            }),
-            device.value?.getModel(),
-          ]);
+        /**
+         * Because the data retrieved immediately after burning to xiao will be from the previous time,
+         * so we can't request it right away. Therefore, we still use a synchronous method to request
+         * instructions one by one here.
+         */
+        const name = await device.value?.getName();
+        const version = await device.value?.getVersion();
+        const deviceId = await device.value?.getID();
+        const base64Str = await device.value?.getInfo();
+        const currentModel = await device.value?.getModel();
+
+        let model = null;
+        if (base64Str) {
+          const str = decode(base64Str);
+          model = JSON.parse(str);
+        }
         deviceStore.setDeviceName(name);
         deviceStore.setDeviceVersion(version);
         deviceStore.setDeviceId(deviceId);
