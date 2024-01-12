@@ -11,9 +11,14 @@ export async function fetchConstant() {
     .then((res) => res.data);
 }
 
-export async function fetchModelDetail(modelId: string, needParams?: string[]) {
+export async function fetchModelDetail(
+  modelId: string,
+  token: string,
+  needParams?: string[]
+) {
   const response: Record<string, any> = await fetch(
-    `https://sensecraft.seeed.cc/aiserverapi/model/view_model?model_id=${modelId}`
+    `https://sensecraft.seeed.cc/aiserverapi/model/view_model?model_id=${modelId}`,
+    { headers: { Authorization: token } }
   ).then((res) => res.json());
   if (response?.code !== '0') {
     throw new Error(response.msg);
@@ -49,7 +54,7 @@ const useSenseCraftAIComesToFlash = () => {
       modelFile,
       constant,
     ] = await Promise.all<any>([
-      fetchModelDetail(modelId as string, [
+      fetchModelDetail(modelId as string, token as string, [
         'pic_url',
         'labels',
         'description',

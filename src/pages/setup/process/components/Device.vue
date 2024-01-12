@@ -477,7 +477,6 @@
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
-    deviceStore.setCurrentAvailableModel(false);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
       if (props.flasher.isNeedResetDevice) {
@@ -494,6 +493,7 @@
         await device.value?.deleteAction();
         deviceStore.setCurrentModel(finallyModel);
       }
+      deviceStore.setCurrentAvailableModel(false);
       deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
     } else {
       await device.value.disconnect();
