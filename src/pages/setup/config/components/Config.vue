@@ -80,7 +80,6 @@
           />
         </a-form-item>
         <a-form-item
-          v-if="!config.mqtt.ssl"
           field="mqtt.username"
           :label="$t('workplace.config.mqtt.username')"
         >
