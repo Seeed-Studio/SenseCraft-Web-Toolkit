@@ -59,8 +59,9 @@ export default class Device {
   public async sendCommand(
     command: string | undefined,
     tag: string,
-    timeout = 5000
+    timeout = 10000
   ): Promise<any> {
+    console.time(tag);
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       if (!command) {
@@ -619,6 +620,7 @@ export default class Device {
   }
 
   public async setMqttServer(
+    clientId: string,
     host: string,
     port: number,
     username: string,
@@ -628,6 +630,7 @@ export default class Device {
     try {
       const tag = 'MQTTSERVER';
       const command = this.client.setMqttServer(
+        clientId,
         host,
         port,
         username,

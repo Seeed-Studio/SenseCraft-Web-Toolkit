@@ -135,13 +135,14 @@ export class ATClient {
   }
 
   public setMqttServer(
+    clientId: string,
     host: string,
     port: number,
     username: string,
     password: string,
     ssl: number
   ): string {
-    return `AT+MQTTSERVER="","${host}",${port},"${username}","${password}", ${ssl} \r`;
+    return `AT+MQTTSERVER="${clientId}","${host}",${port},"${username}","${password}", ${ssl} \r`;
   }
 
   public reset(): string {

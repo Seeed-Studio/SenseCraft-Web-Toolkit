@@ -153,7 +153,10 @@
       </div>
 
       <div
-        v-if="deviceStore.flashWay === FlashWayType.Custom"
+        v-if="
+          deviceStore.flashWay === FlashWayType.Custom &&
+          deviceStore.deviceStatus === DeviceStatus.SerialConnected
+        "
         :class="[
           'custom-model-wrapper',
           { 'custom-model-selected': isSelectedCustomModel },
@@ -431,7 +434,11 @@
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
     const fileArray = [];
-    const currentVersion = deviceStore.deviceVersion;
+    let currentVersion = deviceStore.deviceVersion;
+    // When there is no current version number, you need to obtain the version number first before continuing with the operation.
+    if (currentVersion === null) {
+      currentVersion = await device.value?.getVersion();
+    }
     if (!currentVersion || version !== currentVersion) {
       if (bins.length === 0) {
         throw new Error(t('workplace.device.message.firmware.no'));
@@ -470,7 +477,6 @@
     }
     loadingTip.value = t('workplace.device.message.tip.flashing');
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
-    deviceStore.setCurrentAvailableModel(false);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
       if (props.flasher.isNeedResetDevice) {
@@ -487,6 +493,7 @@
         await device.value?.deleteAction();
         deviceStore.setCurrentModel(finallyModel);
       }
+      deviceStore.setCurrentAvailableModel(false);
       deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
     } else {
       await device.value.disconnect();

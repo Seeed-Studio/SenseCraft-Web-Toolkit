@@ -133,7 +133,7 @@
         <a-select
           :model-value="deviceStore.deviceType.name"
           :style="{}"
-          @update:model-value="deviceStore.setDeviceType"
+          @update:model-value="onSwapDeviceType"
         >
           <a-option v-for="deviceType in DEVICE_LIST" :key="deviceType.id">{{
             deviceType.name
@@ -161,11 +161,20 @@
         >
       </li>
     </ul>
+    <a-modal
+      v-model:visible="visible"
+      :hide-title="true"
+      :ok-text="$t('navbar.switch')"
+      @ok="onConfirmSwitch"
+      @cancel="onCancel"
+    >
+      <span>{{ $t('navbar.swap.confirm.text') }}</span>
+    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, inject, watch } from 'vue';
+  import { computed, ref, inject } from 'vue';
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
@@ -183,11 +192,12 @@
   const deviceStore = useDeviceStore();
   const { t } = useI18n();
   const { device, term } = useDeviceManager();
-
+  const visible = ref(false);
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
   const locales = [...LOCALE_OPTIONS];
   const loading = ref(false);
+  let tempDeviceType = deviceStore.deviceType.name;
 
   const theme = computed(() => {
     return appStore.theme;
@@ -221,6 +231,21 @@
   };
 
   const triggerBtn = ref();
+
+  const onSwapDeviceType = (
+    value:
+      | string
+      | number
+      | Record<string, any>
+      | (string | number | Record<string, any>)[]
+  ) => {
+    if (deviceStore.deviceStatus === DeviceStatus.SerialConnected) {
+      visible.value = true;
+      tempDeviceType = value as string;
+    } else {
+      deviceStore.setDeviceType(value as string);
+    }
+  };
 
   const setDropDownVisible = () => {
     const event = new MouseEvent('click', {
@@ -259,13 +284,15 @@
     }
   }
 
-  // Clear the logs when switching
-  watch(
-    () => deviceStore.deviceType,
-    () => {
-      device.value.cleanLogger();
-    }
-  );
+  const onCancel = () => {
+    visible.value = false;
+  };
+
+  const onConfirmSwitch = async () => {
+    await disconnect();
+    deviceStore.setDeviceType(tempDeviceType);
+    onCancel();
+  };
 </script>
 
 <style scoped lang="less">

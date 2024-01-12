@@ -13,7 +13,6 @@ class Himax extends Device {
   private lastCode: number; // 遍历时缓存的上一个code，用来辅助判断开始和结束
   private cacheData: Array<number>;
   private watchLoop: boolean | undefined = undefined;
-  private loggerManager: string[] = [];
 
   name = 'Grove AI WE2';
   constructor() {
@@ -23,6 +22,37 @@ class Himax extends Device {
     this.cacheData = [];
   }
 
+  private parseAndProcessData = (data: number[]) => {
+    try {
+      const buffer = new Uint8Array(data);
+      const str = this.textDecoder.decode(buffer);
+      const obj = JSON.parse(str);
+      const type = obj?.type;
+      const name = obj?.name;
+      if (type === 0) {
+        // 指令响应
+        console.log('handleReceive:', obj);
+        console.timeEnd(name);
+        const resolve = this.resolveMap.get(name);
+        if (resolve) resolve(obj);
+      } else if (type === 1) {
+        // 事件
+        const code = obj?.code;
+        const listener = this.eventMap.get(name);
+        if (listener?.(obj) && code !== 0) {
+          Message.error(
+            `Please check device connection status, errorCode[${code}]`
+          );
+        }
+      }
+    } catch (error) {
+      // console.error(
+      //   'An error occurred while parsing the returned data:',
+      //   error
+      // );
+    }
+  };
+
   private readLoop = async () => {
     while (true) {
       if (!this.serial) {
@@ -31,9 +61,6 @@ class Himax extends Device {
       if (this.watchLoop && this.serial.available()) {
         // eslint-disable-next-line no-await-in-loop
         const data = await this.serial.read();
-        this.loggerManager.push(
-          `[${new Date()}]: ${this.textDecoder.decode(data)}`
-        );
         try {
           let index = 0;
           while (index < data.length) {
@@ -52,33 +79,11 @@ class Himax extends Device {
               if (this.lastCode === 0x7d) {
                 // }
                 this.hasStart = false;
-                try {
-                  const buffer = new Uint8Array(this.cacheData);
-                  const str = this.textDecoder.decode(buffer);
-                  const obj = JSON.parse(str);
-                  const type = obj?.type;
-                  const name = obj?.name;
-                  if (type === 0) {
-                    // 指令响应
-                    console.log('handleReceive:', obj);
-                    const resolve = this.resolveMap.get(name);
-                    if (resolve) resolve(obj);
-                  } else if (type === 1) {
-                    // 事件
-                    const code = obj?.code;
-                    const listener = this.eventMap.get(name);
-                    if (listener?.(obj) && code !== 0) {
-                      Message.error(
-                        `Please check device connection status, errorCode[${code}]`
-                      );
-                    }
-                  }
-                } catch (error) {
-                  // console.error(
-                  //   'An error occurred while parsing the returned data:',
-                  //   error
-                  // );
-                }
+                const tempCache = [...this.cacheData];
+                requestIdleCallback(() => {
+                  this.parseAndProcessData(tempCache);
+                });
+                // this.parseAndProcessData(tempCache);
                 this.cacheData = [];
               } else if (this.hasStart) {
                 this.cacheData.push(num);
@@ -249,18 +254,9 @@ class Himax extends Device {
     this.deviceStore.setDeviceStatus(DeviceStatus.SerialConnected);
   }
 
-  public cleanLogger() {
-    this.loggerManager = [];
-  }
-
-  public showLogger() {
-    return [...this.loggerManager];
-  }
-
   public async disconnect(): Promise<void> {
     console.log('Called when disconnected, Does serial exist?', !!this.serial);
     this.break();
-    this.cleanLogger();
     if (!this.serial) {
       return;
     }

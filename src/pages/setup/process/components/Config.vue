@@ -58,11 +58,17 @@
   const iou = ref(deviceStore.tiou);
 
   const setConfidence = async (value: number | [number, number]) => {
-    await device.value?.setScore(value as number);
+    const result = await device.value?.setScore(value as number);
+    if (Number(result) === Number(value)) {
+      deviceStore.setScore(Number(result));
+    }
   };
 
   const setIou = async (value: number | [number, number]) => {
-    await device.value?.setIOU(value as number);
+    const result = await device.value?.setIOU(value as number);
+    if (Number(result) === Number(value)) {
+      deviceStore.setIOU(Number(result));
+    }
   };
 
   const handelConfidenceChange = throttle(setConfidence, 1000);
