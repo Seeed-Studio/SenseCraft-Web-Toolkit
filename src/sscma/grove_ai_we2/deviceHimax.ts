@@ -80,10 +80,7 @@ class Himax extends Device {
                 // }
                 this.hasStart = false;
                 const tempCache = [...this.cacheData];
-                requestIdleCallback(() => {
-                  this.parseAndProcessData(tempCache);
-                });
-                // this.parseAndProcessData(tempCache);
+                this.parseAndProcessData(tempCache);
                 this.cacheData = [];
               } else if (this.hasStart) {
                 this.cacheData.push(num);
