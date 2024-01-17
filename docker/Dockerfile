@@ -9,7 +9,7 @@ WORKDIR /usr/SenseCraft-Web-Toolkit/
 RUN yarn install \
     && yarn run build
 
-COPY default/nginx-default.conf /usr/SenseCraft-Web-Toolkit/nginx-default.conf
+COPY ./docker/default/nginx-default.conf /usr/SenseCraft-Web-Toolkit/nginx-default.conf
 
 FROM nginx as runner
 COPY --from=builder /usr/SenseCraft-Web-Toolkit/dist /usr/share/nginx/html/
