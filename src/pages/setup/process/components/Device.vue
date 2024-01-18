@@ -62,35 +62,49 @@
 
           <div
             v-if="deviceStore.isCanMqtt || deviceStore.isCanWifi"
-            class="device-basic-info"
-          >
-            <a-space v-if="deviceStore.isCanWifi" class="device-item">
-              <div class="device-item-title"
-                >{{ $t('workplace.device.model.ip.address') }}
-              </div>
-              <span
-                v-if="
-                  deviceStore.deviceIPStatus ===
-                  DeviceWIFIStatus.JoinedLatestConfigApplied
-                "
-                class="device-item-value"
-              >
-                {{ deviceStore.deviceIPv4Address }}</span
-              >
-              <span v-else class="device-item-value">-</span>
-            </a-space>
-            <a-space v-if="deviceStore.isCanMqtt" class="device-item">
-              <div class="device-item-title"
-                >{{ $t('workplace.device.model.server.state') }}
-              </div>
-              <div class="device-item-value">
-                {{
-                  $t(
-                    `workplace.device.model.server.state.${deviceStore.deviceServerState}`
-                  )
-                }}</div
-              >
-            </a-space>
+            class="device-basic-info-wifi-mqtt"
+            ><div class="wifi-mqtt-container">
+              <a-space v-if="deviceStore.isCanWifi" class="device-item">
+                <div class="device-item-title"
+                  >{{ $t('workplace.device.model.ip.address') }}
+                </div>
+                <span
+                  v-if="
+                    deviceStore.deviceIPStatus ===
+                    DeviceWIFIStatus.JoinedLatestConfigApplied
+                  "
+                  class="device-item-value"
+                >
+                  {{ deviceStore.deviceIPv4Address }}</span
+                >
+                <span v-else class="unset-finish-wifi-mqtt">-</span>
+              </a-space>
+              <a-space v-if="deviceStore.isCanMqtt" class="device-item">
+                <div class="device-item-title"
+                  >{{ $t('workplace.device.model.server.state') }}
+                </div>
+                <div
+                  :class="{
+                    'device-item-value': true,
+                    'unset-finish-wifi-mqtt':
+                      deviceStore.deviceServerState !== 2,
+                  }"
+                >
+                  {{
+                    $t(
+                      `workplace.device.model.server.state.${deviceStore.deviceServerState}`
+                    )
+                  }}</div
+                >
+              </a-space>
+            </div>
+            <a-button
+              type="primary"
+              size="large"
+              status="success"
+              @click="onClickGoToConfigWifi"
+              >{{ $t('workplace.device.go.to.wifiMqtt.config') }}</a-button
+            >
           </div>
         </template>
         <div v-else class="device-item">
@@ -294,6 +308,7 @@
   import 'swiper/css/navigation';
   import { DescData, Message } from '@arco-design/web-vue';
   import { encode } from 'js-base64';
+  import { useRouter } from 'vue-router';
   import { useDeviceStore } from '@/store';
   import { DeviceStatus, Bin, Model } from '@/sscma';
   import customModelIcon from '@/assets/images/custom-model.png';
@@ -313,6 +328,7 @@
   };
   const props = defineProps<Props>();
   const { t } = useI18n();
+  const router = useRouter();
   const deviceStore = useDeviceStore();
   const { device, term } = useDeviceManager();
   const modalName = ref<undefined | string>();
@@ -635,6 +651,10 @@
     visible.value = false;
   };
 
+  const onClickGoToConfigWifi = () => {
+    router.push('/setup/config');
+  };
+
   watch(
     () => deviceStore.currentModel,
     (model?: Model | null) => {
@@ -677,6 +697,10 @@
 
     .device-item-value {
       color: rgb(var(--success-6));
+    }
+
+    .unset-finish-wifi-mqtt {
+      color: rgb(var(--danger-6));
     }
   }
 
@@ -807,5 +831,20 @@
     padding: 15px;
     background-color: var(--color-fill-1);
     border-radius: 3px;
+  }
+
+  .device-basic-info-wifi-mqtt {
+    display: flex;
+    flex-direction: row;
+    padding: 15px;
+    background-color: var(--color-fill-1);
+    border-radius: 3px;
+  }
+
+  .wifi-mqtt-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-right: auto;
   }
 </style>
