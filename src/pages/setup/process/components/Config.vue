@@ -49,6 +49,7 @@
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
   import { DeviceStatus } from '@/sscma';
+  import { logEvent } from '@/utils/firebase';
 
   const { device } = useDeviceManager();
 
@@ -61,6 +62,7 @@
     const result = await device.value?.setScore(value as number);
     if (Number(result) === Number(value)) {
       deviceStore.setScore(Number(result));
+      logEvent('config', { type: 'Confidence', value });
     }
   };
 
@@ -68,6 +70,7 @@
     const result = await device.value?.setIOU(value as number);
     if (Number(result) === Number(value)) {
       deviceStore.setIOU(Number(result));
+      logEvent('config', { type: 'iou', value });
     }
   };
 

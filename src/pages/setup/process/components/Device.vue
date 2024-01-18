@@ -316,6 +316,7 @@
   import useDeviceManager from '@/hooks/deviceManager';
   import { FlashWayType, DeviceWIFIStatus } from '@/store/modules/device';
   import { flashErrorHandle } from '@/utils/flash';
+  import { logEvent } from '@/utils/firebase';
 
   export type FileType<T> = {
     data: T;
@@ -539,6 +540,11 @@
   };
 
   const handleUpload = async () => {
+    logEvent('flash', {
+      type: 'Prefabricated',
+      behavior: 'send',
+      modelName: deviceStore.models[selectedModel.value]?.name,
+    });
     if (deviceStore.flashWay === FlashWayType.ComeToSenseCraftAI) {
       if (isComeToFlashFinished.value) {
         Message.warning(t('workplace.device.message.model.current'));
@@ -582,6 +588,7 @@
   };
 
   const beforeUpload = (file: File): Promise<boolean> => {
+    logEvent('flash', { type: 'Custom', behavior: 'before upload' });
     return new Promise((resolve) => {
       if (file) {
         modelFile.value = file;
@@ -591,6 +598,7 @@
   };
 
   const beforeRemove = (fileItem: FileItem): Promise<boolean> => {
+    logEvent('flash', { type: 'Custom', behavior: 'before remove' });
     return new Promise((resolve) => {
       const file = fileItem.file;
       if (file) {
@@ -601,6 +609,7 @@
   };
 
   const handleAddClass = () => {
+    logEvent('flash', { type: 'Custom', behavior: 'add class' });
     showInput.value = true;
     nextTick(() => {
       if (inputRef.value) {
@@ -610,6 +619,7 @@
   };
 
   const handleAdd = () => {
+    logEvent('flash', { type: 'Custom', behavior: 'add' });
     if (inputVal.value) {
       modelObjects.value.push(inputVal.value);
       inputVal.value = '';
@@ -618,10 +628,12 @@
   };
 
   const handleRemove = (key: any) => {
+    logEvent('flash', { type: 'Custom', behavior: 'remove' });
     modelObjects.value = modelObjects.value.filter((tag) => tag !== key);
   };
 
   const handleCustomModelOk = async () => {
+    logEvent('flash', { type: 'Custom', behavior: 'ok' });
     try {
       if (modalName.value == null || modalName.value === '') {
         throw new Error(t('workplace.device.message.model.name'));
@@ -646,15 +658,18 @@
   };
 
   const handleOk = () => {
+    logEvent('flash', { type: 'Come to SenseCraftAI', behavior: 'ok' });
     comeToSenseCraftAIFlash();
     visible.value = false;
   };
 
   const handleCancel = () => {
+    logEvent('flash', { type: 'Come to SenseCraftAI', behavior: 'cancel' });
     visible.value = false;
   };
 
   const onClickGoToConfigWifi = () => {
+    logEvent('config', { type: 'Go to Config Wifi' });
     router.push('/setup/config');
   };
 

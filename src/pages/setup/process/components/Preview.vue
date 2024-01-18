@@ -31,6 +31,7 @@
   import { useDeviceStore } from '@/store';
   import useDeviceManager from '@/hooks/deviceManager';
   import { DeviceStatus } from '@/sscma';
+  import { logEvent } from '@/utils/firebase';
 
   const { device, term } = useDeviceManager();
 
@@ -73,6 +74,7 @@
   const length = computed(() => classes.value.length);
 
   const handleInvoke = async () => {
+    logEvent('invoke', { behavior: 'invoke' });
     const model = await device.value?.getModel();
     const isAvailable = model?.id !== undefined;
     deviceStore.setCurrentAvailableModel(isAvailable);
@@ -90,6 +92,7 @@
   };
 
   const handleStop = () => {
+    logEvent('invoke', { behavior: 'stop' });
     device.value?.break();
     invoke.value = false;
     deviceStore.setIsInvoke(false);
