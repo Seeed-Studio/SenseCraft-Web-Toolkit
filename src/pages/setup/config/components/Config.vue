@@ -129,6 +129,7 @@
   import { DeviceStatus } from '@/sscma';
   import useDeviceManager from '@/hooks/deviceManager';
   import { retry } from '@/utils/timer';
+  import { logEvent } from '@/utils/firebase';
 
   const appStore = useAppStore();
   const { device } = useDeviceManager();
@@ -175,6 +176,7 @@
   const change = ref(true);
 
   const handleSubmit = async () => {
+    logEvent('config', { type: 'Config Wifi Or MQTT', behavior: 'save' });
     loading.value = true;
     let ret = 0;
     if (
