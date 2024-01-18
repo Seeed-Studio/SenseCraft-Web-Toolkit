@@ -12,7 +12,12 @@
         <div class="device-item"> {{ $t('workplace.device.noconnect') }} </div>
       </a-space>
       <div v-else>
-        <template v-if="deviceStore.currentAvailableModel">
+        <template
+          v-if="
+            deviceStore.currentAvailableModel &&
+            deviceStore.deviceStatus === DeviceStatus.SerialConnected
+          "
+        >
           <div class="device-basic-info">
             <a-space class="device-item">
               <div class="device-item-title">{{

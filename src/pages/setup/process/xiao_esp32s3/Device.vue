@@ -34,8 +34,12 @@
 
         let model = null;
         if (base64Str) {
-          const str = decode(base64Str);
-          model = JSON.parse(str);
+          try {
+            const str = decode(base64Str);
+            model = JSON.parse(str);
+          } catch (error) {
+            console.error(error);
+          }
         }
         deviceStore.setDeviceName(name);
         deviceStore.setDeviceVersion(version);

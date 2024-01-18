@@ -11,6 +11,9 @@ export function delay(time: number, isReject = false) {
   });
 }
 
+/**
+ * It should be noted that if the 'fn' function contains 'this', please use an arrow function.
+ */
 export async function retry(
   fn: () => Promise<any>,
   retryCount: number,

@@ -25,11 +25,22 @@
           await Promise.all([
             device.value?.getName(),
             device.value?.getVersion(),
-            device.value?.getInfo().then((base64Str) => {
-              if (!base64Str) return null;
-              const str = decode(base64Str);
-              return JSON.parse(str);
-            }),
+            retry(
+              () =>
+                device.value?.getInfo().then((base64Str) => {
+                  if (!base64Str) return null;
+                  try {
+                    const str = decode(base64Str);
+                    return JSON.parse(str);
+                  } catch (error) {
+                    console.error(error);
+                    return null;
+                  }
+                }),
+              5,
+              1000,
+              null
+            ),
             device.value?.getModel(),
             device.value?.getID(),
           ]);
