@@ -29,4 +29,5 @@ export default {
   'settings.color.tooltip':
     '10 gradient colors generated according to the theme color',
   'workplace.device.model.nomodel': 'No model',
+  'workplace.device.go.to.wifiMqtt.config': 'Configure wifi now',
 };
