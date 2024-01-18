@@ -99,7 +99,7 @@ export default {
   'workplace.device.message.tip.connecting': 'Connecting',
   'workplace.device.message.tip.downloading.firmware': 'Downloading firmware',
   'workplace.device.message.tip.downloading.model': 'Downloading model',
-  'workplace.device.message.tip.flashing': 'Flashing',
+  'workplace.device.message.tip.flashing': 'Flashing, {progress}',
   'workplace.device.message.tip.resetting': 'Resetting',
   'workplace.device.message.tip.erasing': 'Erasing',
   'workplace.firmware.eraseflash': 'Erase Device',

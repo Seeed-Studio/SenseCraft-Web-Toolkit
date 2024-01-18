@@ -91,7 +91,7 @@ export default {
   'workplace.device.message.tip.connecting': '连接中',
   'workplace.device.message.tip.downloading.firmware': '固件下载中',
   'workplace.device.message.tip.downloading.model': '模型下载中',
-  'workplace.device.message.tip.flashing': '烧录中',
+  'workplace.device.message.tip.flashing': '烧录中，{progress}',
   'workplace.device.message.tip.resetting': '重置中',
   'workplace.device.message.tip.erasing': '擦除中',
   'workplace.firmware.eraseflash': '擦除设备',
