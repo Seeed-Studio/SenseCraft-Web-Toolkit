@@ -36,27 +36,71 @@
   const { device, term } = useDeviceManager();
 
   const COLORS = [
-    'red',
-    'orange',
-    'green',
-    'cyan',
-    'blue',
-    'purple',
-    'pink',
-    'brown',
-    'black',
-    'lime',
-    'teal',
-    'lavender',
-    'turquoise',
-    'yellow',
-    'indigo',
-    'maroon',
-    'navy',
-    'magenta',
-    'olive',
-    'sky blue',
-    'lime green',
+    '#FF0000',
+    '#FFA500',
+    '#FFFF00',
+    '#32CD32',
+    '#006400',
+    '#4169E1',
+    '#0000FF',
+    '#FF1493',
+    '#FFC0CB',
+    '#800080',
+    '#FFD700',
+    '#9ACD32',
+    '#ADFF2F',
+    '#00FFFF',
+    '#1E90FF',
+    '#FF4500',
+    '#CD853F',
+    '#FF8C00',
+    '#FF6347',
+    '#8B4513',
+    '#FF69B4',
+    '#FF00FF',
+    '#BA55D3',
+    '#9400D3',
+    '#8A2BE2',
+    '#4682B4',
+    '#87CEEB',
+    '#00CED1',
+    '#20B2AA',
+    '#FFB6C1',
+    '#696969',
+    '#808080',
+    '#A9A9A9',
+    '#C0C0C0',
+    '#D3D3D3',
+    '#FFFAFA',
+    '#F0FFF0',
+    '#F5F5DC',
+    '#FFE4C4',
+    '#FFDAB9',
+    '#EEE8AA',
+    '#F0E68C',
+    '#BDB76B',
+    '#FFD700',
+    '#F5DEB3',
+    '#D2B48C',
+    '#DEB887',
+    '#BC8F8F',
+    '#F4A460',
+    '#DAA520',
+    '#CD853F',
+    '#A52A2A',
+    '#8B4513',
+    '#D2691E',
+    '#B22222',
+    '#FF6347',
+    '#FF4500',
+    '#FF8C00',
+    '#FFA07A',
+    '#FA8072',
+    '#E9967A',
+    '#FF69B4',
+    '#FF1493',
+    '#DB7093',
+    '#C71585',
   ];
 
   const eventName = 'INVOKE';
@@ -238,6 +282,7 @@
             }
             // draw lines
             if (points.length === 17) {
+              // human pose with 17 points
               ctx.lineWidth = 2;
 
               // nose to left eye
@@ -275,9 +320,27 @@
                 ctx.stroke();
               }
 
+              // left ear to left shoulder
+              if (pointSet.has(3) && pointSet.has(5)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[3][0], points[3][1]);
+                ctx.lineTo(points[5][0], points[5][1]);
+                ctx.stroke();
+              }
+
+              // right ear to right shoulder
+              if (pointSet.has(4) && pointSet.has(6)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[4][0], points[4][1]);
+                ctx.lineTo(points[6][0], points[6][1]);
+                ctx.stroke();
+              }
+
               // left shoulder to right shoulder
               if (pointSet.has(5) && pointSet.has(6)) {
-                ctx.strokeStyle = COLORS[2];
+                ctx.strokeStyle = COLORS[1];
                 ctx.beginPath();
                 ctx.moveTo(points[5][0], points[5][1]);
                 ctx.lineTo(points[6][0], points[6][1]);
@@ -313,7 +376,7 @@
 
               // left shoulder to left elbow
               if (pointSet.has(5) && pointSet.has(7)) {
-                ctx.strokeStyle = COLORS[5];
+                ctx.strokeStyle = COLORS[1];
                 ctx.beginPath();
                 ctx.moveTo(points[5][0], points[5][1]);
                 ctx.lineTo(points[7][0], points[7][1]);
@@ -322,7 +385,7 @@
 
               // left elbow to left wrist
               if (pointSet.has(7) && pointSet.has(9)) {
-                ctx.strokeStyle = COLORS[7];
+                ctx.strokeStyle = COLORS[1];
                 ctx.beginPath();
                 ctx.moveTo(points[7][0], points[7][1]);
                 ctx.lineTo(points[9][0], points[9][1]);
@@ -331,7 +394,7 @@
 
               // right shoulder to right elbow
               if (pointSet.has(6) && pointSet.has(8)) {
-                ctx.strokeStyle = COLORS[6];
+                ctx.strokeStyle = COLORS[1];
                 ctx.beginPath();
                 ctx.moveTo(points[6][0], points[6][1]);
                 ctx.lineTo(points[8][0], points[8][1]);
@@ -340,7 +403,7 @@
 
               // right elbow to right wrist
               if (pointSet.has(8) && pointSet.has(10)) {
-                ctx.strokeStyle = COLORS[8];
+                ctx.strokeStyle = COLORS[1];
                 ctx.beginPath();
                 ctx.moveTo(points[8][0], points[8][1]);
                 ctx.lineTo(points[10][0], points[10][1]);
@@ -349,7 +412,7 @@
 
               // left hip to left knee
               if (pointSet.has(11) && pointSet.has(13)) {
-                ctx.strokeStyle = COLORS[11];
+                ctx.strokeStyle = COLORS[3];
                 ctx.beginPath();
                 ctx.moveTo(points[11][0], points[11][1]);
                 ctx.lineTo(points[13][0], points[13][1]);
@@ -358,7 +421,7 @@
 
               // left knee to left ankle
               if (pointSet.has(13) && pointSet.has(15)) {
-                ctx.strokeStyle = COLORS[13];
+                ctx.strokeStyle = COLORS[3];
                 ctx.beginPath();
                 ctx.moveTo(points[13][0], points[13][1]);
                 ctx.lineTo(points[15][0], points[15][1]);
@@ -367,7 +430,7 @@
 
               // right hip to right knee
               if (pointSet.has(12) && pointSet.has(14)) {
-                ctx.strokeStyle = COLORS[12];
+                ctx.strokeStyle = COLORS[3];
                 ctx.beginPath();
                 ctx.moveTo(points[12][0], points[12][1]);
                 ctx.lineTo(points[14][0], points[14][1]);
@@ -376,10 +439,185 @@
 
               // right knee to right ankle
               if (pointSet.has(14) && pointSet.has(16)) {
-                ctx.strokeStyle = COLORS[14];
+                ctx.strokeStyle = COLORS[3];
                 ctx.beginPath();
                 ctx.moveTo(points[14][0], points[14][1]);
                 ctx.lineTo(points[16][0], points[16][1]);
+                ctx.stroke();
+              }
+            }
+
+            if (points.length === 21) {
+              // hand 21 points
+              ctx.lineWidth = 2;
+
+              // thumb
+              if (pointSet.has(0) && pointSet.has(1)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[1][0], points[1][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(1) && pointSet.has(2)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[1][0], points[1][1]);
+                ctx.lineTo(points[2][0], points[2][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(2) && pointSet.has(3)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[2][0], points[2][1]);
+                ctx.lineTo(points[3][0], points[3][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(3) && pointSet.has(4)) {
+                ctx.strokeStyle = COLORS[0];
+                ctx.beginPath();
+                ctx.moveTo(points[3][0], points[3][1]);
+                ctx.lineTo(points[4][0], points[4][1]);
+                ctx.stroke();
+              }
+
+              // index finger
+              if (pointSet.has(0) && pointSet.has(5)) {
+                ctx.strokeStyle = COLORS[1];
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[5][0], points[5][1]);
+                ctx.stroke();
+              }
+              if (pointSet.has(5) && pointSet.has(6)) {
+                ctx.strokeStyle = COLORS[1];
+                ctx.beginPath();
+                ctx.moveTo(points[5][0], points[5][1]);
+                ctx.lineTo(points[6][0], points[6][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(6) && pointSet.has(7)) {
+                ctx.strokeStyle = COLORS[1];
+                ctx.beginPath();
+                ctx.moveTo(points[6][0], points[6][1]);
+                ctx.lineTo(points[7][0], points[7][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(7) && pointSet.has(8)) {
+                ctx.strokeStyle = COLORS[1];
+                ctx.beginPath();
+                ctx.moveTo(points[7][0], points[7][1]);
+                ctx.lineTo(points[8][0], points[8][1]);
+                ctx.stroke();
+              }
+
+              // middle finger
+              if (pointSet.has(5) && pointSet.has(9)) {
+                ctx.strokeStyle = COLORS[5];
+                ctx.beginPath();
+                ctx.moveTo(points[5][0], points[5][1]);
+                ctx.lineTo(points[9][0], points[9][1]);
+                ctx.stroke();
+              }
+              if (pointSet.has(9) && pointSet.has(10)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[9][0], points[9][1]);
+                ctx.lineTo(points[10][0], points[10][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(10) && pointSet.has(11)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[10][0], points[10][1]);
+                ctx.lineTo(points[11][0], points[11][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(11) && pointSet.has(12)) {
+                ctx.strokeStyle = COLORS[2];
+                ctx.beginPath();
+                ctx.moveTo(points[11][0], points[11][1]);
+                ctx.lineTo(points[12][0], points[12][1]);
+                ctx.stroke();
+              }
+
+              // ring finger
+              if (pointSet.has(9) && pointSet.has(13)) {
+                ctx.strokeStyle = COLORS[5];
+                ctx.beginPath();
+                ctx.moveTo(points[9][0], points[9][1]);
+                ctx.lineTo(points[13][0], points[13][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(13) && pointSet.has(14)) {
+                ctx.strokeStyle = COLORS[3];
+                ctx.beginPath();
+                ctx.moveTo(points[13][0], points[13][1]);
+                ctx.lineTo(points[14][0], points[14][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(14) && pointSet.has(15)) {
+                ctx.strokeStyle = COLORS[3];
+                ctx.beginPath();
+                ctx.moveTo(points[14][0], points[14][1]);
+                ctx.lineTo(points[15][0], points[15][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(15) && pointSet.has(16)) {
+                ctx.strokeStyle = COLORS[3];
+                ctx.beginPath();
+                ctx.moveTo(points[15][0], points[15][1]);
+                ctx.lineTo(points[16][0], points[16][1]);
+                ctx.stroke();
+              }
+
+              // pinky
+              if (pointSet.has(13) && pointSet.has(17)) {
+                ctx.strokeStyle = COLORS[5];
+                ctx.beginPath();
+                ctx.moveTo(points[13][0], points[13][1]);
+                ctx.lineTo(points[17][0], points[17][1]);
+                ctx.stroke();
+              }
+              if (pointSet.has(0) && pointSet.has(17)) {
+                ctx.strokeStyle = COLORS[4];
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[17][0], points[17][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(17) && pointSet.has(18)) {
+                ctx.strokeStyle = COLORS[4];
+                ctx.beginPath();
+                ctx.moveTo(points[17][0], points[17][1]);
+                ctx.lineTo(points[18][0], points[18][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(18) && pointSet.has(19)) {
+                ctx.strokeStyle = COLORS[4];
+                ctx.beginPath();
+                ctx.moveTo(points[18][0], points[18][1]);
+                ctx.lineTo(points[19][0], points[19][1]);
+                ctx.stroke();
+              }
+
+              if (pointSet.has(19) && pointSet.has(20)) {
+                ctx.strokeStyle = COLORS[4];
+                ctx.beginPath();
+                ctx.moveTo(points[19][0], points[19][1]);
+                ctx.lineTo(points[20][0], points[20][1]);
                 ctx.stroke();
               }
             }
@@ -390,11 +628,10 @@
               const x = point[0];
               const y = point[1];
               const target = point[3];
-              const color = COLORS[target % COLORS.length];
               if (pointSet.has(target)) {
-                ctx.fillStyle = color;
+                ctx.fillStyle = COLORS[target % COLORS.length];
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.arc(x, y, 3, 0, 3 * Math.PI);
                 ctx.fill();
               }
             }
