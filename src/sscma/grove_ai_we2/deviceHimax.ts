@@ -120,6 +120,7 @@ class Himax extends Device {
     const xmodem = new Xmodem({});
     const progress = (current: number, total: number, percent: number) => {
       console.log(`progress ${current}/${total} ${percent}%`);
+      this.deviceStore.setFlashProgress(`${percent}%`);
     };
     if (!this.serial) {
       return;

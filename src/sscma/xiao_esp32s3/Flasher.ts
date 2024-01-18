@@ -56,6 +56,9 @@ class Flasher implements FlasherInterface {
         compress: true,
         reportProgress: (fileIndex, written, total) => {
           console.log('written ', fileIndex, ' file:', (written / total) * 100);
+          this.deviceStore.setFlashProgress(
+            `${Math.floor((written / total) * 100)}%`
+          );
         },
       } as FlashOptions;
       await this.espLoader?.write_flash(flashOptions);

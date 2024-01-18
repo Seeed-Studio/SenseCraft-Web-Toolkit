@@ -496,7 +496,10 @@
         }
       }
     }
-    loadingTip.value = t('workplace.device.message.tip.flashing');
+    deviceStore.setFlashProgress('0%');
+    loadingTip.value = t('workplace.device.message.tip.flashing', {
+      progress: deviceStore.flashProgress,
+    });
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
@@ -654,6 +657,17 @@
   const onClickGoToConfigWifi = () => {
     router.push('/setup/config');
   };
+
+  watch(
+    () => deviceStore.flashProgress,
+    () => {
+      if (deviceStore.deviceStatus === DeviceStatus.Flashing) {
+        loadingTip.value = t('workplace.device.message.tip.flashing', {
+          progress: deviceStore.flashProgress,
+        });
+      }
+    }
+  );
 
   watch(
     () => deviceStore.currentModel,

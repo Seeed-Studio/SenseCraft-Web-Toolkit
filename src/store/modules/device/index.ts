@@ -56,6 +56,7 @@ const useDeviceStore = defineStore('device', {
     currentAvailableModel: false,
     comeToSenseCraftAI: {} as ComeToSenseCraftAIType,
     flashWay: FlashWayType.Prefabricated,
+    flashProgress: '0%',
   }),
   persist: {
     enabled: true,
@@ -139,6 +140,9 @@ const useDeviceStore = defineStore('device', {
     },
     setIsCanMqtt(isCanMqtt: boolean) {
       this.isCanMqtt = isCanMqtt;
+    },
+    setFlashProgress(progress: string) {
+      this.flashProgress = progress;
     },
 
     clearDeviceInfo() {
