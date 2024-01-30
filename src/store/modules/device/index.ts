@@ -57,6 +57,7 @@ const useDeviceStore = defineStore('device', {
     comeToSenseCraftAI: {} as ComeToSenseCraftAIType,
     flashWay: FlashWayType.Prefabricated,
     flashProgress: '0%',
+    flashTip: '',
   }),
   persist: {
     enabled: true,
@@ -143,6 +144,10 @@ const useDeviceStore = defineStore('device', {
     },
     setFlashProgress(progress: string) {
       this.flashProgress = progress;
+    },
+
+    setFlashTip(tip: string) {
+      this.flashTip = tip;
     },
 
     clearDeviceInfo() {

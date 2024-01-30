@@ -1,5 +1,5 @@
 <template>
-  <a-spin :loading="loading" :tip="loadingTip" class="item-card">
+  <a-spin :loading="loading" :tip="deviceStore.flashTip" class="item-card">
     <a-card
       :class="['general-card', 'item-card']"
       :title="$t('workplace.device.title')"
@@ -340,7 +340,6 @@
   const modelObjects = ref<string[]>([]);
   const modelFile = ref<File | null>(null);
   const loading = ref(false);
-  const loadingTip = ref('');
   const selectedModel = ref(-1);
   const isSelectedCustomModel = ref(false);
   const isComeToFlashFinished = ref(false);
@@ -451,7 +450,7 @@
 
   const flashFirmware = async () => {
     loading.value = true;
-    loadingTip.value = t('workplace.device.message.tip.connecting');
+    deviceStore.setFlashTip(t('workplace.device.message.tip.connecting'));
     await props.flasher.writeFlashBefore();
     const version = deviceStore.firmware?.version;
     const bins = deviceStore.firmware?.bins ?? [];
@@ -466,7 +465,9 @@
         throw new Error(t('workplace.device.message.firmware.no'));
       }
       // 下载固件
-      loadingTip.value = t('workplace.device.message.tip.downloading.firmware');
+      deviceStore.setFlashTip(
+        t('workplace.device.message.tip.downloading.firmware')
+      );
       const firmwareArray = await downloadFirmware(bins);
       fileArray.push(...firmwareArray);
     }
@@ -489,7 +490,9 @@
         throw new Error(t('workplace.device.message.model.no'));
       }
       if (deviceStore.models.length > 0) {
-        loadingTip.value = t('workplace.device.message.tip.downloading.model');
+        deviceStore.setFlashTip(
+          t('workplace.device.message.tip.downloading.model')
+        );
         finallyModel = deviceStore.models[selectedModel.value];
         if (finallyModel?.url) {
           const modelFile = await downloadModel(finallyModel.url);
@@ -498,14 +501,16 @@
       }
     }
     deviceStore.setFlashProgress('0%');
-    loadingTip.value = t('workplace.device.message.tip.flashing', {
-      progress: deviceStore.flashProgress,
-    });
+    deviceStore.setFlashTip(
+      t('workplace.device.message.tip.flashing', {
+        progress: deviceStore.flashProgress,
+      })
+    );
     deviceStore.setDeviceStatus(DeviceStatus.Flashing);
     const result = await props.flasher.onWriteFlash(fileArray);
     if (result) {
       if (props.flasher.isNeedResetDevice) {
-        loadingTip.value = t('workplace.device.message.tip.resetting');
+        deviceStore.setFlashTip(t('workplace.device.message.tip.resetting'));
         await props.flasher.onResetDevice();
       }
       if (props.flasher.isNeedConnectDevice) {
@@ -523,7 +528,7 @@
     } else {
       await device.value.disconnect();
     }
-    loadingTip.value = '';
+    deviceStore.setFlashTip('');
     loading.value = false;
   };
 
@@ -534,7 +539,7 @@
     } catch (error: any) {
       flashErrorHandle(error);
     } finally {
-      loadingTip.value = '';
+      deviceStore.setFlashTip('');
       loading.value = false;
     }
   };
@@ -576,7 +581,7 @@
       flashErrorHandle(error);
       term.writeln(`Error: ${error?.message}`);
     } finally {
-      loadingTip.value = '';
+      deviceStore.setFlashTip('');
       loading.value = false;
     }
   };
@@ -651,7 +656,7 @@
       console.error(error);
       flashErrorHandle(error);
     } finally {
-      loadingTip.value = '';
+      deviceStore.setFlashTip('');
       loading.value = false;
     }
     return false;
@@ -677,10 +682,19 @@
     () => deviceStore.flashProgress,
     () => {
       if (deviceStore.deviceStatus === DeviceStatus.Flashing) {
-        loadingTip.value = t('workplace.device.message.tip.flashing', {
-          progress: deviceStore.flashProgress,
-        });
+        deviceStore.setFlashTip(
+          t('workplace.device.message.tip.flashing', {
+            progress: deviceStore.flashProgress,
+          })
+        );
       }
+    }
+  );
+
+  watch(
+    () => deviceStore.flashTip,
+    () => {
+      loading.value = !!deviceStore.flashTip;
     }
   );
 
