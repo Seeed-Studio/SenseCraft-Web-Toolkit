@@ -577,7 +577,7 @@
       deviceStore.setFlashWay(FlashWayType.Prefabricated);
       await flashFirmware();
     } catch (error: any) {
-      console.error(error);
+      console.error(error.name, '----------', error.message);
       flashErrorHandle(error);
       term.writeln(`Error: ${error?.message}`);
     } finally {
@@ -687,6 +687,15 @@
             progress: deviceStore.flashProgress,
           })
         );
+      }
+    }
+  );
+
+  watch(
+    () => deviceStore.deviceStatus,
+    () => {
+      if (deviceStore.deviceStatus !== DeviceStatus.Flashing) {
+        deviceStore.setFlashTip('');
       }
     }
   );

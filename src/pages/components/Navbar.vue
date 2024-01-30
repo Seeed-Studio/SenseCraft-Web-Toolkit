@@ -266,7 +266,12 @@
         Message.success(t('workplace.serial.device.connected.successfully'));
       }
     } catch (error: any) {
-      console.error('Device connection failed: ', error);
+      console.error(
+        'Device connection failed: ',
+        error.name,
+        '--------',
+        error.message
+      );
       flashErrorHandle(error, t('workplace.serial.connected.failed'));
       term.writeln(`Error: ${error?.message}`);
     } finally {

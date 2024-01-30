@@ -260,8 +260,8 @@ class Himax extends Device {
     }
     try {
       await this.serial.close();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error(error.name, '----------', error.message);
     } finally {
       this.deviceStore.setDeviceStatus(DeviceStatus.UnConnected);
       this.deviceStore.setCurrentAvailableModel(false);
