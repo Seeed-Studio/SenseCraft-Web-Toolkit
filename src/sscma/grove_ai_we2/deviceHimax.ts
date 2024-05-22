@@ -218,6 +218,7 @@ class Himax extends Device {
   }
 
   public async eraseFlash(): Promise<void> {
+    await this.flash(new Uint8Array(128), 0x300000);
     await this.flash(new Uint8Array(128), 0x400000);
   }
 

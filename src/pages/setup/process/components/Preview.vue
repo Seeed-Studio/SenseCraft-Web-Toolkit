@@ -171,7 +171,52 @@
 
         canvas.value.width = img.height;
         canvas.value.height = img.width;
-        ctx.drawImage(img, 0, 0, img.width, img.height);
+        if (data?.rotate) {
+          const rotate = data.rotate;
+          console.log(rotate);
+          if (rotate === 0) {
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+          }
+          if (rotate === 90) {
+            ctx.translate(canvas.value.width / 2, canvas.value.height / 2);
+            ctx.rotate((90 * Math.PI) / 180);
+            ctx.drawImage(
+              img,
+              -canvas.value.height / 2,
+              -canvas.value.width / 2,
+              canvas.value.height,
+              canvas.value.width
+            );
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+          }
+          if (rotate === 180) {
+            ctx.translate(canvas.value.width / 2, canvas.value.height / 2);
+            ctx.rotate((180 * Math.PI) / 180);
+            ctx.drawImage(
+              img,
+              -canvas.value.width / 2,
+              -canvas.value.height / 2,
+              canvas.value.width,
+              canvas.value.height
+            );
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+          }
+          if (rotate === 270) {
+            ctx.translate(canvas.value.width / 2, canvas.value.height / 2);
+            ctx.rotate((270 * Math.PI) / 180);
+            ctx.drawImage(
+              img,
+              -canvas.value.height / 2,
+              -canvas.value.width / 2,
+              canvas.value.height,
+              canvas.value.width
+            );
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+          }
+        } else {
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+        }
+
         if (data?.boxes) {
           const boxes = data.boxes;
           term.writeln(`boxes: ${JSON.stringify(boxes)}`);
