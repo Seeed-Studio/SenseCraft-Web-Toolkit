@@ -1,4 +1,11 @@
 <template>
+  <a-alert type="warning" banner center closable
+    >We apologize that the AI model in the tool is not updating at this time. If
+    you would like to explore more models, please visit our website at
+    <a href="https://sensecraft.seeed.cc" target="_blank"
+      >https://sensecraft.seeed.cc</a
+    ></a-alert
+  >
   <div class="navbar">
     <div class="left-side">
       <a-space>
@@ -305,13 +312,14 @@
   }
 
   .left-side {
-    display: flex;
     align-items: center;
+    margin: 10px 0;
     padding-left: 20px;
   }
 
   .center-side {
-    flex: 1;
+    display: flex;
+    margin-left: 80px;
   }
 
   .right-side {
