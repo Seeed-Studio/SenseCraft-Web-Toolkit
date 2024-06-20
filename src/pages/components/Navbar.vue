@@ -2,8 +2,8 @@
   <a-alert type="warning" banner center closable
     >We apologize that the AI model in the tool is not updating at this time. If
     you would like to explore more models, please visit our website at
-    <a href="https://sensecraft.seeed.cc" target="_blank"
-      >https://sensecraft.seeed.cc</a
+    <a href="https://sensecraft.seeed.cc/ai/#/model" target="_blank"
+      >https://sensecraft.seeed.cc/ai/#/model</a
     ></a-alert
   >
   <div class="navbar">
